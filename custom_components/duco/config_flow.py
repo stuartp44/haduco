@@ -30,7 +30,13 @@ class DucoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if "DUCO" not in name:
             return self.async_abort(reason="not_duco_device")
 
-        unique_id = properties.get("id", name)
+        try:
+            mac_address = name.split('[')[1].split(']')[0]
+        except IndexError:
+            return self.async_abort(reason="invalid_name_format")
+        
+        # Extract a unique ID from the properties or use the MAC address
+        unique_id = properties.get("id", mac_address)
 
         # Set the unique ID and check if already configured
         await self.async_set_unique_id(unique_id)
@@ -38,7 +44,7 @@ class DucoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         # Store the device info in the config entry
         return self.async_create_entry(
-            title=f"Duco Device {name}",
+            title=name,
             data={
                 "host": host,
                 "port": port,
