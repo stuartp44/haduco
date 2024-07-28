@@ -39,7 +39,11 @@ class DucoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         
         # Extract a unique ID from the properties or use the MAC address
         unique_id = properties.get("id", mac_address)
-        board_data = duco_device.get_cap_board_info()
+        try:
+            # Fetch board data asynchronously
+            board_data = await duco_device.get_cap_board_info()
+        except Exception as e:
+            return self.async_abort(reason="cannot_connect")
 
         # Set the unique ID and check if already configured
         await self.async_set_unique_id(unique_id)
