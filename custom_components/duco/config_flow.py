@@ -4,6 +4,7 @@ from homeassistant.components import zeroconf
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 from .const import DOMAIN
+from duco import DucoDevice
 
 class DucoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Duco."""
@@ -25,6 +26,7 @@ class DucoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         host = discovery_info.host
         port = discovery_info.port
         properties = discovery_info.properties
+        duco_device = DucoDevice(host, port)
         
         # Filter only devices with "DUCO" in the name
         if "DUCO" not in name:
@@ -37,6 +39,7 @@ class DucoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         
         # Extract a unique ID from the properties or use the MAC address
         unique_id = properties.get("id", mac_address)
+        board_data = duco_device.get_cap_board_info()
 
         # Set the unique ID and check if already configured
         await self.async_set_unique_id(unique_id)
@@ -44,13 +47,17 @@ class DucoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         # Store the device info in the config entry
         return self.async_create_entry(
-            title=name,
+            title=f"Duco Communication and Print Board - {board_data['serial']}",
             data={
                 "host": host,
                 "port": port,
                 "name": name,
-                "unique_id": unique_id,
+                "unique_id": f"{board_data['mac']}",
             },
+            options = {
+                "serial": board_data['serial'],
+                "version": board_data['swversion'],
+            }
         )
 
 class DucoOptionsFlowHandler(config_entries.OptionsFlow):
