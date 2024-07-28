@@ -6,6 +6,7 @@ from homeassistant.data_entry_flow import FlowResult
 from .const import DOMAIN
 from duco import DucoDevice
 
+
 class DucoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Duco."""
 
@@ -39,7 +40,7 @@ class DucoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         
         # Extract a unique ID from the properties or use the MAC address
         unique_id = properties.get("id", mac_address)
-        board_data = duco_device.get_cap_board_info()
+        board_data = await hass.async_add_executor_job(duco_device.get_cap_board_info())
 
         # Set the unique ID and check if already configured
         await self.async_set_unique_id(unique_id)
