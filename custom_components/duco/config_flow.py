@@ -25,6 +25,11 @@ class DucoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         host = discovery_info.host
         port = discovery_info.port
         properties = discovery_info.properties
+        
+        # Filter only devices with "DUCO" in the name
+        if "DUCO" not in name:
+            return self.async_abort(reason="not_duco_device")
+
         unique_id = properties.get("id", name)
 
         # Set the unique ID and check if already configured
