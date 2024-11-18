@@ -45,6 +45,30 @@ class DucoboxNodeSensorEntityDescription(SensorEntityDescription):
     sensor_key: str
     node_type: str
 
+COMMBOARD_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = (
+    # Wi-Fi signal strength
+    DucoboxSensorEntityDescription(
+        key="RssiWifi",
+        name="Wi-Fi Signal Strength",
+        native_unit_of_measurement="dBm",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.SIGNAL_STRENGTH,
+        value_fn=lambda data: _process_rssi(
+            data.get('General', {}).get('Lan', {}).get('RssiWifi', {}).get('Val')
+        ),
+    ),
+    # Device uptime
+    DucoboxSensorEntityDescription(
+        key="UpTime",
+        name="Device Uptime",
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        device_class=SensorDeviceClass.DURATION,
+        value_fn=lambda data: _process_uptime(
+            data.get('General', {}).get('Board', {}).get('UpTime', {}).get('Val')
+        ),
+    ),
+)
 
 SENSORS: tuple[DucoboxSensorEntityDescription, ...] = (
     # Temperature sensors
@@ -135,28 +159,7 @@ SENSORS: tuple[DucoboxSensorEntityDescription, ...] = (
             data.get('Ventilation', {}).get('Fan', {}).get('PressEha', {}).get('Val')
         ),
     ),
-    # Wi-Fi signal strength
-    DucoboxSensorEntityDescription(
-        key="RssiWifi",
-        name="Wi-Fi Signal Strength",
-        native_unit_of_measurement="dBm",
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.SIGNAL_STRENGTH,
-        value_fn=lambda data: _process_rssi(
-            data.get('General', {}).get('Lan', {}).get('RssiWifi', {}).get('Val')
-        ),
-    ),
-    # Device uptime
-    DucoboxSensorEntityDescription(
-        key="UpTime",
-        name="Device Uptime",
-        native_unit_of_measurement=UnitOfTime.SECONDS,
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        device_class=SensorDeviceClass.DURATION,
-        value_fn=lambda data: _process_uptime(
-            data.get('General', {}).get('Board', {}).get('UpTime', {}).get('Val')
-        ),
-    ),
+
     # Filter time remaining
     DucoboxSensorEntityDescription(
         key="TimeFilterRemain",
@@ -461,7 +464,7 @@ async def async_setup_entry(
     entities: list[SensorEntity] = []
 
     # Add main Ducobox sensors
-    for description in SENSORS:
+    for description in COMMBOARD_SENSORS:
         unique_id = f"{device_id}-{description.key}"
         entities.append(
             DucoboxSensorEntity(
@@ -471,6 +474,7 @@ async def async_setup_entry(
                 unique_id=unique_id,
             )
         )
+    
 
     # Add node sensors
     nodes = coordinator.data.get('Nodes', [])
