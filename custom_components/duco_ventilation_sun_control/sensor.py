@@ -567,7 +567,7 @@ class DucoboxNodeSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntit
         self._attr_unique_id = unique_id
         self._node_id = node_id
         # Updated entity name
-        self._attr_name = f"{node_name} {description.name}"
+        self._attr_name = description.name
         # self._attr_suggested_object_id = f"{device_id}_{node_name}_{description.name}".lower().replace(' ', '_')
 
     @property
