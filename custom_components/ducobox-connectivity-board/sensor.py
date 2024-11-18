@@ -507,14 +507,12 @@ async def async_setup_entry(
         node_id = node.get('Node')
         node_type = node.get('General', {}).get('Type', {}).get('Val', 'Unknown')
         node_addr = node.get('General', {}).get('Addr', 'Unknown')
-        # Updated node_name
-        node_name = f"{device_id}:{node_id}:{node_type}"
 
         # Create device info for the node
         node_device_id = f"{device_id}-{node_id}"
         node_device_info = DeviceInfo(
             identifiers={(DOMAIN, node_device_id)},
-            name=node_name,
+            name=node_type,
             manufacturer="DUCO Ventilation & Sun Control",
             model=node_type,
             via_device=(DOMAIN, device_id),
