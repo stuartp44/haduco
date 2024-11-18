@@ -484,17 +484,32 @@ async def async_setup_entry(
     nodes = coordinator.data.get('Nodes', [])
     for node in nodes:
         node_id = node.get('Node')
+        box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "")
         node_type = node.get('General', {}).get('Type', {}).get('Val', 'Unknown')
+        box_sw_version = coordinator.data.get("General", {}).get("Board", {}).get("SwVersionBox", {}).get("Val", "")
 
         # Create device info for the node
         node_device_id = f"{device_id}-{node_id}"
-        node_device_info = DeviceInfo(
-            identifiers={(DOMAIN, node_device_id)},
-            name=node_type,
-            manufacturer="DUCO Ventilation & Sun Control",
-            model=node_type,
-            via_device=(DOMAIN, device_id),
-        )
+
+        if node.get('General', {}).get('Type', {}).get('Val') == 'BOX':
+            node_device_info = DeviceInfo(
+                identifiers={(DOMAIN, node_device_id)},
+                name=box_name,
+                manufacturer="DUCO Ventilation & Sun Control",
+                model=node_type,
+                sw_version=box_sw_version,
+                via_device=(DOMAIN, device_id),
+            )
+        else:
+            node_device_info = DeviceInfo(
+                identifiers={(DOMAIN, node_device_id)},
+                name=node_type,
+                manufacturer="DUCO Ventilation & Sun Control",
+                model=node_type,
+                via_device=(DOMAIN, f"{device_id}-1"),
+            )
+            
+
 
         # Get the sensors for this node type
         node_sensors = NODE_SENSORS.get(node_type, [])
