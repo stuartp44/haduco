@@ -236,27 +236,6 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             sensor_key='Temp',
             node_type='BOX',
         ),
-        DucoboxNodeSensorEntityDescription(
-            key='Rh',
-            name='Relative Humidity',
-            native_unit_of_measurement=PERCENTAGE,
-            device_class=SensorDeviceClass.HUMIDITY,
-            value_fn=lambda node: _process_node_humidity(
-                node.get('Sensor', {}).get('data', {}).get('Rh')
-            ),
-            sensor_key='Rh',
-            node_type='BOX',
-        ),
-        DucoboxNodeSensorEntityDescription(
-            key='IaqRh',
-            name='Humidity Air Quality',
-            native_unit_of_measurement=PERCENTAGE,
-            value_fn=lambda node: _process_node_iaq(
-                node.get('Sensor', {}).get('data', {}).get('IaqRh')
-            ),
-            sensor_key='IaqRh',
-            node_type='BOX',
-        ),
     ],
     'UCCO2': [
         DucoboxNodeSensorEntityDescription(
@@ -506,7 +485,6 @@ async def async_setup_entry(
     for node in nodes:
         node_id = node.get('Node')
         node_type = node.get('General', {}).get('Type', {}).get('Val', 'Unknown')
-        node_addr = node.get('General', {}).get('Addr', 'Unknown')
 
         # Create device info for the node
         node_device_id = f"{device_id}-{node_id}"
