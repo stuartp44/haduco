@@ -326,6 +326,33 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             node_type='BSRH',
         ),
     ],
+    'VLVRH': [
+        DucoboxNodeSensorEntityDescription(
+            key='Mode',
+            name='Ventilation Mode',
+            value_fn=lambda node: node.get('Ventilation', {}).get('Mode'),
+            sensor_key='Mode',
+            node_type='VLVRH',
+        ),
+        DucoboxNodeSensorEntityDescription(
+            key='FlowLvlTgt',
+            name='Flow Level Target',
+            native_unit_of_measurement=PERCENTAGE,
+            value_fn=lambda node: node.get('Ventilation', {}).get('FlowLvlTgt'),
+            sensor_key='FlowLvlTgt',
+            node_type='VLVRH',
+        ),
+        DucoboxNodeSensorEntityDescription(
+            key='IaqRh',
+            name='Humidity Air Quality',
+            native_unit_of_measurement=PERCENTAGE,
+            value_fn=lambda node: _process_node_iaq(
+                node.get('Sensor', {}).get('data', {}).get('IaqRh')
+            ),
+            sensor_key='IaqRh',
+            node_type='VLVRH',
+        ),
+    ],
     # Add other node types and their sensors if needed
 }
 
