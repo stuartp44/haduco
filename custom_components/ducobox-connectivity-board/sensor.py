@@ -478,6 +478,7 @@ async def async_setup_entry(
         node_id = node.get('Node')
         node_type = node.get('General', {}).get('Type', {}).get('Val', 'Unknown')
         node_addr = node.get('General', {}).get('Addr', 'Unknown')
+        # Updated node_name
         node_name = f"{device_id}:{node_id}:{node_type}"
 
         # Create device info for the node
@@ -551,7 +552,9 @@ class DucoboxNodeSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntit
         self._attr_device_info = device_info
         self._attr_unique_id = unique_id
         self._node_id = node_id
+        # Updated entity name
         self._attr_name = f"{node_name} {description.name}"
+        # self._attr_suggested_object_id = f"{device_id}_{node_name}_{description.name}".lower().replace(' ', '_')
 
     @property
     def native_value(self) -> Any:
