@@ -37,7 +37,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
                 await asyncio.get_running_loop().run_in_executor(
                     None, lambda: requests.get(f"{base_url.rstrip('/')}/info", verify=False)
                 )
-                return self.async_create_entry(title="Ducobox Connectivity Board", data=user_input)
+                return self.async_create_entry(title="DUCO Connectivity Board", data=user_input)
             except (ValueError, requests.RequestException):
                 errors["base_url"] = "cannot_connect"
 
