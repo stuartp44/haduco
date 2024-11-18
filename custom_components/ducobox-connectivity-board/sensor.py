@@ -449,16 +449,14 @@ async def async_setup_entry(
     device_id = mac_address.replace(":", "").lower() if mac_address else "unknown_mac"
     device_name = f"{device_id}"
 
-    box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "Unknown Model")
-    box_subtype = coordinator.data.get("General", {}).get("Board", {}).get("BoxSubTypeName", {}).get("Val", "")
-    box_model = f"{box_name} {box_subtype}".replace('_', ' ').strip()
+    comms_subtype = coordinator.data.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
 
     device_info = DeviceInfo(
         identifiers={(DOMAIN, device_id)},
         name=device_name,
-        manufacturer="Ducobox",
-        model=box_model,
-        sw_version=coordinator.data.get("General", {}).get("Board", {}).get("SwVersionBox", {}).get("Val", "Unknown Version"),
+        manufacturer="DUCO Ventilation & Sun Control",
+        model=comms_subtype,
+        sw_version=coordinator.data.get("General", {}).get("Board", {}).get("SwVersionComm", {}).get("Val", "Unknown Version"),
     )
 
     entities: list[SensorEntity] = []
@@ -490,7 +488,7 @@ async def async_setup_entry(
         node_device_info = DeviceInfo(
             identifiers={(DOMAIN, node_device_id)},
             name=node_name,
-            manufacturer="Ducobox",
+            manufacturer="DUCO Ventilation & Sun Control",
             model=node_type,
             via_device=(DOMAIN, device_id),
         )
