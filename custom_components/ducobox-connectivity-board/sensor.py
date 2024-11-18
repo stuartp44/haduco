@@ -496,7 +496,7 @@ async def async_setup_entry(
                 identifiers={(DOMAIN, node_device_id)},
                 name=box_name,
                 manufacturer="DUCO Ventilation & Sun Control",
-                model=node_type,
+                model=box_name,
                 sw_version=box_sw_version,
                 via_device=(DOMAIN, device_id),
             )
