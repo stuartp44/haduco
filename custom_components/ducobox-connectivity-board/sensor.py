@@ -480,7 +480,7 @@ async def async_setup_entry(
 
     device_info = DeviceInfo(
         identifiers={(DOMAIN, device_id)},
-        name=device_name,
+        name=comms_subtype,
         manufacturer="DUCO Ventilation & Sun Control",
         model=comms_subtype,
         sw_version=coordinator.data.get("General", {}).get("Board", {}).get("SwVersionComm", {}).get("Val", "Unknown Version"),
