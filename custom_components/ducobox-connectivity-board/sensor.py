@@ -455,13 +455,16 @@ async def async_setup_entry(
     device_id = mac_address.replace(":", "").lower() if mac_address else "unknown_mac"
     device_name = f"{device_id}"
 
+    comms_name = coordinator.data.get("General", {}).get("Lan", {}).get("HostName", {}).get("Val", "")
+    comms_serial_number = coordinator.data.get("General", {}).get("Board", {}).get("SerialBoardComm", {}).get("Val", "")
     comms_subtype = coordinator.data.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
 
     device_info = DeviceInfo(
         identifiers={(DOMAIN, device_id)},
-        name=comms_subtype,
+        name=comms_name,
         manufacturer="DUCO Ventilation & Sun Control",
         model=comms_subtype,
+        serial_number=comms_serial_number,
         sw_version=coordinator.data.get("General", {}).get("Board", {}).get("SwVersionComm", {}).get("Val", "Unknown Version"),
     )
 
@@ -487,6 +490,7 @@ async def async_setup_entry(
         box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "")
         node_type = node.get('General', {}).get('Type', {}).get('Val', 'Unknown')
         box_sw_version = coordinator.data.get("General", {}).get("Board", {}).get("SwVersionBox", {}).get("Val", "")
+        box_serial_number = coordinator.data.get("General", {}).get("Board", {}).get("SerialBoardBox", {}).get("Val", "")
 
         # Create device info for the node
         node_device_id = f"{device_id}-{node_id}"
@@ -498,6 +502,7 @@ async def async_setup_entry(
                 manufacturer="DUCO Ventilation & Sun Control",
                 model=box_name,
                 sw_version=box_sw_version,
+                serial_number=box_serial_number,
                 via_device=(DOMAIN, device_id),
             )
         else:
