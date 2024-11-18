@@ -530,7 +530,7 @@ async def async_setup_entry(
                     device_info=node_device_info,
                     unique_id=unique_id,
                     device_id=device_id,
-                    node_name=node_name,
+                    node_name=node_type,
                 )
             )
 
