@@ -94,7 +94,6 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             description_placeholders={
                 "host": discovery["host"],
                 "unique_id": discovery["unique_id"],
-                "comm_sub_type_name": discovery["comm_sub_type_name"],
             },
         )
 
