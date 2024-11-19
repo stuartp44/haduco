@@ -427,7 +427,6 @@ class DucoboxCoordinator(DataUpdateCoordinator):
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Ducobox sensors from a config entry."""
@@ -442,7 +441,6 @@ async def async_setup_entry(
         .get("Val", "unknown_mac")
     )
     device_id = mac_address.replace(":", "").lower() if mac_address else "unknown_mac"
-    device_name = f"{device_id}"
 
     comms_name = coordinator.data.get("General", {}).get("Lan", {}).get("HostName", {}).get("Val", "")
     comms_serial_number = coordinator.data.get("General", {}).get("Board", {}).get("SerialBoardComm", {}).get("Val", "")
@@ -557,8 +555,6 @@ class DucoboxNodeSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntit
         description: DucoboxNodeSensorEntityDescription,
         device_info: DeviceInfo,
         unique_id: str,
-        device_id: str,
-        node_name: str,
     ) -> None:
         """Initialize a Ducobox node sensor entity."""
         super().__init__(coordinator)
