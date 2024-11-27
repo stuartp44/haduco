@@ -427,6 +427,7 @@ class DucoboxCoordinator(DataUpdateCoordinator):
 
 async def async_setup_entry(
     hass: HomeAssistant,
+    entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Ducobox sensors from a config entry."""
@@ -519,7 +520,7 @@ async def async_setup_entry(
                 )
             )
 
-    async_add_entities(entities)
+    async_add_entities(entities, update_before_add=True)
 
 class DucoboxSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntity):
     """Representation of a Ducobox sensor entity."""
