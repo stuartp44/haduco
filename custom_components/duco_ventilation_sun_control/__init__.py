@@ -20,7 +20,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         duco_client = DucoPy(base_url=base_url, verify=False)
         _LOGGER.debug(f"DucoPy initialized with base URL: {base_url}")
         hass.data.setdefault(DOMAIN, {})
-        hass.data[DOMAIN] = duco_client
+        hass.data[DOMAIN][entry.entry_id] = duco_client
     except Exception as ex:
         _LOGGER.error("Could not connect to Ducobox: %s", ex)
         raise ConfigEntryNotReady from ex
