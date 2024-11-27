@@ -415,7 +415,7 @@ class DucoboxCoordinator(DataUpdateCoordinator):
     def _fetch_data(self) -> dict:
         duco_client = self.hass.data[DOMAIN]
 
-        data = duco_client.get_info()
+        data = duco_client.get_board_info()
         _LOGGER.debug(f"Data received from /info: {data}")
 
         nodes_response = duco_client.get_nodes()
