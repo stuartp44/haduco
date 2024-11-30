@@ -78,7 +78,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             communication_board_info = await asyncio.get_running_loop().run_in_executor(
                 None, duco_client.get_info
             )
-            logging.info(f"Communication board info: {communication_board_info}")
+            _LOGGER.debug(f"Communication board info: {communication_board_info}")
             duco_client.close()
         except Exception as ex:
             _LOGGER.error("Could not get Ducobox info: %s", ex)
