@@ -75,7 +75,9 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             return self.async_abort(reason="cannot_connect")
         
         try:
-            communiction_board_info = duco_client.get_info()
+            communication_board_info = await asyncio.get_running_loop().run_in_executor(
+                None, duco_client.get_info
+            )
             duco_client.close()
         except Exception as ex:
             _LOGGER.error("Could not get Ducobox info: %s", ex)
@@ -85,7 +87,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         self.context["discovery"] = {
             "host": host,
             "unique_id": unique_id,
-            "communiction_board_info": communiction_board_info
+            "communication_board_info": communication_board_info
         }
 
         # Ask user for confirmation
@@ -96,7 +98,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         discovery = self.context["discovery"]
 
         if user_input is not None:
-            communication_board_type = discovery["communiction_board_info"].get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
+            communication_board_type = discovery["communication_board_info"].get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
             if communication_board_type != "CONNECTIVITY":
                 # Create the entry upon confirmation
                 return self.async_create_entry(
