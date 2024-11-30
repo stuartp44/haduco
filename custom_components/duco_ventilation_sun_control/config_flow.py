@@ -5,6 +5,7 @@ from homeassistant.components.zeroconf import ZeroconfServiceInfo
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.core import callback
 from homeassistant.helpers import selector
+from ducopy import DucoPy
 from .const import DOMAIN
 import requests
 import asyncio
@@ -65,10 +66,26 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         await self.async_set_unique_id(unique_id)
         self._abort_if_unique_id_configured()
 
+        try:
+            base_url = f"https://{host}/info"
+            duco_client = DucoPy(base_url=base_url, verify=False)
+            _LOGGER.debug(f"DucoPy initialized with base URL: {base_url}")
+        except Exception as ex:
+            _LOGGER.error("Could not connect to Ducobox: %s", ex)
+            return self.async_abort(reason="cannot_connect")
+        
+        try:
+            communiction_board_info = duco_client.get_info()
+            duco_client.close()
+        except Exception as ex:
+            _LOGGER.error("Could not get Ducobox info: %s", ex)
+            return self.async_abort(reason="unable_to_get_info")
+
         # Store discovery data in context
         self.context["discovery"] = {
             "host": host,
             "unique_id": unique_id,
+            "communiction_board_info": communiction_board_info
         }
 
         # Ask user for confirmation
@@ -79,14 +96,18 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         discovery = self.context["discovery"]
 
         if user_input is not None:
-            # Create the entry upon confirmation
-            return self.async_create_entry(
-                title=f"Ducobox ({discovery['host']})",
-                data={
-                    "base_url": f"https://{discovery['host']}",
-                    "unique_id": discovery["unique_id"],
-                },
-            )
+            communication_board_type = discovery["communiction_board_info"].get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
+            if communication_board_type != "CONNECTIVITY":
+                # Create the entry upon confirmation
+                return self.async_create_entry(
+                    title=f"Duco connectivity board ({discovery['host']})",
+                    data={
+                        "base_url": f"https://{discovery['host']}",
+                        "unique_id": discovery["unique_id"],
+                    },
+                )
+            else:
+                return self.async_abort(reason="not_known_communication_board")
 
         # Show confirmation form to the user
         return self.async_show_form(
