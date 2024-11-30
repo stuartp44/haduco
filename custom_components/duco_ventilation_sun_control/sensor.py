@@ -541,6 +541,11 @@ class DucoboxSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntity):
         self._attr_name = f"{device_info['name']} {description.name}"
 
     @property
+    def available(self) -> bool:
+        """Return if entity is available."""
+        return self.coordinator.last_update_success
+
+    @property
     def native_value(self) -> Any:
         """Return the state of the sensor."""
         return self.entity_description.value_fn(self.coordinator.data)
@@ -556,6 +561,8 @@ class DucoboxNodeSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntit
         description: DucoboxNodeSensorEntityDescription,
         device_info: DeviceInfo,
         unique_id: str,
+        device_id: str,
+        node_name: str,
     ) -> None:
         """Initialize a Ducobox node sensor entity."""
         super().__init__(coordinator)
@@ -566,6 +573,11 @@ class DucoboxNodeSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntit
         # Updated entity name
         self._attr_name = description.name
         # self._attr_suggested_object_id = f"{device_id}_{node_name}_{description.name}".lower().replace(' ', '_')
+
+    @property
+    def available(self) -> bool:
+        """Return if entity is available."""
+        return self.coordinator.last_update_success
 
     @property
     def native_value(self) -> Any:
