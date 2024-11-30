@@ -100,7 +100,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
         if user_input is not None:
             communication_board_type = discovery["communication_board_info"].get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
-            if communication_board_type != "CONNECTIVITY":
+            if communication_board_type == "CONNECTIVITY":
                 # Create the entry upon confirmation
                 return self.async_create_entry(
                     title=f"Duco connectivity board ({discovery['host']})",
