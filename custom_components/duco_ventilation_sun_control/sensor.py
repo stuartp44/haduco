@@ -475,8 +475,8 @@ async def async_setup_entry(
     nodes = coordinator.data.get('Nodes', [])
     for node in nodes:
         node_id = node.get('Node')
-        box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "").title()
-        node_type = node.get('General', {}).get('Type', {}).get('Val', 'Unknown').title()
+        box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "")
+        node_type = node.get('General', {}).get('Type', {}).get('Val', 'Unknown')
         box_sw_version = coordinator.data.get("General", {}).get("Board", {}).get("SwVersionBox", {}).get("Val", "")
         box_serial_number = coordinator.data.get("General", {}).get("Board", {}).get("SerialBoardBox", {}).get("Val", "")
 
