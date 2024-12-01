@@ -125,7 +125,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         communication_board_host = result["communication_board_info"].get("General", {}).get("Lan", {}).get("HostName", {}).get("Val", "")
         _LOGGER.debug(f"Communication board host: {communication_board_host}")
         communication_board_ip = result["communication_board_info"].get("General", {}).get("Lan", {}).get("Ip", {}).get("Val", "")
-        _LOGGER.debug(f"Communication board host: {communication_board_host}")        
+        _LOGGER.debug(f"Communication board IP: {communication_board_ip}")        
         if communication_board_type == "CONNECTIVITY":
             _LOGGER.debug("Communication board is a Connectivity Board")
             product = {
