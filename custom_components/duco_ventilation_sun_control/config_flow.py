@@ -136,7 +136,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         
         return product,discovery_context
 
-    async def get_duco_comm_board_info(host):
+    async def get_duco_comm_board_info(self, host):
                 """Attempt to connect to the Duco device and retrieve its information."""
                 try:
                     parsed_url = requests.utils.urlparse(host)
