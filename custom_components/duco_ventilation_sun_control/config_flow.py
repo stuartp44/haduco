@@ -29,7 +29,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
             try:
                 communication_board_info = await self.get_duco_comm_board_info(host)
-                product_entry_info = await self.get_entry_info(communication_board_info)
+                product_entry_info, _ = await self.get_entry_info(communication_board_info)
 
                 return self.async_create_entry(
                     title=product_entry_info["title"],
