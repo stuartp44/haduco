@@ -76,17 +76,11 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
                     existing_entry, data={**existing_entry.data, "base_url": f"https://{host}"}
                 )
             return self.async_abort(reason="already_configured")
-        
-        try:
-            communication_board_info = await self.get_duco_comm_board_info(host)
-        except ValueError as ex:
-            return self.async_abort(reason=ex)
 
         # Store discovery data in context
         self.context["discovery"] = {
             "host": host,
             "unique_id": unique_id,
-            "communication_board_info": communication_board_info
         }
 
         # Ask user for confirmation
@@ -96,7 +90,12 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         """Ask user to confirm adding the discovered device."""
         discovery = self.context["discovery"]
         _LOGGER.debug(f"Discovery context: {discovery}")
-        product_entry_info,discovery_context = await self.get_entry_info(discovery, discovery_context=None)
+        
+        try:
+            communication_board_info = await self.get_duco_comm_board_info(discovery["host"])
+        except ValueError as ex:
+            return self.async_abort(reason=ex)
+        product_entry_info,discovery_context = await self.get_entry_info(communication_board_info, discovery_context=None)
         
         self.context["title_placeholders"] = discovery_context
         
