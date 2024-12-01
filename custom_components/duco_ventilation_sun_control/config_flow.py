@@ -117,10 +117,15 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         )
     
     async def get_entry_info(self, result, discovery_context=None):
+        """Renders the product entry information and if required discover context."""
         communication_board_type = result["communication_board_info"].get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
+        _LOGGER.debug(f"Communication board type: {communication_board_type}")
         communication_board_mac = result["communication_board_info"].get("General", {}).get("Lan", {}).get("Mac", {}).get("Val", "")
+        _LOGGER.debug(f"Communication board MAC: {communication_board_mac}")
         communication_board_host = result["communication_board_info"].get("General", {}).get("Lan", {}).get("HostName", {}).get("Val", "")
+        _LOGGER.debug(f"Communication board host: {communication_board_host}")
         if communication_board_type == "CONNECTIVITY":
+            _LOGGER.debug("Communication board is a Connectivity Board")
             product = {
                 "title": f"Connectivity Board ({communication_board_mac.replace(':', '')})",
                 "data": {
