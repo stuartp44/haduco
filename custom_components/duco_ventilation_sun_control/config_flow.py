@@ -36,17 +36,13 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
                 existing_entry = self.hass.config_entries.async_get_entry(product_entry_info["data"]["unique_id"])
                 
                 if existing_entry:
-                    # Update the IP address if it has changed
-                    if existing_entry.data["base_url"] != product_entry_info["data"]["base_url"]:
-                        self.hass.config_entries.async_update_entry(
-                            existing_entry, data={**existing_entry.data, "base_url": product_entry_info["data"]["base_url"]}
-                        )
                     return self.async_abort(reason="already_configured")
                 
-                return self.async_create_entry(
-                    title=product_entry_info["title"],
-                    data=product_entry_info["data"],
-                )
+                else:
+                    return self.async_create_entry(
+                        title=product_entry_info["title"],
+                        data=product_entry_info["data"],
+                    )
 
             except ValueError:
                 errors["host"] = "invalid_url"
