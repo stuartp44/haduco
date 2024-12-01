@@ -4,7 +4,6 @@ from homeassistant import config_entries
 from homeassistant.components.zeroconf import ZeroconfServiceInfo
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.core import callback
-from homeassistant.helpers import selector
 from ducopy import DucoPy
 from .const import DOMAIN
 import requests
@@ -13,9 +12,7 @@ import asyncio
 _LOGGER = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = vol.Schema({
-    vol.Required("base_url"): selector.TextSelector(
-        selector.TextSelectorConfig(type='url')  # Using URL text selector
-    )
+    vol.Required("host"): str,
 })
 
 class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -136,7 +133,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         
         return product,discovery_context
 
-    async def get_duco_comm_board_info(self, host):
+    async def get_duco_comm_board_info(self, host: str):
                 """Attempt to connect to the Duco device and retrieve its information."""
                 try:
                     parsed_url = requests.utils.urlparse(host)
