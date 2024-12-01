@@ -108,7 +108,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
                     "unique_id": communication_board_mac,
                 },
             }
-            self.context["title_placeholders"] = {"name": f"Connectivity board ({communication_board_mac})"}
+            self.context["title_placeholders"] = {"name": f"Connectivity board ({communication_board_mac.replace(':', '')})"}
 
         if user_input is not None:
             return self.async_create_entry(
