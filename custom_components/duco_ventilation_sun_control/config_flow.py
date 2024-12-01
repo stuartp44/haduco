@@ -64,7 +64,15 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
         # Check if the device has already been configured
         await self.async_set_unique_id(unique_id)
-        self._abort_if_unique_id_configured()
+        existing_entry = self.hass.config_entries.async_get_entry(unique_id)
+
+        if existing_entry:
+            # Update the IP address if it has changed
+            if existing_entry.data["base_url"] != f"https://{host}":
+                self.hass.config_entries.async_update_entry(
+                    existing_entry, data={**existing_entry.data, "base_url": f"https://{host}"}
+                )
+            return self.async_abort(reason="already_configured")
 
         try:
             base_url = f"https://{host}/info"
