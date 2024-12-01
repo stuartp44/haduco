@@ -98,12 +98,15 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         """Ask user to confirm adding the discovered device."""
         discovery = self.context["discovery"]
 
+        self.context["title_placeholders"] = {"name": f"Duco connectivity board ({discovery["unique_id"]})"}
+
         if user_input is not None:
             communication_board_type = discovery["communication_board_info"].get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
+            
             if communication_board_type == "CONNECTIVITY":
                 # Create the entry upon confirmation
                 return self.async_create_entry(
-                    title=f"Duco connectivity board ({discovery['host']})",
+                    title=f"Duco connectivity board",
                     data={
                         "base_url": f"https://{discovery['host']}",
                         "unique_id": discovery["unique_id"],
@@ -112,9 +115,11 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             else:
                 return self.async_abort(reason="not_known_communication_board")
 
+        self._set_confirm_only()
         # Show confirmation form to the user
         return self.async_show_form(
             step_id="confirm",
+            
             description_placeholders={
                 "host": discovery["host"],
                 "unique_id": discovery["unique_id"],
