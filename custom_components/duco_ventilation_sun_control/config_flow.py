@@ -94,7 +94,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
     async def async_step_confirm(self, user_input=None) -> FlowResult:
         """Ask user to confirm adding the discovered device."""
-        discovery = await self.context["discovery"]
+        discovery = self.context["discovery"]
         product_entry_info,discovery_context = await self.get_entry_info(discovery)
         
         self.context["title_placeholders"] = discovery_context
