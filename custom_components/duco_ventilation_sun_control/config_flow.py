@@ -97,23 +97,24 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
     async def async_step_confirm(self, user_input=None) -> FlowResult:
         """Ask user to confirm adding the discovered device."""
         discovery = self.context["discovery"]
-
-        self.context["title_placeholders"] = {"name": f"Duco connectivity board ({discovery["unique_id"]})"}
+        communication_board_type = discovery["communication_board_info"].get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
+        communication_board_mac = discovery["communication_board_info"].get("General", {}).get("Lan", {}).get("Mac", {}).get("Val", "")
+        
+        if communication_board_type == "CONNECTIVITY":
+            product = {
+                "title": "Connectivity board",
+                "data": {
+                    "base_url": f"https://{discovery['host']}",
+                    "unique_id": communication_board_mac,
+                },
+            }
+            self.context["title_placeholders"] = {"name": f"Connectivity board ({communication_board_mac})"}
 
         if user_input is not None:
-            communication_board_type = discovery["communication_board_info"].get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
-            
-            if communication_board_type == "CONNECTIVITY":
-                # Create the entry upon confirmation
-                return self.async_create_entry(
-                    title=f"Duco connectivity board",
-                    data={
-                        "base_url": f"https://{discovery['host']}",
-                        "unique_id": discovery["unique_id"],
-                    },
-                )
-            else:
-                return self.async_abort(reason="not_known_communication_board")
+            return self.async_create_entry(
+                title=product["title"],
+                data=product["data"],
+            )
 
         self._set_confirm_only()
         # Show confirmation form to the user
