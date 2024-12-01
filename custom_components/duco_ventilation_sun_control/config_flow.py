@@ -28,22 +28,28 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         errors = {}
 
         if user_input is not None:
-            base_url = user_input["base_url"]
+            host = user_input["host"]
+
             try:
-                # Optional: Perform additional URL validation if needed
-                parsed_url = requests.utils.urlparse(base_url)
-                if parsed_url.scheme not in ('https'):  # connectivity board only supports https
-                    raise ValueError('Invalid URL scheme')
-                # Attempt to connect to the device
-                await asyncio.get_running_loop().run_in_executor(
-                    None, lambda: requests.get(f"{base_url.rstrip('/')}/info", verify=False)
+                communication_board_info = await self.get_duco_comm_board_info(host)
+                product_entry_info = await self.get_entry_info(communication_board_info)
+
+                return self.async_create_entry(
+                    title=product_entry_info["title"],
+                    data=product_entry_info["data"],
                 )
-                return self.async_create_entry(title="Ducobox Connectivity Board", data=user_input)
-            except (ValueError, requests.RequestException):
-                errors["base_url"] = "cannot_connect"
+
+            except ValueError:
+                errors["host"] = "invalid_url"
+            except ConnectionError:
+                errors["host"] = "cannot_connect"
+            except RuntimeError:
+                errors["host"] = "unknown_error"
 
         return self.async_show_form(
-            step_id="user", data_schema=CONFIG_SCHEMA, errors=errors
+            step_id="user",
+            data_schema=CONFIG_SCHEMA,
+            errors=errors
         )
 
     async def async_step_zeroconf(self, discovery_info: ZeroconfServiceInfo) -> FlowResult:
@@ -73,24 +79,11 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
                     existing_entry, data={**existing_entry.data, "base_url": f"https://{host}"}
                 )
             return self.async_abort(reason="already_configured")
-
-        try:
-            base_url = f"https://{host}/info"
-            duco_client = DucoPy(base_url=base_url, verify=False)
-            _LOGGER.debug(f"DucoPy initialized with base URL: {base_url}")
-        except Exception as ex:
-            _LOGGER.error("Could not connect to Ducobox: %s", ex)
-            return self.async_abort(reason="cannot_connect")
         
         try:
-            communication_board_info = await asyncio.get_running_loop().run_in_executor(
-                None, duco_client.get_info
-            )
-            _LOGGER.debug(f"Communication board info: {communication_board_info}")
-            duco_client.close()
-        except Exception as ex:
-            _LOGGER.error("Could not get Ducobox info: %s", ex)
-            return self.async_abort(reason="unable_to_get_info")
+            communication_board_info = await self.get_duco_comm_board_info(host)
+        except ValueError as ex:
+            return self.async_abort(reason=ex)
 
         # Store discovery data in context
         self.context["discovery"] = {
@@ -104,24 +97,15 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
     async def async_step_confirm(self, user_input=None) -> FlowResult:
         """Ask user to confirm adding the discovered device."""
-        discovery = self.context["discovery"]
-        communication_board_type = discovery["communication_board_info"].get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
-        communication_board_mac = discovery["communication_board_info"].get("General", {}).get("Lan", {}).get("Mac", {}).get("Val", "")
+        discovery = await self.context["discovery"]
+        product_entry_info,discovery_context = await self.get_entry_info(discovery)
         
-        if communication_board_type == "CONNECTIVITY":
-            product = {
-                "title": f"Connectivity Board ({communication_board_mac.replace(':', '')})",
-                "data": {
-                    "base_url": f"https://{discovery['host']}",
-                    "unique_id": communication_board_mac,
-                },
-            }
-            self.context["title_placeholders"] = {"name": f"Connectivity Board ({communication_board_mac.replace(':', '')})"}
-
+        self.context["title_placeholders"] = discovery_context
+        
         if user_input is not None:
             return self.async_create_entry(
-                title=product["title"],
-                data=product["data"],
+                title=product_entry_info["title"],
+                data=product_entry_info["data"],
             )
 
         self._set_confirm_only()
@@ -134,7 +118,56 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
                 "unique_id": discovery["unique_id"],
             },
         )
+    
+    async def get_entry_info(self, result, discovery_context=None):
+        communication_board_type = result["communication_board_info"].get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
+        communication_board_mac = result["communication_board_info"].get("General", {}).get("Lan", {}).get("Mac", {}).get("Val", "")
+        communication_board_host = result["communication_board_info"].get("General", {}).get("Lan", {}).get("HostName", {}).get("Val", "")
+        if communication_board_type == "CONNECTIVITY":
+            product = {
+                "title": f"Connectivity Board ({communication_board_mac.replace(':', '')})",
+                "data": {
+                    "base_url": f"https://{communication_board_host}",
+                    "unique_id": communication_board_mac,
+                },
+            }
+            if discovery_context:
+                discovery_context = {"name": f"Connectivity Board ({communication_board_mac.replace(':', '')})"}
+        
+        return product,discovery_context
 
+    async def get_duco_comm_board_info(host):
+                """Attempt to connect to the Duco device and retrieve its information."""
+                try:
+                    parsed_url = requests.utils.urlparse(host)
+                    if not parsed_url.scheme:
+                        base_url = f"https://{host}"
+                        parsed_url = requests.utils.urlparse(base_url)
+
+                    if parsed_url.scheme != "https":
+                        raise ValueError("Invalid URL scheme")
+
+                    duco_client = DucoPy(base_url=base_url, verify=False)
+                    _LOGGER.debug(f"DucoPy initialized with base URL: {base_url}")
+
+                    communication_board_info = await asyncio.get_running_loop().run_in_executor(
+                        None, duco_client.get_info
+                    )
+                    _LOGGER.debug(f"Communication board info: {communication_board_info}")
+                    duco_client.close()
+
+                    return {"base_url": base_url, "communication_board_info": communication_board_info}
+
+                except ValueError as ex:
+                    _LOGGER.error("Invalid URL provided: %s", ex)
+                    raise ValueError("invalid_url")
+                except requests.exceptions.RequestException as ex:
+                    _LOGGER.error("Connection error to Ducobox: %s", ex)
+                    raise ConnectionError("cannot_connect")
+                except Exception as ex:
+                    _LOGGER.error("Unexpected error connecting to Ducobox: %s", ex)
+                    raise RuntimeError("unknown_error")
+    
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
