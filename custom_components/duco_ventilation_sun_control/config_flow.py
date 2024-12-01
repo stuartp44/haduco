@@ -102,7 +102,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         
         if communication_board_type == "CONNECTIVITY":
             product = {
-                "title": "Connectivity board",
+                "title": f"Connectivity Board ({communication_board_mac.replace(':', '')})",
                 "data": {
                     "base_url": f"https://{discovery['host']}",
                     "unique_id": communication_board_mac,
