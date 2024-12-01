@@ -95,7 +95,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             communication_board_info = await self.get_duco_comm_board_info(discovery["host"])
         except ValueError as ex:
             return self.async_abort(reason=ex)
-        product_entry_info,discovery_context = await self.get_entry_info(communication_board_info, discovery_context=None)
+        product_entry_info,discovery_context = await self.get_entry_info(communication_board_info, discovery_context=True)
         
         self.context["title_placeholders"] = discovery_context
         
