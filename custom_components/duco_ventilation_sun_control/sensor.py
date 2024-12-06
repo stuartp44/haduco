@@ -320,6 +320,27 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             sensor_key='IaqRh',
             node_type='VLVRH',
         ),
+        DucoboxNodeSensorEntityDescription(
+            key='Rh',
+            name='Humidity',
+            native_unit_of_measurement=PERCENTAGE,
+            value_fn=lambda node: _process_node_iaq(
+                node.get('Sensor', {}).get('data', {}).get('Rh')
+            ),
+            sensor_key='Rh',
+            node_type='VLVRH',
+        ),
+        DucoboxNodeSensorEntityDescription(
+            key='Temp',
+            name='Temperature',
+            native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+            device_class=SensorDeviceClass.TEMPERATURE,
+            value_fn=lambda node: _process_node_temperature(
+                node.get('Sensor', {}).get('data', {}).get('Temp')
+            ),
+            sensor_key='Temp',
+            node_type='BSRH',
+        ),
     ],
     # Add other node types and their sensors if needed
 }
