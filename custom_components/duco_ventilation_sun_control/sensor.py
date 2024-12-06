@@ -324,6 +324,7 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             key='Rh',
             name='Humidity',
             native_unit_of_measurement=PERCENTAGE,
+            device_class=SensorDeviceClass.HUMIDITY,
             value_fn=lambda node: _process_node_iaq(
                 node.get('Sensor', {}).get('data', {}).get('Rh')
             ),
