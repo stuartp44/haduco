@@ -101,17 +101,25 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         
         try:
             communication_board_info = await self.get_duco_comm_board_info(discovery["host"])
+        
         except ValueError as ex:
             return self.async_abort(reason=ex)
         product_entry_info,discovery_context = await self.get_entry_info(communication_board_info, discovery_context=True)
         
         self.context["title_placeholders"] = discovery_context
         
-        if user_input is not None:
-            return self.async_create_entry(
-                title=product_entry_info["title"],
-                data=product_entry_info["data"],
-            )
+
+        existing_entry = self.hass.config_entries.async_get_entry(communication_board_info["unique_id"])
+        
+        if existing_entry:
+            return self.async_abort(reason="already_configured")
+        
+        else:
+            if user_input is not None:
+                return self.async_create_entry(
+                    title=product_entry_info["title"],
+                    data=product_entry_info["data"],
+                )
 
         self._set_confirm_only()
         # Show confirmation form to the user
