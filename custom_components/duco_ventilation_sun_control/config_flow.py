@@ -69,7 +69,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         # Extract information from mDNS discovery
         # Use the IP address directly to avoid '.local' issues
         host = discovery_info.addresses[0]
-        unique_id = discovery_info.macaddress
+        unique_id = discovery_info.properties.get("mac")
 
         _LOGGER.debug(f"Extracted host: {host}, unique_id: {unique_id}")
 
