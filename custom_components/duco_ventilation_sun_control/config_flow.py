@@ -79,11 +79,12 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         # Check if the device has already been configured
         await self.async_set_unique_id(unique_id)
         existing_entry = self.hass.config_entries.async_get_entry(unique_id)
+        _LOGGER.debug(f"Existing entry: {existing_entry}")
 
         if existing_entry:
-            _LOGGER.debug(f"Existing entry: {existing_entry}")
             # Update the IP address if it has changed
             if existing_entry.data["base_url"] != f"https://{host}":
+                _LOGGER.debug("Updating existing entry with new IP address")
                 self.hass.config_entries.async_update_entry(
                     existing_entry, data={**existing_entry.data, "base_url": f"https://{host}"}
                 )
