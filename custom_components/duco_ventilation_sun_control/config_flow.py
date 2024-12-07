@@ -15,6 +15,8 @@ CONFIG_SCHEMA = vol.Schema({
     vol.Required("host"): str,
 })
 
+
+
 class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Ducobox Connectivity Board."""
 
@@ -34,7 +36,6 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
                 # Check if the device has already been configured
                 await self.async_set_unique_id(product_entry_info["data"]["unique_id"])
                 existing_entry = self.hass.config_entries.async_get_entry(product_entry_info["data"]["unique_id"])
-                
                 
                 if existing_entry:
                     _LOGGER.debug(f"Existing entry: {existing_entry}")
@@ -76,19 +77,19 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
         _LOGGER.debug(f"Extracted host: {host}, unique_id: {unique_id}")
 
-        # Check if the device has already been configured
-        await self.async_set_unique_id(unique_id)
-        existing_entry = self.hass.config_entries.async_get_entry(unique_id)
-        _LOGGER.debug(f"Existing entry: {existing_entry}")
+        existing_entries = self.hass.config_entries.async_entries(self.domain)
 
-        if existing_entry:
-            # Update the IP address if it has changed
-            if existing_entry.data["base_url"] != f"https://{host}":
-                _LOGGER.debug("Updating existing entry with new IP address")
-                self.hass.config_entries.async_update_entry(
-                    existing_entry, data={**existing_entry.data, "base_url": f"https://{host}"}
-                )
-            return self.async_abort(reason="already_configured")
+        # Look for a specific entry by unique_id
+        for existing_entry in existing_entries:
+            if existing_entry.unique_id == unique_id:
+                _LOGGER.debug(f"Existing entry: {existing_entry}")
+                if existing_entry.data["base_url"] != f"https://{host}":
+                    _LOGGER.debug("Updating existing entry with new IP address")
+                    self.hass.config_entries.async_update_entry(
+                        existing_entry, data={**existing_entry.data, "base_url": f"https://{host}"}
+                    )
+                else:
+                    return self.async_abort(reason="already_configured")
 
         # Store discovery data in context
         self.context["discovery"] = {
