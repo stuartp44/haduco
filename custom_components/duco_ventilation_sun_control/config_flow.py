@@ -35,10 +35,13 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
                 await self.async_set_unique_id(product_entry_info["data"]["unique_id"])
                 existing_entry = self.hass.config_entries.async_get_entry(product_entry_info["data"]["unique_id"])
                 
+                
                 if existing_entry:
+                    _LOGGER.debug(f"Existing entry: {existing_entry}")
                     return self.async_abort(reason="already_configured")
                 
                 else:
+                    _LOGGER.debug("Creating new entry")
                     return self.async_create_entry(
                         title=product_entry_info["title"],
                         data=product_entry_info["data"],
@@ -78,6 +81,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         existing_entry = self.hass.config_entries.async_get_entry(unique_id)
 
         if existing_entry:
+            _LOGGER.debug(f"Existing entry: {existing_entry}")
             # Update the IP address if it has changed
             if existing_entry.data["base_url"] != f"https://{host}":
                 self.hass.config_entries.async_update_entry(
