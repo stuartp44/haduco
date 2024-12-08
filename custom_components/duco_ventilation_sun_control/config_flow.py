@@ -32,21 +32,24 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             try:
                 communication_board_info = await self.get_duco_comm_board_info(host)
                 product_entry_info, _ = await self.get_entry_info(communication_board_info)
+                unique_id = product_entry_info["data"]["unique_id"]
 
                 # Check if the device has already been configured
-                await self.async_set_unique_id(product_entry_info["data"]["unique_id"])
-                existing_entry = self.hass.config_entries.async_get_entry(product_entry_info["data"]["unique_id"])
+                await self.async_set_unique_id(unique_id)
+                existing_entries = self.hass.config_entries.async_entries(DOMAIN)
                 
-                if existing_entry:
-                    _LOGGER.debug(f"Existing entry: {existing_entry}")
-                    return self.async_abort(reason="already_configured")
+                for existing_entry in existing_entries:
+                    _LOGGER.debug(f"Checking existing entry: {existing_entry}")
+                    if existing_entry.unique_id == unique_id:
+                        _LOGGER.debug(f"Existing entry: {existing_entry}")
+                        return self.async_abort(reason="already_configured")
                 
-                else:
-                    _LOGGER.debug("Creating new entry")
-                    return self.async_create_entry(
-                        title=product_entry_info["title"],
-                        data=product_entry_info["data"],
-                    )
+                    else:
+                        _LOGGER.debug("Creating new entry")
+                        return self.async_create_entry(
+                            title=product_entry_info["title"],
+                            data=product_entry_info["data"],
+                        )
 
             except ValueError:
                 errors["host"] = "invalid_url"
