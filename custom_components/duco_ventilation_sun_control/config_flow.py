@@ -81,6 +81,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
         # Look for a specific entry by unique_id
         for existing_entry in existing_entries:
+            _LOGGER.debug(f"Checking existing entry: {existing_entry}")
             if existing_entry.unique_id == unique_id:
                 _LOGGER.debug(f"Existing entry: {existing_entry}")
                 if existing_entry.data["base_url"] != f"https://{host}":
@@ -89,6 +90,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
                         existing_entry, data={**existing_entry.data, "base_url": f"https://{host}"}
                     )
                 else:
+                    _LOGGER.debug("Entry already exists")
                     return self.async_abort(reason="already_configured")
 
         # Store discovery data in context
