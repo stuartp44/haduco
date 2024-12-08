@@ -77,7 +77,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
         _LOGGER.debug(f"Extracted host: {host}, unique_id: {unique_id}")
 
-        existing_entries = self.hass.config_entries.async_entries(self.domain)
+        existing_entries = self.hass.config_entries.async_entries(DOMAIN)
 
         # Look for a specific entry by unique_id
         for existing_entry in existing_entries:
