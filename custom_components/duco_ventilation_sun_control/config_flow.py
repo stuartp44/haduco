@@ -84,28 +84,29 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         existing_entries = self.hass.config_entries.async_entries(DOMAIN)
 
         # Look for a specific entry by unique_id
-        for existing_entry in existing_entries:
-            _LOGGER.debug(f"Checking existing entry: {existing_entry}")
-            if existing_entry.unique_id == unique_id:
-                _LOGGER.debug(f"Existing entry: {existing_entry}")
-                if existing_entry.data["base_url"] != f"https://{host}":
-                    _LOGGER.debug("Updating existing entry with new IP address")
-                    self.hass.config_entries.async_update_entry(
-                        existing_entry, data={**existing_entry.data, "base_url": f"https://{host}"}
-                    )
-                else:
-                    _LOGGER.debug("Entry already exists")
-                    return self.async_abort(reason="already_configured")
-            else:
-                # Store discovery data in context
-                self.context["discovery"] = {
-                    "host": host,
-                    "unique_id": unique_id,
-                }
+        if existing_entries:
+            for existing_entry in existing_entries:
+                _LOGGER.debug(f"Checking existing entry: {existing_entry}")
+                if existing_entry.unique_id == unique_id:
+                    _LOGGER.debug(f"Existing entry: {existing_entry}")
+                    if existing_entry.data["base_url"] != f"https://{host}":
+                        _LOGGER.debug("Updating existing entry with new IP address")
+                        self.hass.config_entries.async_update_entry(
+                            existing_entry, data={**existing_entry.data, "base_url": f"https://{host}"}
+                        )
+                    else:
+                        _LOGGER.debug("Entry already exists")
+                        return self.async_abort(reason="already_configured")
+        else:
+            # Store discovery data in context
+            self.context["discovery"] = {
+                "host": host,
+                "unique_id": unique_id,
+            }
 
-                _LOGGER.debug(f"Discovery context: {self.context['discovery']}")
-                # Ask user for confirmation
-                return await self.async_step_confirm()       
+        _LOGGER.debug(f"Discovery context: {self.context['discovery']}")
+        # Ask user for confirmation
+        return await self.async_step_confirm()       
 
 
 
