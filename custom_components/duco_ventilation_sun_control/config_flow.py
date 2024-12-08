@@ -99,6 +99,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
                     "unique_id": unique_id,
                 }
 
+                _LOGGER.debug(f"Discovery context: {self.context['discovery']}")
                 # Ask user for confirmation
                 return await self.async_step_confirm()       
 
