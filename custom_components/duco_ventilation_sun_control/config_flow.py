@@ -92,15 +92,17 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
                 else:
                     _LOGGER.debug("Entry already exists")
                     return self.async_abort(reason="already_configured")
+            else:
+                # Store discovery data in context
+                self.context["discovery"] = {
+                    "host": host,
+                    "unique_id": unique_id,
+                }
 
-        # Store discovery data in context
-        self.context["discovery"] = {
-            "host": host,
-            "unique_id": unique_id,
-        }
+                # Ask user for confirmation
+                return await self.async_step_confirm()       
 
-        # Ask user for confirmation
-        return await self.async_step_confirm()
+
 
     async def async_step_confirm(self, user_input=None) -> FlowResult:
         """Ask user to confirm adding the discovered device."""
