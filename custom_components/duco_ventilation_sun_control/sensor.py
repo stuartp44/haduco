@@ -329,6 +329,7 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             key='IaqRh',
             name='Humidity Air Quality',
             native_unit_of_measurement=PERCENTAGE,
+            icon="mdi:crosshairs",
             value_fn=lambda node: _process_node_iaq(
                 node.get('Sensor', {}).get('data', {}).get('IaqRh')
             ),
