@@ -52,7 +52,7 @@ COMMBOARD_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = (
         name="Wi-Fi Signal Strength",
         native_unit_of_measurement="dBm",
         state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.SIGNAL_STRENGTH,
+        device_class=SensorDeviceClass.DIAGNOSTIC,
         value_fn=lambda data: _process_rssi(
             data.get('General', {}).get('Lan', {}).get('RssiWifi', {}).get('Val')
         ),
@@ -63,7 +63,7 @@ COMMBOARD_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = (
         name="Device Uptime",
         native_unit_of_measurement=UnitOfTime.SECONDS,
         state_class=SensorStateClass.TOTAL_INCREASING,
-        device_class=SensorDeviceClass.DURATION,
+        device_class=SensorDeviceClass.DIAGNOSTIC,
         value_fn=lambda data: _process_uptime(
             data.get('General', {}).get('Board', {}).get('UpTime', {}).get('Val')
         ),
