@@ -79,6 +79,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
             key='Mode',
             name='Ventilation Mode',
             value_fn=lambda node: node.get('Ventilation', {}).get('Mode'),
+            icon="mdi:fan",
             sensor_key='Mode',
             node_type='BOX',
         ),
@@ -86,6 +87,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
             key='State',
             name='Ventilation State',
             value_fn=lambda node: node.get('Ventilation', {}).get('State'),
+            icon="mdi:fan-auto",
             sensor_key='State',
             node_type='BOX',
         ),
@@ -103,6 +105,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
             name='Time State Remaining',
             native_unit_of_measurement=UnitOfTime.SECONDS,
             value_fn=lambda node: node.get('Ventilation', {}).get('TimeStateRemain'),
+            icon="mdi:fan-clock",
             sensor_key='TimeStateRemain',
             node_type='BOX',
         ),
@@ -111,6 +114,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
             name='Time State End',
             native_unit_of_measurement=UnitOfTime.SECONDS,
             value_fn=lambda node: node.get('Ventilation', {}).get('TimeStateEnd'),
+            incon="mdi:fan-off",
             sensor_key='TimeStateEnd',
             node_type='BOX',
         ),
@@ -260,6 +264,7 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             key='IaqCo2',
             name='CO₂ Air Quality',
             native_unit_of_measurement=PERCENTAGE,
+            icon="mdi:crosshairs",
             value_fn=lambda node: _process_node_iaq(
                 node.get('Sensor', {}).get('data', {}).get('IaqCo2')
             ),
@@ -294,6 +299,7 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             key='IaqRh',
             name='Humidity Air Quality',
             native_unit_of_measurement=PERCENTAGE,
+            icon="mdi:crosshairs",
             value_fn=lambda node: _process_node_iaq(
                 node.get('Sensor', {}).get('data', {}).get('IaqRh')
             ),
@@ -306,6 +312,7 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             key='Mode',
             name='Ventilation Mode',
             value_fn=lambda node: node.get('Ventilation', {}).get('Mode'),
+            icon="mdi:fan-auto",
             sensor_key='Mode',
             node_type='VLVRH',
         ),
@@ -314,6 +321,7 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             name='Flow Level Target',
             native_unit_of_measurement=PERCENTAGE,
             value_fn=lambda node: node.get('Ventilation', {}).get('FlowLvlTgt'),
+            icon="mdi:fan-chevron-up",
             sensor_key='FlowLvlTgt',
             node_type='VLVRH',
         ),
