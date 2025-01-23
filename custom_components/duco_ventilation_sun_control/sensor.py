@@ -114,7 +114,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
             name='Time State End',
             native_unit_of_measurement=UnitOfTime.SECONDS,
             value_fn=lambda node: node.get('Ventilation', {}).get('TimeStateEnd'),
-            incon="mdi:fan-off",
+            icon="mdi:fan-off",
             sensor_key='TimeStateEnd',
             node_type='BOX',
         ),
