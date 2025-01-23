@@ -94,6 +94,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
             name='Flow Level Target',
             native_unit_of_measurement=PERCENTAGE,
             value_fn=lambda node: node.get('Ventilation', {}).get('FlowLvlTgt'),
+            icon="mdi:fan-chevron-up",
             sensor_key='FlowLvlTgt',
             node_type='BOX',
         ),
