@@ -537,13 +537,14 @@ async def async_setup_entry(
                 via_device=(DOMAIN, device_id),
             )
         else:
-            node_device_info = DeviceInfo(
-                identifiers={(DOMAIN, node_device_id)},
-                name=node_type,
-                manufacturer="DUCO Ventilation & Sun Control",
-                model=node_type,
-                via_device=(DOMAIN, f"{device_id}-1"),
-            )
+            if node_type != 'UC':
+                node_device_info = DeviceInfo(
+                    identifiers={(DOMAIN, node_device_id)},
+                    name=node_type,
+                    manufacturer="DUCO Ventilation & Sun Control",
+                    model=node_type,
+                    via_device=(DOMAIN, f"{device_id}-1"),
+                )
             
         # if box_name is the same as the BOX_SENSORS, add the sensors within
         if box_name in BOX_SENSORS:
