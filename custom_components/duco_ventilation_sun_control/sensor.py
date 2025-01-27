@@ -27,6 +27,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 from .const import DOMAIN, SCAN_INTERVAL
+import asyncio
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -443,9 +444,17 @@ class DucoboxCoordinator(DataUpdateCoordinator):
         )
 
     async def _async_update_data(self) -> dict:
-        """Fetch data from the Ducobox API."""
+        """Fetch data from the Ducobox API with a timeout."""
         try:
-            return await self.hass.async_add_executor_job(self._fetch_data)
+            # Set the timeout duration (e.g., 10 seconds)
+            timeout_seconds = 10
+            return await asyncio.wait_for(
+                self.hass.async_add_executor_job(self._fetch_data),
+                timeout=timeout_seconds
+            )
+        except asyncio.TimeoutError:
+            _LOGGER.error("Timeout occurred while fetching data from Ducobox API")
+            return {}
         except Exception as e:
             _LOGGER.error("Failed to fetch data from Ducobox API: %s", e)
             return {}
