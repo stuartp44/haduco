@@ -433,7 +433,6 @@ def _process_bypass_position(value):
 
 class DucoboxCoordinator(DataUpdateCoordinator):
     """Coordinator to manage data updates for Ducobox sensors."""
-
     def __init__(self, hass: HomeAssistant):
         super().__init__(
             hass,
@@ -441,14 +440,28 @@ class DucoboxCoordinator(DataUpdateCoordinator):
             name="Ducobox Connectivity Board",
             update_interval=SCAN_INTERVAL,
         )
+        self.last_successful_update = None
+        self.failed_attempts = 0
 
     async def _async_update_data(self) -> dict:
         """Fetch data from the Ducobox API."""
         try:
-            return await self.hass.async_add_executor_job(self._fetch_data)
+            data = await self.hass.async_add_executor_job(self._fetch_data)
+            self.last_successful_update = self.hass.loop.time()  
+            self.failed_attempts = 0 
+            return data
         except Exception as e:
+            self.failed_attempts += 1
             _LOGGER.error("Failed to fetch data from Ducobox API: %s", e)
-            return {}
+
+            if (
+                self.last_successful_update is None 
+                or self.hass.loop.time() - self.last_successful_update > 60
+            ):
+                _LOGGER.warning("No response from Ducobox API for over 60 seconds.")
+                return {"Nodes": []}
+
+            return self.data or {}
 
     def _fetch_data(self) -> dict:
         duco_client = self.hass.data[DOMAIN]
@@ -459,8 +472,8 @@ class DucoboxCoordinator(DataUpdateCoordinator):
         nodes_response = duco_client.get_nodes()
         _LOGGER.debug(f"Data received from /nodes: {nodes_response}")
 
-        # Convert nodes_response.Nodes (which is a list of NodeInfo objects) to list of dicts
-        data['Nodes'] = [node.dict() for node in nodes_response.Nodes]
+        data["Nodes"] = [node.dict() for node in nodes_response.Nodes]
+
         return data
 
 async def async_setup_entry(
@@ -613,7 +626,7 @@ class DucoboxSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntity):
     def available(self) -> bool:
         """Return if entity is available."""
         return self.coordinator.last_update_success
-
+    
     @property
     def native_value(self) -> Any:
         """Return the state of the sensor."""
