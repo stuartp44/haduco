@@ -555,6 +555,22 @@ async def async_setup_entry(
                     serial_number=box_serial_number,
                     via_device=(DOMAIN, device_id),
                 )
+                if box_name in BOX_SENSORS:
+                    for description in BOX_SENSORS[box_name]:
+                        unique_id = f"{node_device_id}-{description.key}"
+                        entities.append(
+                            DucoboxNodeSensorEntity(
+                                coordinator=coordinator,
+                                node_id=node_id,
+                                description=description,
+                                device_info=node_device_info,
+                                unique_id=unique_id,
+                                device_id=device_id,
+                                node_name=box_name,
+                            )
+                        )
+                else:
+                    _LOGGER.debug(f"No sensors found for node type {box_name}")
             else:
                 if node_type != 'UC':
                     node_device_info = DeviceInfo(
@@ -564,40 +580,21 @@ async def async_setup_entry(
                         model=node_type,
                         via_device=(DOMAIN, f"{device_id}-1"),
                     )
-                
-            # if box_name is the same as the BOX_SENSORS, add the sensors within
-            if box_name in BOX_SENSORS:
-                for description in BOX_SENSORS[box_name]:
-                    unique_id = f"{node_device_id}-{description.key}"
-                    entities.append(
-                        DucoboxNodeSensorEntity(
-                            coordinator=coordinator,
-                            node_id=node_id,
-                            description=description,
-                            device_info=node_device_info,
-                            unique_id=unique_id,
-                            device_id=device_id,
-                            node_name=box_name,
+                    node_sensors = NODE_SENSORS.get(node_type, [])
+                    for description in node_sensors:
+                        unique_id = f"{node_device_id}-{description.key}"
+                        entities.append(
+                            DucoboxNodeSensorEntity(
+                                coordinator=coordinator,
+                                node_id=node_id,
+                                description=description,
+                                device_info=node_device_info,
+                                unique_id=unique_id,
+                                device_id=device_id,
+                                node_name=node_type,
+                            )
                         )
-                    )
-            else:
-                _LOGGER.debug(f"No sensors found for node type {box_name}")
 
-            # Get the sensors for this node type
-            node_sensors = NODE_SENSORS.get(node_type, [])
-            for description in node_sensors:
-                unique_id = f"{node_device_id}-{description.key}"
-                entities.append(
-                    DucoboxNodeSensorEntity(
-                        coordinator=coordinator,
-                        node_id=node_id,
-                        description=description,
-                        device_info=node_device_info,
-                        unique_id=unique_id,
-                        device_id=device_id,
-                        node_name=node_type,
-                    )
-                )
         if entities:
             async_add_entities(entities, update_before_add=True)
     else:
