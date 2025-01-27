@@ -26,7 +26,7 @@ from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
 )
-from .const import DOMAIN, SCAN_INTERVAL
+from .const import DOMAIN, SCAN_INTERVAL, REQUEST_TIMEOUT
 import asyncio
 
 _LOGGER = logging.getLogger(__name__)
@@ -446,8 +446,7 @@ class DucoboxCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self) -> dict:
         """Fetch data from the Ducobox API with a timeout."""
         try:
-            # Set the timeout duration (e.g., 10 seconds)
-            timeout_seconds = 10
+            timeout_seconds = REQUEST_TIMEOUT
             return await asyncio.wait_for(
                 self.hass.async_add_executor_job(self._fetch_data),
                 timeout=timeout_seconds
@@ -489,85 +488,104 @@ async def async_setup_entry(
         .get("Mac", {})
         .get("Val", "unknown_mac")
     )
-    device_id = mac_address.replace(":", "").lower() if mac_address else "unknown_mac"
+    if mac_address:
+        device_id = mac_address.replace(":", "").lower() if mac_address else "unknown_mac"
 
-    comms_name = coordinator.data.get("General", {}).get("Lan", {}).get("HostName", {}).get("Val", "")
-    comms_serial_number = coordinator.data.get("General", {}).get("Board", {}).get("SerialBoardComm", {}).get("Val", "")
-    comms_subtype = coordinator.data.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
+        comms_name = coordinator.data.get("General", {}).get("Lan", {}).get("HostName", {}).get("Val", "")
+        comms_serial_number = coordinator.data.get("General", {}).get("Board", {}).get("SerialBoardComm", {}).get("Val", "")
+        comms_subtype = coordinator.data.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
 
-    device_info = DeviceInfo(
-        identifiers={(DOMAIN, device_id)},
-        name=comms_name,
-        manufacturer="DUCO Ventilation & Sun Control",
-        model=comms_subtype,
-        serial_number=comms_serial_number,
-        sw_version=coordinator.data.get("General", {}).get("Board", {}).get("SwVersionComm", {}).get("Val", "Unknown Version"),
-    )
-
-    entities: list[SensorEntity] = []
-
-    # Add main Ducobox sensors
-    for description in COMMBOARD_SENSORS:
-        unique_id = f"{device_id}-{description.key}"
-        entities.append(
-            DucoboxSensorEntity(
-                coordinator=coordinator,
-                description=description,
-                device_info=device_info,
-                unique_id=unique_id,
-            )
+        device_info = DeviceInfo(
+            identifiers={(DOMAIN, device_id)},
+            name=comms_name,
+            manufacturer="DUCO Ventilation & Sun Control",
+            model=comms_subtype,
+            serial_number=comms_serial_number,
+            sw_version=coordinator.data.get("General", {}).get("Board", {}).get("SwVersionComm", {}).get("Val", "Unknown Version"),
         )
-    
-    # Add common box sensors
-    for description in BOX_SENSORS["COMMON"]:
-        unique_id = f"{device_id}-{description.key}"
-        entities.append(
-            DucoboxNodeSensorEntity(
-                coordinator=coordinator,
-                node_id=1,
-                description=description,
-                device_info=device_info,
-                unique_id=unique_id,
-                device_id=device_id,
-                node_name="Common",
-            )
-        )
-    
-    # Add node sensors
-    nodes = coordinator.data.get('Nodes', [])
-    for node in nodes:
-        node_id = node.get('Node')
-        box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "")
-        node_type = node.get('General', {}).get('Type', {}).get('Val', 'Unknown')
-        box_sw_version = coordinator.data.get("General", {}).get("Board", {}).get("SwVersionBox", {}).get("Val", "")
-        box_serial_number = coordinator.data.get("General", {}).get("Board", {}).get("SerialBoardBox", {}).get("Val", "")
 
-        # Create device info for the node
-        node_device_id = f"{device_id}-{node_id}"
+        entities: list[SensorEntity] = []
 
-        if node.get('General', {}).get('Type', {}).get('Val') == 'BOX':
-            node_device_info = DeviceInfo(
-                identifiers={(DOMAIN, node_device_id)},
-                name=box_name,
-                manufacturer="DUCO Ventilation & Sun Control",
-                model=box_name,
-                sw_version=box_sw_version,
-                serial_number=box_serial_number,
-                via_device=(DOMAIN, device_id),
+        # Add main Ducobox sensors
+        for description in COMMBOARD_SENSORS:
+            unique_id = f"{device_id}-{description.key}"
+            entities.append(
+                DucoboxSensorEntity(
+                    coordinator=coordinator,
+                    description=description,
+                    device_info=device_info,
+                    unique_id=unique_id,
+                )
             )
-        else:
-            if node_type != 'UC':
+        
+        # Add common box sensors
+        for description in BOX_SENSORS["COMMON"]:
+            unique_id = f"{device_id}-{description.key}"
+            entities.append(
+                DucoboxNodeSensorEntity(
+                    coordinator=coordinator,
+                    node_id=1,
+                    description=description,
+                    device_info=device_info,
+                    unique_id=unique_id,
+                    device_id=device_id,
+                    node_name="Common",
+                )
+            )
+        
+        # Add node sensors
+        nodes = coordinator.data.get('Nodes', [])
+        for node in nodes:
+            node_id = node.get('Node')
+            box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "")
+            node_type = node.get('General', {}).get('Type', {}).get('Val', 'Unknown')
+            box_sw_version = coordinator.data.get("General", {}).get("Board", {}).get("SwVersionBox", {}).get("Val", "")
+            box_serial_number = coordinator.data.get("General", {}).get("Board", {}).get("SerialBoardBox", {}).get("Val", "")
+
+            # Create device info for the node
+            node_device_id = f"{device_id}-{node_id}"
+
+            if node.get('General', {}).get('Type', {}).get('Val') == 'BOX':
                 node_device_info = DeviceInfo(
                     identifiers={(DOMAIN, node_device_id)},
-                    name=node_type,
+                    name=box_name,
                     manufacturer="DUCO Ventilation & Sun Control",
-                    model=node_type,
-                    via_device=(DOMAIN, f"{device_id}-1"),
+                    model=box_name,
+                    sw_version=box_sw_version,
+                    serial_number=box_serial_number,
+                    via_device=(DOMAIN, device_id),
                 )
-            
-        # if box_name is the same as the BOX_SENSORS, add the sensors within
-        if box_name in BOX_SENSORS:
-            for description in BOX_SENSORS[box_name]:
+            else:
+                if node_type != 'UC':
+                    node_device_info = DeviceInfo(
+                        identifiers={(DOMAIN, node_device_id)},
+                        name=node_type,
+                        manufacturer="DUCO Ventilation & Sun Control",
+                        model=node_type,
+                        via_device=(DOMAIN, f"{device_id}-1"),
+                    )
+                
+            # if box_name is the same as the BOX_SENSORS, add the sensors within
+            if box_name in BOX_SENSORS:
+                for description in BOX_SENSORS[box_name]:
+                    unique_id = f"{node_device_id}-{description.key}"
+                    entities.append(
+                        DucoboxNodeSensorEntity(
+                            coordinator=coordinator,
+                            node_id=node_id,
+                            description=description,
+                            device_info=node_device_info,
+                            unique_id=unique_id,
+                            device_id=device_id,
+                            node_name=box_name,
+                        )
+                    )
+            else:
+                _LOGGER.debug(f"No sensors found for node type {box_name}")
+
+            # Get the sensors for this node type
+            node_sensors = NODE_SENSORS.get(node_type, [])
+            for description in node_sensors:
                 unique_id = f"{node_device_id}-{description.key}"
                 entities.append(
                     DucoboxNodeSensorEntity(
@@ -577,29 +595,13 @@ async def async_setup_entry(
                         device_info=node_device_info,
                         unique_id=unique_id,
                         device_id=device_id,
-                        node_name=box_name,
+                        node_name=node_type,
                     )
                 )
-        else:
-            _LOGGER.debug(f"No sensors found for node type {box_name}")
-
-        # Get the sensors for this node type
-        node_sensors = NODE_SENSORS.get(node_type, [])
-        for description in node_sensors:
-            unique_id = f"{node_device_id}-{description.key}"
-            entities.append(
-                DucoboxNodeSensorEntity(
-                    coordinator=coordinator,
-                    node_id=node_id,
-                    description=description,
-                    device_info=node_device_info,
-                    unique_id=unique_id,
-                    device_id=device_id,
-                    node_name=node_type,
-                )
-            )
-
-    async_add_entities(entities, update_before_add=True)
+        if entities:
+            async_add_entities(entities, update_before_add=True)
+    else:
+        _LOGGER.error("No MAC address found in data, unable to create sensors")
 
 class DucoboxSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntity):
     """Representation of a Ducobox sensor entity."""
