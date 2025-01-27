@@ -233,6 +233,30 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
         ),
     ],
     "COMMON": [
+        DucoboxNodeSensorEntityDescription(
+            key='NetworkDuco',
+            name='Network Status',
+            value_fn=lambda coordinator: coordinator.data.get("General", {}).get("Network", {}).get("State", {}).get("Val", ""),
+            icon="mdi:wifi-arrow-left-right",
+            entity_category=EntityCategory.DIAGNOSTIC,
+            disabled_by_default=True,
+        ),
+        DucoboxNodeSensorEntityDescription(
+            key='CalibrationStatus',
+            name='Calibration Status',
+            value_fn=lambda coordinator: coordinator.data.get("Ventilation", {}).get("Calibration", {}).get("Valid", {}).get("Val", ""),
+            icon="mdi:progress-wrench",
+            entity_category=EntityCategory.DIAGNOSTIC,
+            disabled_by_default=True,
+        ),
+        DucoboxNodeSensorEntityDescription(
+            key='CalibrationState',
+            name='Calibration State',
+            value_fn=lambda coordinator: coordinator.data.get("Ventilation", {}).get("Calibration", {}).get("State", {}).get("Val", ""),
+            icon="mdi:progress-wrench",
+            entity_category=EntityCategory.DIAGNOSTIC,
+            disabled_by_default=True,
+        ),
     ]
 }
 
