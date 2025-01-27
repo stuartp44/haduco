@@ -486,7 +486,7 @@ async def async_setup_entry(
         coordinator.data.get("General", {})
         .get("Lan", {})
         .get("Mac", {})
-        .get("Val", "unknown_mac")
+        .get("Val")
     )
     if mac_address:
         device_id = mac_address.replace(":", "").lower() if mac_address else "unknown_mac"
