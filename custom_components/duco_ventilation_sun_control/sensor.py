@@ -471,8 +471,6 @@ class DucoboxCoordinator(DataUpdateCoordinator):
             update_interval=SCAN_INTERVAL,
         )
 
-
-    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
     async def _async_update_data(self) -> dict:
         """Fetch data from the Ducobox API with a timeout."""
         # Use retrying library to retry fetching data
@@ -490,6 +488,7 @@ class DucoboxCoordinator(DataUpdateCoordinator):
             _LOGGER.error("Failed to fetch data from Ducobox API: %s", e)
             return {}
 
+    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
     def _fetch_data(self) -> dict:
         duco_client = self.hass.data[DOMAIN]
 
