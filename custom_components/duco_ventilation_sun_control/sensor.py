@@ -4,6 +4,7 @@ import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
+from retrying import retry
 from homeassistant.components.sensor import (
     SensorEntity,
     SensorEntityDescription,
@@ -470,8 +471,12 @@ class DucoboxCoordinator(DataUpdateCoordinator):
             update_interval=SCAN_INTERVAL,
         )
 
+
+    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
     async def _async_update_data(self) -> dict:
         """Fetch data from the Ducobox API with a timeout."""
+        # Use retrying library to retry fetching data
+        
         try:
             timeout_seconds = REQUEST_TIMEOUT
             return await asyncio.wait_for(
