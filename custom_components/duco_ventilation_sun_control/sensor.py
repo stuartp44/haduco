@@ -477,7 +477,8 @@ class DucoboxCoordinator(DataUpdateCoordinator):
         
         try:
             return await asyncio.wait_for(
-                self.hass.async_add_executor_job(self._fetch_data)
+                self.hass.async_add_executor_job(self._fetch_data),
+                timeout=30
             )
         except asyncio.TimeoutError:
             _LOGGER.error("Timeout occurred while fetching data from Ducobox API")
