@@ -626,7 +626,8 @@ async def async_setup_entry(
                                     node_name=box_name,
                                 )
                             )
-                    if coordinator.data.get('Ventilation', {}).get('Calibration', {}).get('Valid', {}).get('Val', None):
+                    val = coordinator.data.get('Ventilation', {}).get('Calibration', {}).get('Valid', {}).get('Val', None)
+                    if val is not None:
                         for description in CALIBRATION_SENSORS:
                             unique_id = f"{node_device_id}-{description.key}"
                             entities.append(
