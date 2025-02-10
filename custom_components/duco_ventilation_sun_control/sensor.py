@@ -27,7 +27,7 @@ from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
 )
-from .const import DOMAIN, SCAN_INTERVAL, REQUEST_TIMEOUT
+from .const import DOMAIN, SCAN_INTERVAL
 import asyncio
 
 _LOGGER = logging.getLogger(__name__)
