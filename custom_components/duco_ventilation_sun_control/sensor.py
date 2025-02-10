@@ -511,6 +511,11 @@ async def async_setup_entry(
     """Set up Ducobox sensors from a config entry."""
     coordinator = DucoboxCoordinator(hass)
     await coordinator.async_config_entry_first_refresh()
+    
+    # see if the first refresh was successful
+    if not coordinator.last_update_success:
+        _LOGGER.error("Unable to fetch data from Ducobox API, unable to create sensors")
+        return
 
     # Retrieve MAC address and format device ID and name
     mac_address = (
