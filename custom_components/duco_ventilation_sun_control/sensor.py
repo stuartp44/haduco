@@ -516,7 +516,7 @@ async def async_setup_entry(
     if not coordinator.last_update_success:
         _LOGGER.error("Unable to fetch data from Ducobox API, unable to create sensors")
         return
-
+    _LOGGER.debug(f"Data received from Ducobox API: {coordinator.data}")
     # Retrieve MAC address and format device ID and name
     mac_address = (
         coordinator.data.get("General", {})
