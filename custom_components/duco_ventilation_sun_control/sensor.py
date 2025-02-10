@@ -552,21 +552,6 @@ async def async_setup_entry(
                 )
             )
         
-        # Add common box sensors
-        for description in BOX_SENSORS["COMMON"]:
-            unique_id = f"{device_id}-{description.key}"
-            entities.append(
-                DucoboxNodeSensorEntity(
-                    coordinator=coordinator,
-                    node_id=1,
-                    description=description,
-                    device_info=device_info,
-                    unique_id=unique_id,
-                    device_id=device_id,
-                    node_name="Common",
-                )
-            )
-        
         # Add node sensors
         nodes = coordinator.data.get('Nodes', [])
         for node in nodes:
