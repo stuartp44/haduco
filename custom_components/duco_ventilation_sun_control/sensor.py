@@ -476,10 +476,8 @@ class DucoboxCoordinator(DataUpdateCoordinator):
         # Use retrying library to retry fetching data
         
         try:
-            timeout_seconds = REQUEST_TIMEOUT
             return await asyncio.wait_for(
-                self.hass.async_add_executor_job(self._fetch_data),
-                timeout=timeout_seconds
+                self.hass.async_add_executor_job(self._fetch_data)
             )
         except asyncio.TimeoutError:
             _LOGGER.error("Timeout occurred while fetching data from Ducobox API")
@@ -512,11 +510,6 @@ async def async_setup_entry(
     coordinator = DucoboxCoordinator(hass)
     await coordinator.async_config_entry_first_refresh()
     
-    # see if the first refresh was successful
-    if not coordinator.last_update_success:
-        _LOGGER.error("Unable to fetch data from Ducobox API, unable to create sensors")
-        return
-    _LOGGER.debug(f"Data received from Ducobox API: {coordinator.data}")
     # Retrieve MAC address and format device ID and name
     mac_address = (
         coordinator.data.get("General", {})
