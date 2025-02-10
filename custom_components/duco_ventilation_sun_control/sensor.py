@@ -232,36 +232,40 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
                 data.get('HeatRecovery', {}).get('Bypass', {}).get('Pos', {}).get('Val')
             ),
         ),
-    ],
-    "COMMON": [
-        DucoboxNodeSensorEntityDescription(
-            key='NetworkDuco',
-            name='Network Status',
-            value_fn=lambda node: node.get("General", {}).get("NetworkDuco", {}).get("State", {}).get("Val", ""),
-            icon="mdi:wifi-arrow-left-right",
-            sensor_key='NetworkDuco',
-            node_type='BOX',
-            entity_category=EntityCategory.DIAGNOSTIC,
-        ),
-        DucoboxNodeSensorEntityDescription(
-            key='CalibrationStatus',
-            name='Calibration Status',
-            value_fn=lambda node: node.get("Ventilation", {}).get("Calibration", {}).get("Valid", {}).get("Val", ""),
-            icon="mdi:progress-wrench",
-            sensor_key='CalibrationStatus',
-            node_type='BOX',
-            entity_category=EntityCategory.DIAGNOSTIC,
-        ),
-        DucoboxNodeSensorEntityDescription(
-            key='CalibrationState',
-            name='Calibration State',
-            value_fn=lambda node: node.get("Ventilation", {}).get("Calibration", {}).get("State", {}).get("Val", ""),
-            icon="mdi:progress-wrench",
-            sensor_key='CalibrationState',
-            node_type='BOX',
-            entity_category=EntityCategory.DIAGNOSTIC,
-        ),
     ]
+}
+
+DUCONETWORK_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
+    DucoboxNodeSensorEntityDescription(
+        key='NetworkDuco',
+        name='Network Status',
+        value_fn=lambda coordinator: coordinator.data.get("General", {}).get("NetworkDuco", {}).get("State", {}).get("Val", ""),
+        icon="mdi:wifi-arrow-left-right",
+        sensor_key='NetworkDuco',
+        node_type='BOX',
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+}
+
+CALIBRATION_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
+    DucoboxNodeSensorEntityDescription(
+        key='CalibrationStatus',
+        name='Calibration Status',
+        value_fn=lambda coordinator: coordinator.data.get("Ventilation", {}).get("Calibration", {}).get("Valid", {}).get("Val", ""),
+        icon="mdi:progress-wrench",
+        sensor_key='CalibrationStatus',
+        node_type='BOX',
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    DucoboxNodeSensorEntityDescription(
+        key='CalibrationState',
+        name='Calibration State',
+        value_fn=lambda coordinator: coordinator.data.get("Ventilation", {}).get("Calibration", {}).get("State", {}).get("Val", ""),
+        icon="mdi:progress-wrench",
+        sensor_key='CalibrationState',
+        node_type='BOX',
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
 }
 
 # Define sensors for nodes based on their type
@@ -599,6 +603,35 @@ async def async_setup_entry(
                                 node_name=box_name,
                             )
                         )
+                    if coordinator.data.get('General', {}).get('NetworkDuco', {}).get('State', {}).get('Val', ""):
+                        for description in DUCONETWORK_SENSORS:
+                            unique_id = f"{node_device_id}-{description.key}"
+                            entities.append(
+                                DucoboxNodeSensorEntity(
+                                    coordinator=coordinator,
+                                    node_id=node_id,
+                                    description=description,
+                                    device_info=node_device_info,
+                                    unique_id=unique_id,
+                                    device_id=device_id,
+                                    node_name=box_name,
+                                )
+                            )
+                    if coordinator.data.get('Ventilation', {}).get('Calibration', {}).get('Valid', {}).get('Val', ""):
+                        for description in CALIBRATION_SENSORS:
+                            unique_id = f"{node_device_id}-{description.key}"
+                            entities.append(
+                                DucoboxNodeSensorEntity(
+                                    coordinator=coordinator,
+                                    node_id=node_id,
+                                    description=description,
+                                    device_info=node_device_info,
+                                    unique_id=unique_id,
+                                    device_id=device_id,
+                                    node_name=box_name,
+                                )
+                            )
+                    
                 else:
                     _LOGGER.debug(f"No sensors found for node type {box_name}")
             else:
