@@ -239,7 +239,9 @@ DUCONETWORK_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
     DucoboxNodeSensorEntityDescription(
         key='NetworkDuco',
         name='Network Status',
-        value_fn=lambda data: data.get("General", {}).get("NetworkDuco", {}).get("State", {}).get("Val", ""),
+        value_fn=lambda data: _process_network_status(
+            data.get("General", {}).get("NetworkDuco", {}).get("State", {}).get("Val"),
+        ),
         icon="mdi:wifi-arrow-left-right",
         sensor_key='NetworkDuco',
         node_type='BOX',
@@ -251,7 +253,9 @@ CALIBRATION_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
     DucoboxNodeSensorEntityDescription(
         key='CalibrationStatus',
         name='Calibration Status',
-        value_fn=lambda data: data.get("Ventilation", {}).get("Calibration", {}).get("Valid", {}).get("Val", ""),
+        value_fn=lambda data: _process_calibration_status(
+            data.get("Ventilation", {}).get("Calibration", {}).get("Valid", {}).get("Val"),
+        ),
         icon="mdi:progress-wrench",
         sensor_key='CalibrationStatus',
         node_type='BOX',
@@ -260,7 +264,9 @@ CALIBRATION_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
     DucoboxNodeSensorEntityDescription(
         key='CalibrationState',
         name='Calibration State',
-        value_fn=lambda data: data.get("Ventilation", {}).get("Calibration", {}).get("State", {}).get("Val", ""),
+        value_fn=lambda data: _process_calibration_state(
+            data.get("Ventilation", {}).get("Calibration", {}).get("State", {}).get("Val"),
+        ),
         icon="mdi:progress-wrench",
         sensor_key='CalibrationState',
         node_type='BOX',
@@ -462,6 +468,24 @@ def _process_bypass_position(value):
     if value is not None:
         # Assuming value ranges from 0 to 255, where 255 is 100%
         return round((value / 255) * 100)
+    return None
+
+def _process_network_status(value):
+    """Process network status."""
+    if value is not None:
+        return value  # Assuming value is a string
+    return None
+
+def _process_calibration_status(value):
+    """Process calibration status."""
+    if value is not None:
+        return value  # Assuming value is a string
+    return None
+
+def _process_calibration_state(value):
+    """Process calibration state."""
+    if value is not None:
+        return value  # Assuming value is a string
     return None
 
 class DucoboxCoordinator(DataUpdateCoordinator):
