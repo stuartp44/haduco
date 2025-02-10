@@ -628,6 +628,7 @@ async def async_setup_entry(
             async_add_entities(entities, update_before_add=True)
     else:
         _LOGGER.error("No MAC address found in data, unable to create sensors")
+        _LOGGER.debug(f"Data received: {coordinator.data}")
 
 class DucoboxSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntity):
     """Representation of a Ducobox sensor entity."""
