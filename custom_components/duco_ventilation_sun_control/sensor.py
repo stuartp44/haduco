@@ -503,7 +503,6 @@ class DucoboxCoordinator(DataUpdateCoordinator):
         
         return data
 
-@retry(wait_fixed=5000)
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
@@ -520,7 +519,7 @@ async def async_setup_entry(
         .get("Mac", {})
         .get("Val")
     )   
-    if mac_address and len(mac_address) == 17:
+    if mac_address and mac_address is not None:
         device_id = mac_address.replace(":", "").lower() if mac_address else "unknown_mac"
 
         comms_name = coordinator.data.get("General", {}).get("Lan", {}).get("HostName", {}).get("Val", "")
