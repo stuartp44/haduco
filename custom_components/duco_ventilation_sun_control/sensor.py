@@ -239,7 +239,7 @@ DUCONETWORK_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
     DucoboxNodeSensorEntityDescription(
         key='NetworkDuco',
         name='Network Status',
-        value_fn=lambda coordinator: coordinator.data.get("General", {}).get("NetworkDuco", {}).get("State", {}).get("Val", ""),
+        value_fn=lambda data: data.get("General", {}).get("NetworkDuco", {}).get("State", {}).get("Val", ""),
         icon="mdi:wifi-arrow-left-right",
         sensor_key='NetworkDuco',
         node_type='BOX',
@@ -251,7 +251,7 @@ CALIBRATION_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
     DucoboxNodeSensorEntityDescription(
         key='CalibrationStatus',
         name='Calibration Status',
-        value_fn=lambda coordinator: coordinator.data.get("Ventilation", {}).get("Calibration", {}).get("Valid", {}).get("Val", ""),
+        value_fn=lambda data: data.get("Ventilation", {}).get("Calibration", {}).get("Valid", {}).get("Val", ""),
         icon="mdi:progress-wrench",
         sensor_key='CalibrationStatus',
         node_type='BOX',
@@ -260,7 +260,7 @@ CALIBRATION_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
     DucoboxNodeSensorEntityDescription(
         key='CalibrationState',
         name='Calibration State',
-        value_fn=lambda coordinator: coordinator.data.get("Ventilation", {}).get("Calibration", {}).get("State", {}).get("Val", ""),
+        value_fn=lambda data: data.get("Ventilation", {}).get("Calibration", {}).get("State", {}).get("Val", ""),
         icon="mdi:progress-wrench",
         sensor_key='CalibrationState',
         node_type='BOX',
