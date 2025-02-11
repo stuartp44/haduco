@@ -76,43 +76,40 @@ COMMBOARD_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = (
 )
 
 DUCONETWORK_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
-    DucoboxNodeSensorEntityDescription(
+    DucoboxSensorEntityDescription(
         key='NetworkDuco',
         name='Network Status',
-        value_fn=lambda data:
-            _LOGGER.debug(f"Data: {data}"),
-            #data.get("General", {}).get("NetworkDuco", {}).get("State", {}).get("Val"),
         icon="mdi:wifi-arrow-left-right",
         sensor_key='NetworkDuco',
-        node_type='BOX',
-        entity_category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.TOTAL_INCREASING,
-        device_class=SensorDeviceClass.DURATION
+        device_class=SensorDeviceClass.DURATION,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda data: _process_network_status(
+            data.get("General", {}).get("NetworkDuco", {}).get("State", {}).get("Val"),
+        )
     ),
 }
 
 CALIBRATION_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
-    DucoboxNodeSensorEntityDescription(
+    DucoboxSensorEntityDescription(
         key='CalibrationStatus',
         name='Calibration Status',
-        value_fn=lambda data: _process_calibration_status(
-            data.get("Ventilation", {}).get("Calibration", {}).get("Valid", {}).get("Val"),
-        ),
         icon="mdi:progress-wrench",
         sensor_key='CalibrationStatus',
-        node_type='BOX',
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda data: _process_calibration_status(
+            data.get("Ventilation", {}).get("Calibration", {}).get("Valid", {}).get("Val"),
+        )
     ),
-    DucoboxNodeSensorEntityDescription(
+    DucoboxSensorEntityDescription(
         key='CalibrationState',
         name='Calibration State',
-        value_fn=lambda data: _process_calibration_state(
-            data.get("Ventilation", {}).get("Calibration", {}).get("State", {}).get("Val"),
-        ),
         icon="mdi:progress-wrench",
         sensor_key='CalibrationState',
-        node_type='BOX',
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda data: _process_calibration_state(
+            data.get("Ventilation", {}).get("Calibration", {}).get("State", {}).get("Val"),
+        )
     ),
 }
 
@@ -618,14 +615,11 @@ async def async_setup_entry(
                         for description in DUCONETWORK_SENSORS:
                             unique_id = f"{node_device_id}-{description.key}"
                             entities.append(
-                                DucoboxNodeSensorEntity(
+                                DucoboxSensorEntity(
                                     coordinator=coordinator,
-                                    node_id=node_id,
                                     description=description,
-                                    device_info=node_device_info,
+                                    device_info=device_info,
                                     unique_id=unique_id,
-                                    device_id=device_id,
-                                    node_name=box_name,
                                 )
                             )
                     val = coordinator.data.get('Ventilation', {}).get('Calibration', {}).get('Valid', {}).get('Val', None)
@@ -633,14 +627,11 @@ async def async_setup_entry(
                         for description in CALIBRATION_SENSORS:
                             unique_id = f"{node_device_id}-{description.key}"
                             entities.append(
-                                DucoboxNodeSensorEntity(
+                                DucoboxSensorEntity(
                                     coordinator=coordinator,
-                                    node_id=node_id,
                                     description=description,
-                                    device_info=node_device_info,
+                                    device_info=device_info,
                                     unique_id=unique_id,
-                                    device_id=device_id,
-                                    node_name=box_name,
                                 )
                             )
                     
