@@ -44,7 +44,7 @@ class DucoboxSensorEntityDescription(SensorEntityDescription):
 class DucoboxNodeSensorEntityDescription(SensorEntityDescription):
     """Describes a Ducobox node sensor entity."""
 
-    value_fn: Callable[[dict, dict], float | None]
+    value_fn: Callable[[dict], float | None]
     sensor_key: str
     node_type: str
 
@@ -79,8 +79,8 @@ DUCONETWORK_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
     DucoboxNodeSensorEntityDescription(
         key='NetworkDuco',
         name='Network Status',
-        value_fn=lambda data, general_data: _process_network_status(
-            data,general_data.get("General", {}).get("NetworkDuco", {}).get("State", {}).get("Val"),
+        value_fn=lambda data: _process_network_status(
+            data.get("General", {}).get("NetworkDuco", {}).get("State", {}).get("Val"),
         ),
         icon="mdi:wifi-arrow-left-right",
         sensor_key='NetworkDuco',
@@ -95,8 +95,8 @@ CALIBRATION_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
     DucoboxNodeSensorEntityDescription(
         key='CalibrationStatus',
         name='Calibration Status',
-        value_fn=lambda data, general_data: _process_calibration_status(
-            data,general_data.get("Ventilation", {}).get("Calibration", {}).get("Valid", {}).get("Val"),
+        value_fn=lambda data: _process_calibration_status(
+            data.get("Ventilation", {}).get("Calibration", {}).get("Valid", {}).get("Val"),
         ),
         icon="mdi:progress-wrench",
         sensor_key='CalibrationStatus',
@@ -106,8 +106,8 @@ CALIBRATION_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
     DucoboxNodeSensorEntityDescription(
         key='CalibrationState',
         name='Calibration State',
-        value_fn=lambda data, general_data: _process_calibration_state(
-            data,general_data.get("Ventilation", {}).get("Calibration", {}).get("State", {}).get("Val"),
+        value_fn=lambda data: _process_calibration_state(
+            data.get("Ventilation", {}).get("Calibration", {}).get("State", {}).get("Val"),
         ),
         icon="mdi:progress-wrench",
         sensor_key='CalibrationState',
@@ -472,22 +472,22 @@ def _process_bypass_position(value):
         return round((value / 255) * 100)
     return None
 
-def _process_network_status(node_info, general_value):
+def _process_network_status(value):
     """Process network status."""
-    if general_value is not None:
-        return general_value  # Assuming value is a string
+    if value is not None:
+        return value  # Assuming value is a string
     return None
 
-def _process_calibration_status(node_info, general_value):
+def _process_calibration_status(value):
     """Process calibration status."""
-    if general_value is not None:
-        return general_value  # Assuming value is a string
+    if value is not None:
+        return value  # Assuming value is a string
     return None
 
-def _process_calibration_state(node_info, general_value):
+def _process_calibration_state(value):
     """Process calibration state."""
-    if general_value is not None:
-        return general_value  # Assuming value is a string
+    if value is not None:
+        return value  # Assuming value is a string
     return None
 
 class DucoboxCoordinator(DataUpdateCoordinator):
@@ -740,5 +740,5 @@ class DucoboxNodeSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntit
         nodes = self.coordinator.data.get('Nodes', [])
         for node in nodes:
             if node.get('Node') == self._node_id:
-                return self.entity_description.value_fn(node, self.coordinator.data)
+                return self.entity_description.value_fn({**node, **self.coordinator.data})
         return None
