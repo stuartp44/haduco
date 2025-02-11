@@ -121,7 +121,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
         DucoboxNodeSensorEntityDescription(
             key='Mode',
             name='Ventilation Mode',
-            value_fn=lambda node, general_data: node.get('Ventilation', {}).get('Mode'),
+            value_fn=lambda node: node.get('Ventilation', {}).get('Mode'),
             icon="mdi:fan",
             sensor_key='Mode',
             node_type='BOX',
@@ -129,7 +129,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
         DucoboxNodeSensorEntityDescription(
             key='State',
             name='Ventilation State',
-            value_fn=lambda node, general_data: node.get('Ventilation', {}).get('State'),
+            value_fn=lambda node: node.get('Ventilation', {}).get('State'),
             icon="mdi:fan-auto",
             sensor_key='State',
             node_type='BOX',
@@ -138,7 +138,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
             key='FlowLvlTgt',
             name='Flow Level Target',
             native_unit_of_measurement=PERCENTAGE,
-            value_fn=lambda node, general_data: node.get('Ventilation', {}).get('FlowLvlTgt'),
+            value_fn=lambda node: node.get('Ventilation', {}).get('FlowLvlTgt'),
             icon="mdi:fan-chevron-up",
             sensor_key='FlowLvlTgt',
             node_type='BOX',
@@ -147,7 +147,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
             key='TimeStateRemain',
             name='Time State Remaining',
             native_unit_of_measurement=UnitOfTime.SECONDS,
-            value_fn=lambda node, general_data: node.get('Ventilation', {}).get('TimeStateRemain'),
+            value_fn=lambda node: node.get('Ventilation', {}).get('TimeStateRemain'),
             icon="mdi:fan-clock",
             sensor_key='TimeStateRemain',
             node_type='BOX',
@@ -156,7 +156,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
             key='TimeStateEnd',
             name='Time State End',
             native_unit_of_measurement=UnitOfTime.SECONDS,
-            value_fn=lambda node, general_data: node.get('Ventilation', {}).get('TimeStateEnd'),
+            value_fn=lambda node: node.get('Ventilation', {}).get('TimeStateEnd'),
             icon="mdi:fan-off",
             sensor_key='TimeStateEnd',
             node_type='BOX',
@@ -284,7 +284,7 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             name='Temperature',
             native_unit_of_measurement=UnitOfTemperature.CELSIUS,
             device_class=SensorDeviceClass.TEMPERATURE,
-            value_fn=lambda node, general_data: _process_node_temperature(
+            value_fn=lambda node: _process_node_temperature(
                 node.get('Sensor', {}).get('data', {}).get('Temp')
             ),
             sensor_key='Temp',
@@ -295,7 +295,7 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             name='CO₂',
             native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
             device_class=SensorDeviceClass.CO2,
-            value_fn=lambda node, general_data: _process_node_co2(
+            value_fn=lambda node: _process_node_co2(
                 node.get('Sensor', {}).get('data', {}).get('Co2')
             ),
             sensor_key='Co2',
@@ -306,7 +306,7 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             name='CO₂ Air Quality',
             native_unit_of_measurement=PERCENTAGE,
             icon="mdi:crosshairs",
-            value_fn=lambda node, general_data: _process_node_iaq(
+            value_fn=lambda node: _process_node_iaq(
                 node.get('Sensor', {}).get('data', {}).get('IaqCo2')
             ),
             sensor_key='IaqCo2',
@@ -319,7 +319,7 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             name='Temperature',
             native_unit_of_measurement=UnitOfTemperature.CELSIUS,
             device_class=SensorDeviceClass.TEMPERATURE,
-            value_fn=lambda node, general_data: _process_node_temperature(
+            value_fn=lambda node: _process_node_temperature(
                 node.get('Sensor', {}).get('data', {}).get('Temp')
             ),
             sensor_key='Temp',
@@ -330,7 +330,7 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             name='Relative Humidity',
             native_unit_of_measurement=PERCENTAGE,
             device_class=SensorDeviceClass.HUMIDITY,
-            value_fn=lambda node, general_data: _process_node_humidity(
+            value_fn=lambda node: _process_node_humidity(
                 node.get('Sensor', {}).get('data', {}).get('Rh')
             ),
             sensor_key='Rh',
@@ -341,7 +341,7 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             name='Humidity Air Quality',
             native_unit_of_measurement=PERCENTAGE,
             icon="mdi:crosshairs",
-            value_fn=lambda node, general_data: _process_node_iaq(
+            value_fn=lambda node: _process_node_iaq(
                 node.get('Sensor', {}).get('data', {}).get('IaqRh')
             ),
             sensor_key='IaqRh',
@@ -352,7 +352,7 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
         DucoboxNodeSensorEntityDescription(
             key='Mode',
             name='Ventilation Mode',
-            value_fn=lambda node, general_data: node.get('Ventilation', {}).get('Mode'),
+            value_fn=lambda node: node.get('Ventilation', {}).get('Mode'),
             icon="mdi:fan-auto",
             sensor_key='Mode',
             node_type='VLVRH',
@@ -361,7 +361,7 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             key='FlowLvlTgt',
             name='Flow Level Target',
             native_unit_of_measurement=PERCENTAGE,
-            value_fn=lambda node, general_data: node.get('Ventilation', {}).get('FlowLvlTgt'),
+            value_fn=lambda node: node.get('Ventilation', {}).get('FlowLvlTgt'),
             icon="mdi:fan-chevron-up",
             sensor_key='FlowLvlTgt',
             node_type='VLVRH',
@@ -371,7 +371,7 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             name='Humidity Air Quality',
             native_unit_of_measurement=PERCENTAGE,
             icon="mdi:crosshairs",
-            value_fn=lambda node, general_data: _process_node_iaq(
+            value_fn=lambda node: _process_node_iaq(
                 node.get('Sensor', {}).get('data', {}).get('IaqRh')
             ),
             sensor_key='IaqRh',
@@ -393,7 +393,7 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             name='Temperature',
             native_unit_of_measurement=UnitOfTemperature.CELSIUS,
             device_class=SensorDeviceClass.TEMPERATURE,
-            value_fn=lambda node, general_data: _process_node_temperature(
+            value_fn=lambda node: _process_node_temperature(
                 node.get('Sensor', {}).get('data', {}).get('Temp')
             ),
             sensor_key='Temp',
@@ -472,22 +472,22 @@ def _process_bypass_position(value):
         return round((value / 255) * 100)
     return None
 
-def _process_network_status(value):
+def _process_network_status(node_info, general_value):
     """Process network status."""
-    if value is not None:
-        return value  # Assuming value is a string
+    if general_value is not None:
+        return general_value  # Assuming value is a string
     return None
 
-def _process_calibration_status(value):
+def _process_calibration_status(node_info, general_value):
     """Process calibration status."""
-    if value is not None:
-        return value  # Assuming value is a string
+    if general_value is not None:
+        return general_value  # Assuming value is a string
     return None
 
-def _process_calibration_state(value):
+def _process_calibration_state(node_info, general_value):
     """Process calibration state."""
-    if value is not None:
-        return value  # Assuming value is a string
+    if general_value is not None:
+        return general_value  # Assuming value is a string
     return None
 
 class DucoboxCoordinator(DataUpdateCoordinator):
