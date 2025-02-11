@@ -473,19 +473,22 @@ def _process_bypass_position(value):
 def _process_network_status(value):
     """Process network status."""
     if value is not None:
-        return value  # Assuming value is a string
+        return value.title()  # Assuming value is a string
     return None
 
 def _process_calibration_status(value):
     """Process calibration status."""
     if value is not None:
-        return value  # Assuming value is a string
+        if value:
+            return "Valid"
+        else:
+            return "Invalid"
     return None
 
 def _process_calibration_state(value):
     """Process calibration state."""
     if value is not None:
-        return value  # Assuming value is a string
+        return value.title()  # Assuming value is a string
     return None
 
 class DucoboxCoordinator(DataUpdateCoordinator):
