@@ -75,6 +75,48 @@ COMMBOARD_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = (
     ),
 )
 
+DUCONETWORK_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
+    DucoboxNodeSensorEntityDescription(
+        key='NetworkDuco',
+        name='Network Status',
+        value_fn=lambda data: _process_network_status(
+            _LOGGER.debug(f"Data: {data}"),
+            data.get("General", {}).get("NetworkDuco", {}).get("State", {}).get("Val"),
+        ),
+        icon="mdi:wifi-arrow-left-right",
+        sensor_key='NetworkDuco',
+        node_type='BOX',
+        entity_category=EntityCategory.DIAGNOSTIC,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        device_class=SensorDeviceClass.DURATION
+    ),
+}
+
+CALIBRATION_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
+    DucoboxNodeSensorEntityDescription(
+        key='CalibrationStatus',
+        name='Calibration Status',
+        value_fn=lambda data: _process_calibration_status(
+            data.get("Ventilation", {}).get("Calibration", {}).get("Valid", {}).get("Val"),
+        ),
+        icon="mdi:progress-wrench",
+        sensor_key='CalibrationStatus',
+        node_type='BOX',
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    DucoboxNodeSensorEntityDescription(
+        key='CalibrationState',
+        name='Calibration State',
+        value_fn=lambda data: _process_calibration_state(
+            data.get("Ventilation", {}).get("Calibration", {}).get("State", {}).get("Val"),
+        ),
+        icon="mdi:progress-wrench",
+        sensor_key='CalibrationState',
+        node_type='BOX',
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+}
+
 BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
     'FOCUS': [
         DucoboxNodeSensorEntityDescription(
@@ -233,45 +275,6 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
             ),
         ),
     ]
-}
-
-DUCONETWORK_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
-    DucoboxNodeSensorEntityDescription(
-        key='NetworkDuco',
-        name='Network Status',
-        value_fn=lambda data: _process_network_status(
-            data.get("General", {}).get("NetworkDuco", {}).get("State", {}).get("Val"),
-        ),
-        icon="mdi:wifi-arrow-left-right",
-        sensor_key='NetworkDuco',
-        node_type='BOX',
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-}
-
-CALIBRATION_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
-    DucoboxNodeSensorEntityDescription(
-        key='CalibrationStatus',
-        name='Calibration Status',
-        value_fn=lambda data: _process_calibration_status(
-            data.get("Ventilation", {}).get("Calibration", {}).get("Valid", {}).get("Val"),
-        ),
-        icon="mdi:progress-wrench",
-        sensor_key='CalibrationStatus',
-        node_type='BOX',
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    DucoboxNodeSensorEntityDescription(
-        key='CalibrationState',
-        name='Calibration State',
-        value_fn=lambda data: _process_calibration_state(
-            data.get("Ventilation", {}).get("Calibration", {}).get("State", {}).get("Val"),
-        ),
-        icon="mdi:progress-wrench",
-        sensor_key='CalibrationState',
-        node_type='BOX',
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
 }
 
 # Define sensors for nodes based on their type
