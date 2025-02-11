@@ -86,8 +86,6 @@ DUCONETWORK_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
         sensor_key='NetworkDuco',
         node_type='BOX',
         entity_category=EntityCategory.DIAGNOSTIC,
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        device_class=SensorDeviceClass.DURATION
     ),
 }
 
