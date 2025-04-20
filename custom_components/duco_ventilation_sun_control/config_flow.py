@@ -182,21 +182,3 @@ class DucoboxOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
         return self.async_show_form(step_id="init", data_schema=vol.Schema({}))
-
-class OptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle options flow."""
-
-    def __init__(self, config_entry):
-        self.config_entry = config_entry
-
-    async def async_step_init(self, user_input=None):
-        if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
-
-        current = self.config_entry.options.get("example_option", "default")
-        return self.async_show_form(
-            step_id="init",
-            data_schema=vol.Schema({
-                vol.Required("example_option", default=current): str,
-            }),
-        )
