@@ -6,6 +6,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
@@ -20,7 +21,11 @@ from .network import DUCONETWORK_SENSORS
 from .nodes import NODE_SENSORS
 from .boxes import BOX_SENSORS
 from .calibration import CALIBRATION_SENSORS
-from .ducobox_classes import DucoboxSensorEntityDescription, DucoboxNodeSensorEntityDescription
+from .ducobox_classes import (
+    DucoboxSensorEntityDescription, 
+    DucoboxNodeSensorEntityDescription,
+    DucoboxCommsBoardInfo
+)
 _LOGGER = logging.getLogger(__name__)
 
 class DucoboxCoordinator(DataUpdateCoordinator):
@@ -65,6 +70,39 @@ class DucoboxCoordinator(DataUpdateCoordinator):
         
         return data
 
+async def get_mac_address(hass: HomeAssistant) -> str:
+    """Get the MAC address of the Ducobox device."""
+    coordinator = hass.data[DOMAIN]
+    ip_address = coordinator.data.get("General", {}).get("Lan", {}).get("Ip", {}).get("Val")
+    mac_address = (
+        coordinator.data.get("General", {})
+        .get("Lan", {})
+        .get("Mac", {})
+        .get("Val")
+    )
+    if not mac_address:
+        _LOGGER.error("No MAC address found in data")
+        raise ConfigEntryNotReady(f"Not able to get a MAC Address from {ip_address}")
+    return mac_address.replace(":", "").lower()
+
+async def build_comms_board_information(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    ) -> tuple[str, str]:
+        """Build the communication board information."""
+        coordinator = hass.data[DOMAIN]
+        name = coordinator.data.get("General", {}).get("Lan", {}).get("HostName", {}).get("Val", "")
+        serial_number = coordinator.data.get("General", {}).get("Board", {}).get("SerialBoardComm", {}).get("Val", "")
+        subtype = coordinator.data.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
+        
+        commsboard_info = DucoboxCommsBoardInfo(
+            name=name,
+            serial_number=serial_number,
+            subtype=subtype,
+        )
+        
+        return commsboard_info
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
@@ -75,18 +113,16 @@ async def async_setup_entry(
     await coordinator.async_config_entry_first_refresh()
     
     # Retrieve MAC address and format device ID and name
-    mac_address = (
-        coordinator.data.get("General", {})
-        .get("Lan", {})
-        .get("Mac", {})
-        .get("Val")
-    )   
+    mac_address = await get_mac_address(hass)
+    
+    comms_board_info = await build_comms_board_information(hass, entry)
+    
     if mac_address and mac_address is not None:
-        device_id = mac_address.replace(":", "").lower() if mac_address else "unknown_mac"
-
-        comms_name = coordinator.data.get("General", {}).get("Lan", {}).get("HostName", {}).get("Val", "")
-        comms_serial_number = coordinator.data.get("General", {}).get("Board", {}).get("SerialBoardComm", {}).get("Val", "")
-        comms_subtype = coordinator.data.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
+        device_id = mac_address
+        
+        comms_name = comms_board_info.name
+        comms_serial_number = comms_board_info.serial_number
+        comms_subtype = comms_board_info.subtype
 
         device_info = DeviceInfo(
             identifiers={(DOMAIN, device_id)},

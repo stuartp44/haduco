@@ -18,4 +18,10 @@ class DucoboxNodeSensorEntityDescription(SensorEntityDescription):
     value_fn: Callable[[dict], float | None]
     sensor_key: str
     node_type: str
-    
+
+class DucoboxCommsBoardInfo():
+    """Class to represent a Ducobox Communication Board."""
+
+    name: str
+    serial_number: str
+    subtype: str
