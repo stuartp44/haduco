@@ -19,8 +19,7 @@ class DucoboxNodeSensorEntityDescription(SensorEntityDescription):
     sensor_key: str
     node_type: str
 
-@dataclass(frozen=True)
-class DucoboxCommsBoardInfo(SensorEntityDescription):
+class DucoboxCommsBoardInfo(object):
     """Class to represent a Ducobox Communication Board."""
 
     name: str
