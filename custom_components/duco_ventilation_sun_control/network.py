@@ -1,4 +1,4 @@
-from custom_components.duco_ventilation_sun_control.ducobox_classes import DucoboxSensorEntityDescription, DucoboxNodeSensorEntityDescription
+from .ducobox_classes import DucoboxSensorEntityDescription, DucoboxNodeSensorEntityDescription
 from common import _process_network_status
 from homeassistant.const import (
     EntityCategory,
