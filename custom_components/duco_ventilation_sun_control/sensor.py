@@ -8,7 +8,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity, DataUpdateCoordinator
 from homeassistant.components.sensor import SensorEntity
-from .const import DOMAIN, SCAN_INTERVAL
+from .const import DOMAIN, SCAN_INTERVAL, MANUFACTURER
 import asyncio
 from .comm_boards import COMMBOARD_SENSORS
 from .network import DUCONETWORK_SENSORS
@@ -103,7 +103,7 @@ def create_device_info(coordinator: DucoboxCoordinator, device_id: str) -> Devic
     return DeviceInfo(
         identifiers={(DOMAIN, device_id)},
         name=data.get("General", {}).get("Lan", {}).get("HostName", {}).get("Val", "Unknown"),
-        manufacturer="DUCO Ventilation & Sun Control",
+        manufacturer=MANUFACTURER,
         model=data.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "Unknown"),
         serial_number=data.get("General", {}).get("Board", {}).get("SerialBoardComm", {}).get("Val", "Unknown"),
         sw_version=data.get("General", {}).get("Board", {}).get("SwVersionComm", {}).get("Val", "Unknown"),
@@ -147,7 +147,7 @@ def create_box_sensors(coordinator: DucoboxCoordinator, node: dict, node_device_
     box_device_info = DeviceInfo(
         identifiers={(DOMAIN, node_device_id)},
         name=box_name,
-        manufacturer="DUCO Ventilation & Sun Control",
+        manufacturer=MANUFACTURER,
         model=box_name,
         via_device=(DOMAIN, device_id),
     )
@@ -205,7 +205,7 @@ def create_generic_node_sensors(
     node_device_info = DeviceInfo(
         identifiers={(DOMAIN, node_device_id)},
         name=node_type,
-        manufacturer="DUCO Ventilation & Sun Control",
+        manufacturer=MANUFACTURER,
         model=node_type,
         via_device=(DOMAIN, device_id),
     )
