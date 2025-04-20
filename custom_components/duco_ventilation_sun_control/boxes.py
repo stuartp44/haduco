@@ -9,7 +9,7 @@ from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorStateClass,
 )
-from common import (
+from .common import (
     _process_bypass_position, 
     _process_pressure, 
     _process_speed, 
