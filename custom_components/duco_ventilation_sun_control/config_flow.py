@@ -16,7 +16,7 @@ CONFIG_SCHEMA = vol.Schema({
 })
 
 OPTIONS_SCHEMA = vol.Schema({
-    vol.Required("refresh_time", default=SCAN_INTERVAL.total_seconds()): vol.All(
+    vol.Required("Refresh Time", default=SCAN_INTERVAL.total_seconds()): vol.All(
         vol.Coerce(int), vol.Range(min=10, max=3600)
     ),
 })
