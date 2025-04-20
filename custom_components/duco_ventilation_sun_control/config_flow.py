@@ -5,7 +5,7 @@ from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.core import callback
 from ducopy import DucoPy
-from .const import DOMAIN
+from .const import DOMAIN, SCAN_INTERVAL
 import requests
 import asyncio
 
@@ -13,6 +13,12 @@ _LOGGER = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = vol.Schema({
     vol.Required("host"): str,
+})
+
+OPTIONS_SCHEMA = vol.Schema({
+    vol.Required("refresh_time", default=SCAN_INTERVAL.total_seconds()): vol.All(
+        vol.Coerce(int), vol.Range(min=10, max=3600)
+    ),
 })
 
 class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -181,4 +187,13 @@ class DucoboxOptionsFlowHandler(config_entries.OptionsFlow):
         """Manage options."""
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
-        return self.async_show_form(step_id="init", data_schema=vol.Schema({}))
+        
+        current_refresh_time = self.config_entry.options.get("refresh_time", SCAN_INTERVAL.total_seconds())
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema({
+                vol.Required("refresh_time", default=current_refresh_time): vol.All(
+                    vol.Coerce(int), vol.Range(min=10, max=3600)
+                ),
+            }),
+        )
