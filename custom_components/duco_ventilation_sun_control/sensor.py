@@ -20,7 +20,7 @@ from .network import DUCONETWORK_SENSORS
 from .nodes import NODE_SENSORS
 from .boxes import BOX_SENSORS
 from .calibration import CALIBRATION_SENSORS
-from .classes import DucoboxSensorEntityDescription, DucoboxNodeSensorEntityDescription
+from .ducoboxc_classes import DucoboxSensorEntityDescription, DucoboxNodeSensorEntityDescription
 _LOGGER = logging.getLogger(__name__)
 
 class DucoboxCoordinator(DataUpdateCoordinator):

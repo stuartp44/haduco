@@ -1,4 +1,4 @@
-from classes import DucoboxSensorEntityDescription, DucoboxNodeSensorEntityDescription
+from custom_components.duco_ventilation_sun_control.ducoboxc_classes import DucoboxSensorEntityDescription, DucoboxNodeSensorEntityDescription
 from common import ( 
     _process_calibration_state, 
     _process_calibration_status

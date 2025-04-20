@@ -1,4 +1,4 @@
-from classes import DucoboxNodeSensorEntityDescription
+from custom_components.duco_ventilation_sun_control.ducoboxc_classes import DucoboxNodeSensorEntityDescription
 from common import (
     _process_node_co2, 
     _process_node_humidity, 
