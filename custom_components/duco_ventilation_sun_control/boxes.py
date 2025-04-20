@@ -1,4 +1,4 @@
-from classes import DucoboxSensorEntityDescription, DucoboxNodeSensorEntityDescription
+from custom_components.duco_ventilation_sun_control.ducobox_classes import DucoboxSensorEntityDescription, DucoboxNodeSensorEntityDescription
 from homeassistant.const import (
     UnitOfTemperature,
     UnitOfTime,

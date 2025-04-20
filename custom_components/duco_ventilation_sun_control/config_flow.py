@@ -15,8 +15,6 @@ CONFIG_SCHEMA = vol.Schema({
     vol.Required("host"): str,
 })
 
-
-
 class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Ducobox Connectivity Board."""
 

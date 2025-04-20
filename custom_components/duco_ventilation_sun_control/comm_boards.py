@@ -1,4 +1,4 @@
-from custom_components.duco_ventilation_sun_control.ducoboxc_classes import DucoboxSensorEntityDescription
+from custom_components.duco_ventilation_sun_control.ducobox_classes import DucoboxSensorEntityDescription
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorStateClass,
