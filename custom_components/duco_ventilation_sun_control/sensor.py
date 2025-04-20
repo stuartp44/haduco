@@ -80,8 +80,8 @@ async def async_setup_entry(
     entities = []
     entities.extend(create_main_sensors(coordinator, device_info, device_id))
     entities.extend(create_node_sensors(coordinator, device_id))
-    entities.extend(create_duco_network_sensors(coordinator, device_info, device_id))
-    entities.extend(create_calibration_sensors(coordinator, device_info, device_id))
+    entities.extend(create_duco_network_sensors(coordinator, device_info, 1))
+    entities.extend(create_calibration_sensors(coordinator, device_info, 1))
 
     if entities:
         async_add_entities(entities, update_before_add=True)
