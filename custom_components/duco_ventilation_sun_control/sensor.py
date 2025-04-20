@@ -1,6 +1,7 @@
 from __future__ import annotations
 import logging
 from typing import Any
+from datetime import timedelta
 from retrying import retry
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -23,12 +24,12 @@ _LOGGER = logging.getLogger(__name__)
 class DucoboxCoordinator(DataUpdateCoordinator):
     """Coordinator to manage data updates for Ducobox sensors."""
 
-    def __init__(self, hass: HomeAssistant):
+    def __init__(self, hass: HomeAssistant, update_interval: int):
         super().__init__(
             hass,
             _LOGGER,
             name="Ducobox Connectivity Board",
-            update_interval=SCAN_INTERVAL,
+            update_interval=update_interval,
         )
 
     async def _async_update_data(self) -> dict:
@@ -65,7 +66,9 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Ducobox sensors from a config entry."""
-    coordinator = DucoboxCoordinator(hass)
+    refresh_time = entry.options.get("refresh_time", SCAN_INTERVAL.total_seconds())
+    
+    coordinator = DucoboxCoordinator(hass, update_interval=timedelta(seconds=refresh_time))
     await coordinator.async_config_entry_first_refresh()
 
     mac_address = get_mac_address(coordinator)
