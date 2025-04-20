@@ -6,14 +6,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
-    DataUpdateCoordinator,
-)
-from homeassistant.components.sensor import (
-    SensorEntity,
-)
+from homeassistant.helpers.update_coordinator import CoordinatorEntity, DataUpdateCoordinator
+from homeassistant.components.sensor import SensorEntity
 from .const import DOMAIN, SCAN_INTERVAL
 import asyncio
 from .comm_boards import COMMBOARD_SENSORS
@@ -21,12 +15,10 @@ from .network import DUCONETWORK_SENSORS
 from .nodes import NODE_SENSORS
 from .boxes import BOX_SENSORS
 from .calibration import CALIBRATION_SENSORS
-from .ducobox_classes import (
-    DucoboxSensorEntityDescription, 
-    DucoboxNodeSensorEntityDescription,
-    DucoboxCommsBoardInfo
-)
+from .ducobox_classes import DucoboxSensorEntityDescription, DucoboxNodeSensorEntityDescription
+
 _LOGGER = logging.getLogger(__name__)
+
 
 class DucoboxCoordinator(DataUpdateCoordinator):
     """Coordinator to manage data updates for Ducobox sensors."""
@@ -41,8 +33,6 @@ class DucoboxCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self) -> dict:
         """Fetch data from the Ducobox API with a timeout."""
-        # Use retrying library to retry fetching data
-        
         try:
             return await asyncio.wait_for(
                 self.hass.async_add_executor_job(self._fetch_data),
@@ -58,7 +48,6 @@ class DucoboxCoordinator(DataUpdateCoordinator):
     @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
     def _fetch_data(self) -> dict:
         duco_client = self.hass.data[DOMAIN]
-
         data = duco_client.get_info()
         _LOGGER.debug(f"Data received from /info: {data}")
 
@@ -67,41 +56,8 @@ class DucoboxCoordinator(DataUpdateCoordinator):
 
         # Convert nodes_response.Nodes (which is a list of NodeInfo objects) to list of dicts
         data['Nodes'] = [node.dict() for node in nodes_response.Nodes]
-        
         return data
 
-async def get_mac_address(
-    coordinator: DucoboxCoordinator,
-    ) -> str:
-    """Get the MAC address of the Ducobox device."""
-    ip_address = coordinator.data.get("General", {}).get("Lan", {}).get("Ip", {}).get("Val")
-    mac_address = (
-        coordinator.data.get("General", {})
-        .get("Lan", {})
-        .get("Mac", {})
-        .get("Val")
-    )
-    if not mac_address:
-        _LOGGER.error("No MAC address found in data")
-        raise ConfigEntryNotReady(f"Not able to get a MAC Address from {ip_address}")
-    return mac_address.replace(":", "").lower()
-
-async def build_comms_board_information(
-    coordinator: DucoboxCoordinator,
-    ) -> tuple[str, str]:
-        """Build the communication board information."""
-
-        name = coordinator.data.get("General", {}).get("Lan", {}).get("HostName", {}).get("Val", "")
-        serial_number = coordinator.data.get("General", {}).get("Board", {}).get("SerialBoardComm", {}).get("Val", "")
-        subtype = coordinator.data.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
-        
-        # cast to a DucoboxCommsBoardInfo object
-        commsboard_info = DucoboxCommsBoardInfo(
-            name=name,
-            serial_number=serial_number,
-            subtype=subtype,
-        )
-        return commsboard_info
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -111,143 +67,133 @@ async def async_setup_entry(
     """Set up Ducobox sensors from a config entry."""
     coordinator = DucoboxCoordinator(hass)
     await coordinator.async_config_entry_first_refresh()
-    
-    # Retrieve MAC address and format device ID and name
-    mac_address = await get_mac_address(coordinator)
-    
-    comms_board_info = await build_comms_board_information(coordinator)
-    
-    if mac_address and mac_address is not None:
-        device_id = mac_address
-        
-        comms_name = comms_board_info.name
-        comms_serial_number = comms_board_info.serial_number
-        comms_subtype = comms_board_info.subtype
 
-        device_info = DeviceInfo(
-            identifiers={(DOMAIN, device_id)},
-            name=comms_name,
-            manufacturer="DUCO Ventilation & Sun Control",
-            model=comms_subtype,
-            serial_number=comms_serial_number,
-            sw_version=coordinator.data.get("General", {}).get("Board", {}).get("SwVersionComm", {}).get("Val", "Unknown Version"),
-        )
-
-        entities: list[SensorEntity] = []
-
-        # Add main Ducobox sensors
-        for description in COMMBOARD_SENSORS:
-            unique_id = f"{device_id}-{description.key}"
-            entities.append(
-                DucoboxSensorEntity(
-                    coordinator=coordinator,
-                    description=description,
-                    device_info=device_info,
-                    unique_id=unique_id,
-                )
-            )
-        
-        # Add node sensors
-        nodes = coordinator.data.get('Nodes', [])
-        for node in nodes:
-            node_id = node.get('Node')
-            box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "")
-            node_type = node.get('General', {}).get('Type', {}).get('Val', 'Unknown')
-            box_sw_version = coordinator.data.get("General", {}).get("Board", {}).get("SwVersionBox", {}).get("Val", "")
-            box_serial_number = coordinator.data.get("General", {}).get("Board", {}).get("SerialBoardBox", {}).get("Val", "")
-
-            # Create device info for the node
-            node_device_id = f"{device_id}-{node_id}"
-
-            if node.get('General', {}).get('Type', {}).get('Val') == 'BOX':
-                node_device_info = DeviceInfo(
-                    identifiers={(DOMAIN, node_device_id)},
-                    name=box_name,
-                    manufacturer="DUCO Ventilation & Sun Control",
-                    model=box_name,
-                    sw_version=box_sw_version,
-                    serial_number=box_serial_number,
-                    via_device=(DOMAIN, device_id),
-                )
-                if box_name in BOX_SENSORS:
-                    for description in BOX_SENSORS[box_name]:
-                        unique_id = f"{node_device_id}-{description.key}"
-                        entities.append(
-                            DucoboxNodeSensorEntity(
-                                coordinator=coordinator,
-                                node_id=node_id,
-                                description=description,
-                                device_info=node_device_info,
-                                unique_id=unique_id,
-                                device_id=device_id,
-                                node_name=box_name,
-                            )
-                        )
-                    if coordinator.data.get('General', {}).get('NetworkDuco', {}).get('State', {}).get('Val', ""):
-                        for description in DUCONETWORK_SENSORS:
-                            unique_id = f"{node_device_id}-{description.key}"
-                            entities.append(
-                                DucoboxNodeSensorEntity(
-                                    coordinator=coordinator,
-                                    node_id=node_id,
-                                    description=description,
-                                    device_info=node_device_info,
-                                    unique_id=unique_id,
-                                    device_id=device_id,
-                                    node_name=box_name,
-                                )
-                            )
-                    val = coordinator.data.get('Ventilation', {}).get('Calibration', {}).get('Valid', {}).get('Val', None)
-                    if val is not None:
-                        for description in CALIBRATION_SENSORS:
-                            unique_id = f"{node_device_id}-{description.key}"
-                            entities.append(
-                                DucoboxNodeSensorEntity(
-                                    coordinator=coordinator,
-                                    node_id=node_id,
-                                    description=description,
-                                    device_info=node_device_info,
-                                    unique_id=unique_id,
-                                    device_id=device_id,
-                                    node_name=box_name,
-                                )
-                            )
-                    
-                else:
-                    _LOGGER.debug(f"No sensors found for node type {box_name}")
-            else:
-                if node_type != 'UC':
-                    node_device_info = DeviceInfo(
-                        identifiers={(DOMAIN, node_device_id)},
-                        name=node_type,
-                        manufacturer="DUCO Ventilation & Sun Control",
-                        model=node_type,
-                        via_device=(DOMAIN, f"{device_id}-1"),
-                    )
-                    node_sensors = NODE_SENSORS.get(node_type, [])
-                    for description in node_sensors:
-                        unique_id = f"{node_device_id}-{description.key}"
-                        entities.append(
-                            DucoboxNodeSensorEntity(
-                                coordinator=coordinator,
-                                node_id=node_id,
-                                description=description,
-                                device_info=node_device_info,
-                                unique_id=unique_id,
-                                device_id=device_id,
-                                node_name=node_type,
-                            )
-                        )
-
-        if entities:
-            async_add_entities(entities, update_before_add=True)
-    else:
+    mac_address = get_mac_address(coordinator)
+    if not mac_address:
         _LOGGER.error("No MAC address found in data, unable to create sensors")
         _LOGGER.debug(f"Data received: {coordinator.data}")
+        return
+
+    device_id = mac_address.replace(":", "").lower()
+    device_info = create_device_info(coordinator, device_id)
+
+    entities = []
+    entities.extend(create_main_sensors(coordinator, device_info, device_id))
+    entities.extend(create_node_sensors(coordinator, device_id))
+
+    if entities:
+        async_add_entities(entities, update_before_add=True)
+
+
+def get_mac_address(coordinator: DucoboxCoordinator) -> str | None:
+    """Retrieve the MAC address from the coordinator data."""
+    return (
+        coordinator.data.get("General", {})
+        .get("Lan", {})
+        .get("Mac", {})
+        .get("Val")
+    )
+
+
+def create_device_info(coordinator: DucoboxCoordinator, device_id: str) -> DeviceInfo:
+    """Create device info for the main Ducobox."""
+    data = coordinator.data
+    return DeviceInfo(
+        identifiers={(DOMAIN, device_id)},
+        name=data.get("General", {}).get("Lan", {}).get("HostName", {}).get("Val", "Unknown"),
+        manufacturer="DUCO Ventilation & Sun Control",
+        model=data.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "Unknown"),
+        serial_number=data.get("General", {}).get("Board", {}).get("SerialBoardComm", {}).get("Val", "Unknown"),
+        sw_version=data.get("General", {}).get("Board", {}).get("SwVersionComm", {}).get("Val", "Unknown"),
+    )
+
+
+def create_main_sensors(coordinator: DucoboxCoordinator, device_info: DeviceInfo, device_id: str) -> list[SensorEntity]:
+    """Create main Ducobox sensors."""
+    return [
+        DucoboxSensorEntity(
+            coordinator=coordinator,
+            description=description,
+            device_info=device_info,
+            unique_id=f"{device_id}-{description.key}",
+        )
+        for description in COMMBOARD_SENSORS
+    ]
+
+
+def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list[SensorEntity]:
+    """Create sensors for each node."""
+    entities = []
+    nodes = coordinator.data.get("Nodes", [])
+    for node in nodes:
+        node_id = node.get("Node")
+        node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
+        node_device_id = f"{device_id}-{node_id}"
+
+        if node_type == "BOX":
+            entities.extend(create_box_sensors(coordinator, node, node_device_id, device_id))
+        elif node_type != "UC":
+            entities.extend(create_generic_node_sensors(coordinator, node, node_device_id, node_type, device_id))
+
+    return entities
+
+
+def create_box_sensors(coordinator: DucoboxCoordinator, node: dict, node_device_id: str, device_id: str) -> list[SensorEntity]:
+    """Create sensors for a BOX node."""
+    entities = []
+    box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "")
+    box_device_info = DeviceInfo(
+        identifiers={(DOMAIN, node_device_id)},
+        name=box_name,
+        manufacturer="DUCO Ventilation & Sun Control",
+        model=box_name,
+        via_device=(DOMAIN, device_id),
+    )
+
+    if box_name in BOX_SENSORS:
+        for description in BOX_SENSORS[box_name]:
+            entities.append(
+                DucoboxNodeSensorEntity(
+                    coordinator=coordinator,
+                    node_id=node.get("Node"),
+                    description=description,
+                    device_info=box_device_info,
+                    unique_id=f"{node_device_id}-{description.key}",
+                    device_id=device_id,
+                    node_name=box_name,
+                )
+            )
+    return entities
+
+
+def create_generic_node_sensors(
+    coordinator: DucoboxCoordinator, node: dict, node_device_id: str, node_type: str, device_id: str
+) -> list[SensorEntity]:
+    """Create sensors for a generic node."""
+    node_device_info = DeviceInfo(
+        identifiers={(DOMAIN, node_device_id)},
+        name=node_type,
+        manufacturer="DUCO Ventilation & Sun Control",
+        model=node_type,
+        via_device=(DOMAIN, device_id),
+    )
+
+    return [
+        DucoboxNodeSensorEntity(
+            coordinator=coordinator,
+            node_id=node.get("Node"),
+            description=description,
+            device_info=node_device_info,
+            unique_id=f"{node_device_id}-{description.key}",
+            device_id=device_id,
+            node_name=node_type,
+        )
+        for description in NODE_SENSORS.get(node_type, [])
+    ]
+
 
 class DucoboxSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntity):
     """Representation of a Ducobox sensor entity."""
-    entity_description: DucoboxSensorEntityDescription
 
     def __init__(
         self,
@@ -264,18 +210,13 @@ class DucoboxSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntity):
         self._attr_name = f"{device_info['name']} {description.name}"
 
     @property
-    def available(self) -> bool:
-        """Return if entity is available."""
-        return self.coordinator.last_update_success
-    
-    @property
     def native_value(self) -> Any:
         """Return the state of the sensor."""
         return self.entity_description.value_fn(self.coordinator.data)
 
+
 class DucoboxNodeSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntity):
     """Representation of a Ducobox node sensor entity."""
-    entity_description: DucoboxNodeSensorEntityDescription
 
     def __init__(
         self,
@@ -293,21 +234,13 @@ class DucoboxNodeSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntit
         self._attr_device_info = device_info
         self._attr_unique_id = unique_id
         self._node_id = node_id
-        # Updated entity name
         self._attr_name = description.name
-        # self._attr_suggested_object_id = f"{device_id}_{node_name}_{description.name}".lower().replace(' ', '_')
-
-    @property
-    def available(self) -> bool:
-        """Return if entity is available."""
-        return self.coordinator.last_update_success
 
     @property
     def native_value(self) -> Any:
         """Return the state of the sensor."""
-        # Fetch the latest data for this node
-        nodes = self.coordinator.data.get('Nodes', [])
+        nodes = self.coordinator.data.get("Nodes", [])
         for node in nodes:
-            if node.get('Node') == self._node_id:
+            if node.get("Node") == self._node_id:
                 return self.entity_description.value_fn({'node_data': node, 'general_data': self.coordinator.data})
         return None
