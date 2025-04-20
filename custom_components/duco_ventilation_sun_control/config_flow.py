@@ -22,180 +22,149 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
     async def async_step_user(self, user_input=None):
         """Handle the initial step for config flow."""
-        errors = {}
-
         if user_input is not None:
-            host = user_input["host"]
+            return await self._handle_user_input(user_input)
 
-            try:
-                communication_board_info = await self.get_duco_comm_board_info(host)
-                product_entry_info, _ = await self.get_entry_info(communication_board_info)
-                unique_id = product_entry_info["data"]["unique_id"]
-
-                # Check if the device has already been configured
-                await self.async_set_unique_id(unique_id)
-                existing_entries = self.hass.config_entries.async_entries(DOMAIN)
-                
-                for existing_entry in existing_entries:
-                    _LOGGER.debug(f"Checking existing entry: {existing_entry}")
-                    if existing_entry.unique_id == unique_id:
-                        _LOGGER.debug(f"Existing entry: {existing_entry}")
-                        return self.async_abort(reason="already_configured")
-                
-                    else:
-                        _LOGGER.debug("Creating new entry")
-                        return self.async_create_entry(
-                            title=product_entry_info["title"],
-                            data=product_entry_info["data"],
-                        )
-
-            except ValueError:
-                errors["host"] = "invalid_url"
-            except ConnectionError:
-                errors["host"] = "cannot_connect"
-            except RuntimeError:
-                errors["host"] = "unknown_error"
-
-        return self.async_show_form(
-            step_id="user",
-            data_schema=CONFIG_SCHEMA,
-            errors=errors
-        )
+        return self._show_user_form()
 
     async def async_step_zeroconf(self, discovery_info: ZeroconfServiceInfo) -> FlowResult:
         """Handle discovery via mDNS."""
-        _LOGGER.debug(f"Discovery info: {discovery_info}")
-
-        valid_names = ['duco_', 'duco ']
-
-        if not any(discovery_info.name.lower().startswith(x) for x in valid_names):
+        if not self._is_valid_discovery(discovery_info):
             return self.async_abort(reason="not_duco_air_device")
 
-        # Extract information from mDNS discovery
-        # Use the IP address directly to avoid '.local' issues
-        host = discovery_info.addresses[0]
-        unique_id = discovery_info.properties.get("MAC").replace(':', '')
-
-        _LOGGER.debug(f"Extracted host: {host}, unique_id: {unique_id}")
-
+        host, unique_id = self._extract_discovery_info(discovery_info)
         await self.async_set_unique_id(unique_id)
-        existing_entries = self.hass.config_entries.async_entries(DOMAIN)
 
-        # Look for a specific entry by unique_id
-        if existing_entries:
-            for existing_entry in existing_entries:
-                _LOGGER.debug(f"Checking existing entry: {existing_entry}")
-                if existing_entry.unique_id == unique_id:
-                    _LOGGER.debug(f"Existing entry: {existing_entry}")
-                    if existing_entry.data["base_url"] != f"https://{host}":
-                        _LOGGER.debug("Updating existing entry with new IP address")
-                        self.hass.config_entries.async_update_entry(
-                            existing_entry, data={**existing_entry.data, "base_url": f"https://{host}"}
-                        )
-                    else:
-                        _LOGGER.debug("Entry already exists")
-                        return self.async_abort(reason="already_configured")
-        else:
-            # Store discovery data in context
-            self.context["discovery"] = {
-                "host": host,
-                "unique_id": unique_id,
-            }
+        if self._is_existing_entry(unique_id, host):
+            return self.async_abort(reason="already_configured")
 
-        _LOGGER.debug(f"Discovery context: {self.context['discovery']}")
-        # Ask user for confirmation
-        return await self.async_step_confirm()       
-
-
+        self.context["discovery"] = {"host": host, "unique_id": unique_id}
+        return await self.async_step_confirm()
 
     async def async_step_confirm(self, user_input=None) -> FlowResult:
         """Ask user to confirm adding the discovered device."""
         discovery = self.context["discovery"]
-        _LOGGER.debug(f"Discovery context: {discovery}")
-        
-        try:
-            communication_board_info = await self.get_duco_comm_board_info(discovery["host"])
-        
-        except ValueError as ex:
-            return self.async_abort(reason=ex)
-        product_entry_info,discovery_context = await self.get_entry_info(communication_board_info, discovery_context=True)
-        
-        self.context["title_placeholders"] = discovery_context
-        
+
         if user_input is not None:
+            return await self._create_entry_from_discovery(discovery)
+
+        return self._show_confirm_form(discovery)
+
+    async def _handle_user_input(self, user_input: dict) -> FlowResult:
+        """Handle user input for manual configuration."""
+        host = user_input["host"]
+        try:
+            communication_board_info = await self._get_duco_comm_board_info(host)
+            product_entry_info, _ = await self._get_entry_info(communication_board_info)
+            unique_id = product_entry_info["data"]["unique_id"]
+
+            await self.async_set_unique_id(unique_id)
+            if self._is_existing_entry(unique_id):
+                return self.async_abort(reason="already_configured")
+
             return self.async_create_entry(
                 title=product_entry_info["title"],
                 data=product_entry_info["data"],
             )
+        except ValueError:
+            return self._show_user_form(errors={"host": "invalid_url"})
+        except ConnectionError:
+            return self._show_user_form(errors={"host": "cannot_connect"})
+        except RuntimeError:
+            return self._show_user_form(errors={"host": "unknown_error"})
 
+    def _show_user_form(self, errors=None) -> FlowResult:
+        """Show the user form for manual configuration."""
+        return self.async_show_form(
+            step_id="user",
+            data_schema=CONFIG_SCHEMA,
+            errors=errors or {},
+        )
+
+    def _is_valid_discovery(self, discovery_info: ZeroconfServiceInfo) -> bool:
+        """Check if the discovery info is valid for a Duco device."""
+        valid_names = ['duco_', 'duco ']
+        return any(discovery_info.name.lower().startswith(x) for x in valid_names)
+
+    def _extract_discovery_info(self, discovery_info: ZeroconfServiceInfo) -> tuple[str, str]:
+        """Extract host and unique ID from discovery info."""
+        host = discovery_info.addresses[0]
+        unique_id = discovery_info.properties.get("MAC").replace(':', '')
+        return host, unique_id
+
+    def _is_existing_entry(self, unique_id: str, host: str = None) -> bool:
+        """Check if an entry with the given unique ID already exists."""
+        for entry in self.hass.config_entries.async_entries(DOMAIN):
+            if entry.unique_id == unique_id:
+                if host and entry.data["base_url"] != f"https://{host}":
+                    self.hass.config_entries.async_update_entry(
+                        entry, data={**entry.data, "base_url": f"https://{host}"}
+                    )
+                return True
+        return False
+
+    async def _create_entry_from_discovery(self, discovery: dict) -> FlowResult:
+        """Create a config entry from discovery data."""
+        communication_board_info = await self._get_duco_comm_board_info(discovery["host"])
+        product_entry_info, _ = await self._get_entry_info(communication_board_info)
+        return self.async_create_entry(
+            title=product_entry_info["title"],
+            data=product_entry_info["data"],
+        )
+
+    def _show_confirm_form(self, discovery: dict) -> FlowResult:
+        """Show the confirmation form for discovered devices."""
         self._set_confirm_only()
-        # Show confirmation form to the user
         return self.async_show_form(
             step_id="confirm",
-            
             description_placeholders={
                 "host": discovery["host"],
                 "unique_id": discovery["unique_id"],
             },
         )
-    
-    async def get_entry_info(self, result, discovery_context=None):
-        """Renders the product entry information and if required discover context."""
-        _LOGGER.debug(f"Result: {result}")
-        communication_board_type = result["communication_board_info"].get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
-        _LOGGER.debug(f"Communication board type: {communication_board_type}")
-        communication_board_mac = result["communication_board_info"].get("General", {}).get("Lan", {}).get("Mac", {}).get("Val", "").replace(':', '')
-        _LOGGER.debug(f"Communication board MAC: {communication_board_mac}")
-        communication_board_host = result["communication_board_info"].get("General", {}).get("Lan", {}).get("HostName", {}).get("Val", "")
-        _LOGGER.debug(f"Communication board host: {communication_board_host}")
-        communication_board_ip = result["communication_board_info"].get("General", {}).get("Lan", {}).get("Ip", {}).get("Val", "")
-        _LOGGER.debug(f"Communication board IP: {communication_board_ip}")        
-        if communication_board_type == "CONNECTIVITY":
-            _LOGGER.debug("Communication board is a Connectivity Board")
-            product = {
-                "title": f"Connectivity Board ({communication_board_mac})",
-                "data": {
-                    "base_url": f"https://{communication_board_ip}",
-                    "unique_id": communication_board_mac,
-                },
-            }
-            if discovery_context:
-                discovery_context = {"name": f"Connectivity Board ({communication_board_mac.replace(':', '')})"}
-        
-        return product,discovery_context
 
-    async def get_duco_comm_board_info(self, host: str):
-                """Attempt to connect to the Duco device and retrieve its information."""
-                try:
-                    parsed_url = requests.utils.urlparse(host)
-                    if not parsed_url.scheme:
-                        base_url = f"https://{host}"
-                        parsed_url = requests.utils.urlparse(base_url)
+    async def _get_entry_info(self, result: dict, discovery_context=None) -> tuple[dict, dict]:
+        """Render the product entry information."""
+        communication_board_info = result["communication_board_info"]
+        mac = communication_board_info.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val", "").replace(':', '')
+        ip = communication_board_info.get("General", {}).get("Lan", {}).get("Ip", {}).get("Val", "")
 
-                    if parsed_url.scheme != "https":
-                        raise ValueError("Invalid URL scheme")
+        product = {
+            "title": f"Connectivity Board ({mac})",
+            "data": {
+                "base_url": f"https://{ip}",
+                "unique_id": mac,
+            },
+        }
+        discovery_context = {"name": f"Connectivity Board ({mac})"} if discovery_context else None
+        return product, discovery_context
 
-                    duco_client = DucoPy(base_url=base_url, verify=False)
-                    _LOGGER.debug(f"DucoPy initialized with base URL: {base_url}")
+    async def _get_duco_comm_board_info(self, host: str) -> dict:
+        """Retrieve information from the Duco device."""
+        try:
+            base_url = self._format_base_url(host)
+            duco_client = DucoPy(base_url=base_url, verify=False)
+            communication_board_info = await asyncio.get_running_loop().run_in_executor(
+                None, duco_client.get_info
+            )
+            duco_client.close()
+            return {"base_url": base_url, "communication_board_info": communication_board_info}
+        except ValueError:
+            raise ValueError("invalid_url")
+        except requests.exceptions.RequestException:
+            raise ConnectionError("cannot_connect")
+        except Exception:
+            raise RuntimeError("unknown_error")
 
-                    communication_board_info = await asyncio.get_running_loop().run_in_executor(
-                        None, duco_client.get_info
-                    )
-                    _LOGGER.debug(f"Communication board info: {communication_board_info}")
-                    duco_client.close()
+    def _format_base_url(self, host: str) -> str:
+        """Format the base URL for the Duco device."""
+        parsed_url = requests.utils.urlparse(host)
+        if not parsed_url.scheme:
+            return f"https://{host}"
+        if parsed_url.scheme != "https":
+            raise ValueError("Invalid URL scheme")
+        return host
 
-                    return {"base_url": base_url, "communication_board_info": communication_board_info}
-
-                except ValueError as ex:
-                    _LOGGER.error("Invalid URL provided: %s", ex)
-                    raise ValueError("invalid_url")
-                except requests.exceptions.RequestException as ex:
-                    _LOGGER.error("Connection error to Ducobox: %s", ex)
-                    raise ConnectionError("cannot_connect")
-                except Exception as ex:
-                    _LOGGER.error("Unexpected error connecting to Ducobox: %s", ex)
-                    raise RuntimeError("unknown_error")
-    
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
