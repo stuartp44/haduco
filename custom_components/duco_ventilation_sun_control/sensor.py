@@ -80,6 +80,8 @@ async def async_setup_entry(
     entities = []
     entities.extend(create_main_sensors(coordinator, device_info, device_id))
     entities.extend(create_node_sensors(coordinator, device_id))
+    entities.extend(create_duco_network_sensors(coordinator, device_info, device_id))
+    entities.extend(create_calibration_sensors(coordinator, device_info, device_id))
 
     if entities:
         async_add_entities(entities, update_before_add=True)
@@ -189,6 +191,32 @@ def create_generic_node_sensors(
             node_name=node_type,
         )
         for description in NODE_SENSORS.get(node_type, [])
+    ]
+
+
+def create_duco_network_sensors(coordinator: DucoboxCoordinator, device_info: DeviceInfo, device_id: str) -> list[SensorEntity]:
+    """Create Duco network sensors."""
+    return [
+        DucoboxSensorEntity(
+            coordinator=coordinator,
+            description=description,
+            device_info=device_info,
+            unique_id=f"{device_id}-{description.key}",
+        )
+        for description in DUCONETWORK_SENSORS
+    ]
+
+
+def create_calibration_sensors(coordinator: DucoboxCoordinator, device_info: DeviceInfo, device_id: str) -> list[SensorEntity]:
+    """Create calibration sensors."""
+    return [
+        DucoboxSensorEntity(
+            coordinator=coordinator,
+            description=description,
+            device_info=device_info,
+            unique_id=f"{device_id}-{description.key}",
+        )
+        for description in CALIBRATION_SENSORS
     ]
 
 
