@@ -95,12 +95,12 @@ async def build_comms_board_information(
         serial_number = coordinator.data.get("General", {}).get("Board", {}).get("SerialBoardComm", {}).get("Val", "")
         subtype = coordinator.data.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
         
+        # cast to a DucoboxCommsBoardInfo object
         commsboard_info = DucoboxCommsBoardInfo(
             name=name,
             serial_number=serial_number,
             subtype=subtype,
         )
-        
         return commsboard_info
 
 async def async_setup_entry(
