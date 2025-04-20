@@ -73,7 +73,6 @@ class DucoboxCoordinator(DataUpdateCoordinator):
 async def get_mac_address(hass: HomeAssistant) -> str:
     """Get the MAC address of the Ducobox device."""
     coordinator = hass.data[DOMAIN]
-    ip_address = coordinator.data.get("General", {}).get("Lan", {}).get("Ip", {}).get("Val")
     mac_address = (
         coordinator.data.get("General", {})
         .get("Lan", {})
@@ -82,7 +81,7 @@ async def get_mac_address(hass: HomeAssistant) -> str:
     )
     if not mac_address:
         _LOGGER.error("No MAC address found in data")
-        raise ConfigEntryNotReady(f"Not able to get a MAC Address from {ip_address}")
+        raise ConfigEntryNotReady(f"Not able to get a MAC Address")
     return mac_address.replace(":", "").lower()
 
 async def build_comms_board_information(
