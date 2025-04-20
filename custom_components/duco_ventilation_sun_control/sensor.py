@@ -15,12 +15,12 @@ from homeassistant.components.sensor import (
 )
 from .const import DOMAIN, SCAN_INTERVAL
 import asyncio
-from comm_boards import COMMBOARD_SENSORS
-from network import DUCONETWORK_SENSORS
-from nodes import NODE_SENSORS
-from boxes import BOX_SENSORS
-from calibration import CALIBRATION_SENSORS
-from classes import DucoboxSensorEntityDescription, DucoboxNodeSensorEntityDescription
+from .comm_boards import COMMBOARD_SENSORS
+from .network import DUCONETWORK_SENSORS
+from .nodes import NODE_SENSORS
+from .boxes import BOX_SENSORS
+from .calibration import CALIBRATION_SENSORS
+from .classes import DucoboxSensorEntityDescription, DucoboxNodeSensorEntityDescription
 _LOGGER = logging.getLogger(__name__)
 
 class DucoboxCoordinator(DataUpdateCoordinator):
