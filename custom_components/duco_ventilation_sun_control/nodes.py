@@ -1,5 +1,5 @@
 from .ducobox_classes import DucoboxNodeSensorEntityDescription
-from common import (
+from .common import (
     _process_node_co2, 
     _process_node_humidity, 
     _process_node_iaq, 

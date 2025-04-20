@@ -1,5 +1,5 @@
 from .ducobox_classes import DucoboxSensorEntityDescription, DucoboxNodeSensorEntityDescription
-from common import ( 
+from .common import ( 
     _process_calibration_state, 
     _process_calibration_status
 )

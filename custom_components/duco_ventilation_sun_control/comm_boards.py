@@ -7,7 +7,7 @@ from homeassistant.const import (
     UnitOfTime,
     EntityCategory,
 )
-from common import (
+from .common import (
     _process_rssi,
     _process_uptime
 )

@@ -1,5 +1,5 @@
 from .ducobox_classes import DucoboxSensorEntityDescription, DucoboxNodeSensorEntityDescription
-from common import _process_network_status
+from .common import _process_network_status
 from homeassistant.const import (
     EntityCategory,
 )
