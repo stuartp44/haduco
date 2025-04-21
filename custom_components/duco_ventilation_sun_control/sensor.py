@@ -125,21 +125,33 @@ def create_main_sensors(coordinator: DucoboxCoordinator, device_info: DeviceInfo
 
 
 def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list[SensorEntity]:
-    """Create sensors for each node."""
+    """Create sensors for each node, connecting them via the box."""
     entities = []
     nodes = coordinator.data.get("Nodes", [])
+    box_device_ids = {}
+
+    # First, create box sensors and store their device IDs
+    for node in nodes:
+        node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
+        if node_type == "BOX":
+            node_id = node.get("Node")
+            node_device_id = f"{device_id}-{node_id}"
+            box_device_ids[node_id] = node_device_id
+            entities.extend(create_box_sensors(coordinator, node, node_device_id, device_id))
+
+    # Then, create sensors for other nodes, linking them via their box
     for node in nodes:
         node_id = node.get("Node")
         node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
-        node_device_id = f"{device_id}-{node_id}"
+        parent_box_id = node.get("ParentBox")  # Assuming nodes have a "ParentBox" field indicating their box
 
-        if node_type == "BOX":
-            entities.extend(create_box_sensors(coordinator, node, node_device_id, device_id))
-        elif node_type != "UC":
-            entities.extend(create_generic_node_sensors(coordinator, node, node_device_id, node_type, device_id))
+        if node_type != "BOX" and node_type != "UC":
+            # Use the parent box's device ID as the via_device
+            via_device_id = box_device_ids.get(parent_box_id, device_id)
+            node_device_id = f"{device_id}-{node_id}"
+            entities.extend(create_generic_node_sensors(coordinator, node, node_device_id, node_type, via_device_id))
 
     return entities
-
 
 def create_box_sensors(coordinator: DucoboxCoordinator, node: dict, node_device_id: str, device_id: str) -> list[SensorEntity]:
     """Create sensors for a BOX node, including calibration and network sensors."""
