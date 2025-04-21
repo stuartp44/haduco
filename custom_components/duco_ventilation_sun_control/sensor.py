@@ -165,11 +165,13 @@ def create_box_sensors(coordinator: DucoboxCoordinator, node: dict, node_device_
     """Create sensors for a BOX node, including calibration and network sensors."""
     entities = []
     box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "")
+    box_sw_version = coordinator.data.get("General", {}).get("Board", {}).get("SwVersionBox", {}).get("Val", "")
     box_device_info = DeviceInfo(
         identifiers={(DOMAIN, node_device_id)},
         name=box_name,
         manufacturer=MANUFACTURER,
         model=box_name,
+        sw_version=box_sw_version,
         via_device=(DOMAIN, device_id),
     )
 
