@@ -88,6 +88,14 @@ async def async_setup_entry(
         async_add_entities(entities, update_before_add=True)
 
 
+def find_box_addr(nodes: list[dict]) -> int | None:
+    """Find the Addr of the first node where the type is BOX."""
+    for node in nodes:
+        if node.get("General", {}).get("Type", {}).get("Val") == "BOX":
+            return node.get("General", {}).get("Addr")
+    return None
+
+
 def get_mac_address(coordinator: DucoboxCoordinator) -> str | None:
     """Retrieve the MAC address from the coordinator data."""
     return (
@@ -143,7 +151,7 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list
     for node in nodes:
         node_id = node.get("Node")
         node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
-        parent_box_id = 1
+        parent_box_id = find_box_addr(nodes)
 
         if node_type != "BOX" and node_type != "UC":
             # Use the parent box's device ID as the via_device
