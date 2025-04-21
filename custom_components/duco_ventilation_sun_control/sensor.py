@@ -212,15 +212,15 @@ def create_box_sensors(coordinator: DucoboxCoordinator, node: dict, node_device_
 
 
 def create_generic_node_sensors(
-    coordinator: DucoboxCoordinator, node: dict, node_device_id: str, node_type: str, device_id: str
+    coordinator: DucoboxCoordinator, node: dict, node_device_id: str, node_type: str, via_device_id: str
 ) -> list[SensorEntity]:
-    """Create sensors for a generic node."""
+    """Create sensors for a generic node, linking them via the specified device."""
     node_device_info = DeviceInfo(
         identifiers={(DOMAIN, node_device_id)},
         name=node_type,
         manufacturer=MANUFACTURER,
         model=node_type,
-        via_device=(DOMAIN, device_id),
+        via_device=(DOMAIN, via_device_id),
     )
 
     return [
@@ -230,7 +230,7 @@ def create_generic_node_sensors(
             description=description,
             device_info=node_device_info,
             unique_id=f"{node_device_id}-{description.key}",
-            device_id=device_id,
+            device_id=via_device_id,
             node_name=node_type,
         )
         for description in NODE_SENSORS.get(node_type, [])
