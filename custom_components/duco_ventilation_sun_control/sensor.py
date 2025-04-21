@@ -143,7 +143,7 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list
     for node in nodes:
         node_id = node.get("Node")
         node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
-        parent_box_id = node.get("ParentBox")  # Assuming nodes have a "ParentBox" field indicating their box
+        parent_box_id = 1
 
         if node_type != "BOX" and node_type != "UC":
             # Use the parent box's device ID as the via_device
