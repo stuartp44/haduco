@@ -18,51 +18,9 @@ from .boxes import BOX_SENSORS
 from .calibration import CALIBRATION_SENSORS
 from .ducobox_classes import DucoboxSensorEntityDescription, DucoboxNodeSensorEntityDescription
 from .select import DucoboxModeSelect
+from .coordinator import DucoboxCoordinator
 
 _LOGGER = logging.getLogger(__name__)
-
-
-class DucoboxCoordinator(DataUpdateCoordinator):
-    """Coordinator to manage data updates for Ducobox sensors."""
-
-    def __init__(self, hass: HomeAssistant, update_interval: int):
-        super().__init__(
-            hass,
-            _LOGGER,
-            name="Ducobox Connectivity Board",
-            update_interval=update_interval,
-        )
-
-    async def _async_update_data(self) -> dict:
-        """Fetch data from the Ducobox API with a timeout."""
-        try:
-            return await asyncio.wait_for(
-                self.hass.async_add_executor_job(self._fetch_data),
-                timeout=30
-            )
-        except asyncio.TimeoutError:
-            _LOGGER.error("Timeout occurred while fetching data from Ducobox API")
-            return {}
-        except Exception as e:
-            _LOGGER.error("Failed to fetch data from Ducobox API: %s", e)
-            return {}
-
-    @property
-    def client(self):
-        return self.hass.data[DOMAIN]
-
-    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
-    def _fetch_data(self) -> dict:
-        duco_client = self.hass.data[DOMAIN]
-        data = duco_client.get_info()
-        _LOGGER.debug(f"Data received from /info: {data}")
-
-        nodes_response = duco_client.get_nodes()
-        _LOGGER.debug(f"Data received from /nodes: {nodes_response}")
-
-        # Convert nodes_response.Nodes (which is a list of NodeInfo objects) to list of dicts
-        data['Nodes'] = [node.dict() for node in nodes_response.Nodes]
-        return data
 
 
 async def async_setup_entry(
@@ -94,11 +52,17 @@ async def async_setup_entry(
 
         try:
             actions_response = await hass.async_add_executor_job(
-                coordinator.client.get_actions_node, node_id, "Mode"
+                coordinator.client.get_actions_node, node_id
             )
-            mode_options = actions_response.actions
+            ventilation_action = next(
+                (a for a in actions_response.Actions if a["Action"] == "SetVentilationState" and a.get("Enum")), None
+            )
+            if not ventilation_action:
+                continue
+
+            mode_options = ventilation_action["Enum"]
         except Exception as e:
-            _LOGGER.warning(f"Failed to retrieve mode actions for node {node_id}: {e}")
+            _LOGGER.warning(f"Failed to retrieve SetVentilationState actions for node {node_id}: {e}")
             continue
 
         if mode_options:
