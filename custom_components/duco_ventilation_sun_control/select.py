@@ -2,7 +2,7 @@ from homeassistant.components.select import SelectEntity
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import DOMAIN
-from .coordinator import DucoboxCoordinator  # Ensure this is the correct module where DucoboxCoordinator is defined
+from .coordinator import DucoboxCoordinator
 import logging
 
 _LOGGER = logging.getLogger(__name__)
