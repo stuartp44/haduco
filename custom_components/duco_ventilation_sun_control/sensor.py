@@ -17,6 +17,7 @@ from .nodes import NODE_SENSORS
 from .boxes import BOX_SENSORS
 from .calibration import CALIBRATION_SENSORS
 from .ducobox_classes import DucoboxSensorEntityDescription, DucoboxNodeSensorEntityDescription
+from .select import DucoboxModeSelect
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -45,6 +46,10 @@ class DucoboxCoordinator(DataUpdateCoordinator):
         except Exception as e:
             _LOGGER.error("Failed to fetch data from Ducobox API: %s", e)
             return {}
+
+    @property
+    def client(self):
+        return self.hass.data[DOMAIN]
 
     @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
     def _fetch_data(self) -> dict:
@@ -83,6 +88,30 @@ async def async_setup_entry(
     entities = []
     entities.extend(create_main_sensors(coordinator, device_info, device_id))
     entities.extend(create_node_sensors(coordinator, device_id))
+
+    for node in coordinator.data.get("Nodes", []):
+        node_id = node.get("Node")
+
+        try:
+            actions_response = await hass.async_add_executor_job(
+                coordinator.client.get_actions_node, node_id, "Mode"
+            )
+            mode_options = actions_response.actions
+        except Exception as e:
+            _LOGGER.warning(f"Failed to retrieve mode actions for node {node_id}: {e}")
+            continue
+
+        if mode_options:
+            unique_id = f"{device_id}-{node_id}-mode"
+            entities.append(
+                DucoboxModeSelect(
+                    coordinator=coordinator,
+                    device_info=device_info,
+                    unique_id=unique_id,
+                    node_id=node_id,
+                    options=mode_options,
+                )
+            )
 
     if entities:
         async_add_entities(entities, update_before_add=True)
