@@ -46,3 +46,7 @@ class DucoboxCoordinator(DataUpdateCoordinator):
         # Convert nodes_response.Nodes (which is a list of NodeInfo objects) to list of dicts
         data['Nodes'] = [node.dict() for node in nodes_response.Nodes]
         return data
+
+    @property
+    def client(self):
+        return self.hass.data[DOMAIN]
