@@ -65,7 +65,7 @@ async def async_setup_entry(
                 continue
 
             mode_options = ventilation_action.Enum
-            unique_id = f"{device_id}-{node_id}-mode"
+            unique_id = f"{device_id}-{node_id}-select-ventilation_mode"
 
             entities.append(
                 DucoboxModeSelect(
