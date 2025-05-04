@@ -36,7 +36,7 @@ class DucoboxModeSelect(CoordinatorEntity[DucoboxCoordinator], SelectEntity):
         nodes = self.coordinator.data.get("Nodes", [])
         for node in nodes:
             if node.get("Node") == self._node_id:
-                return node.get("Ventilation", {}).get("Mode", {}).get("Val")
+                return node.get("Ventilation", {}).get("State", {}).get("Val")
         return None
 
     async def async_select_option(self, option: str) -> None:
