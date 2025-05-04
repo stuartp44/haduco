@@ -54,16 +54,33 @@ async def async_setup_entry(
             actions_response = await hass.async_add_executor_job(
                 coordinator.client.get_actions_node, node_id
             )
+
+            # Look for the action object with Action == "SetVentilationState"
             ventilation_action = next(
-                (a for a in actions_response.Actions if a["Action"] == "SetVentilationState" and a.get("Enum")), None
+                (a for a in actions_response.Actions if a.Action == "SetVentilationState" and hasattr(a, "Enum")),
+                None
             )
-            if not ventilation_action:
+
+            if not ventilation_action or not ventilation_action.Enum:
                 continue
 
-            mode_options = ventilation_action["Enum"]
+            mode_options = ventilation_action.Enum
+            unique_id = f"{device_id}-{node_id}-mode"
+
+            entities.append(
+                DucoboxModeSelect(
+                    coordinator=coordinator,
+                    device_info=device_info,
+                    unique_id=unique_id,
+                    node_id=node_id,
+                    options=mode_options,
+                )
+            )
+
+            _LOGGER.debug(f"Added mode selector for node {node_id} with options: {mode_options}")
+
         except Exception as e:
             _LOGGER.warning(f"Failed to retrieve SetVentilationState actions for node {node_id}: {e}")
-            continue
 
         if mode_options:
             unique_id = f"{device_id}-{node_id}-mode"
