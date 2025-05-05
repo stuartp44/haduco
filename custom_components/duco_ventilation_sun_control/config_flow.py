@@ -126,7 +126,6 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
                 "host": discovery["host"],
                 "unique_id": discovery["unique_id"],
             },
-            title="DUCO Ventilation & Sun Control"
         )
 
     async def _get_entry_info(self, result: dict, discovery_context=None) -> tuple[dict, dict]:
