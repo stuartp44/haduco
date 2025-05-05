@@ -94,36 +94,29 @@ def create_main_sensors(coordinator: DucoboxCoordinator, device_info: DeviceInfo
     ]
 
 def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list[SensorEntity]:
-    """Create sensors for each node, linking them via the parent BOX device."""
+    """Create sensors for each node, connecting them via the parent BOX if available."""
     entities = []
     nodes = coordinator.data.get("Nodes", [])
     box_device_ids = {}
 
-    # First pass: register BOX nodes
+    # Step 1: Register BOX devices and collect their device IDs
     for node in nodes:
         node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
         if node_type == "BOX":
             node_id = node.get("Node")
             node_device_id = f"{device_id}-{node_id}"
             box_device_ids[int(node_id)] = node_device_id
-            _LOGGER.debug(f"Registered BOX {node_id} -> {node_device_id}")
             entities.extend(create_box_sensors(coordinator, node, node_device_id, device_id))
 
-    _LOGGER.debug(f"BOX device IDs registered: {box_device_ids}")
-
-    # Second pass: create non-BOX node sensors and attach to box
+    # Step 2: Create other node sensors, attaching them to their BOX via `via_device`
     for node in nodes:
         node_id = node.get("Node")
         node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
 
         if node_type == "BOX":
-            continue  # Already handled
+            continue  # already handled
 
-        # Retrieve parent box ID safely
-        parent_box_raw = node.get("General", {}).get("Parent")
-        _LOGGER.debug(f"Node {node_id} raw parent field: {parent_box_raw}")
-
-        parent_box_id = parent_box_raw.get("Val") if isinstance(parent_box_raw, dict) else None
+        parent_box_id = node.get("General", {}).get("Parent", {}).get("Val")
         try:
             parent_box_id = int(parent_box_id)
         except (TypeError, ValueError):
@@ -133,8 +126,7 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list
         via_device = (DOMAIN, via_device_id) if via_device_id else None
 
         _LOGGER.debug(
-            f"Node {node_id} type {node_type} — parent_box_id={parent_box_id}, "
-            f"via_device_id={via_device_id} — known_boxes={list(box_device_ids.keys())}"
+            f"Node {node_id} type {node_type} — parent_box_id={parent_box_id}, via_device_id={via_device_id}"
         )
 
         node_device_id = f"{device_id}-{node_id}"
@@ -146,51 +138,46 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list
             via_device=via_device,
         )
 
-        for description in NODE_SENSORS.get(node_type, []):
-            unique_id = f"{node_device_id}-{description.key}"
-            entities.append(
+        entities.extend(
+            [
                 DucoboxNodeSensorEntity(
                     coordinator=coordinator,
                     node_id=node_id,
                     description=description,
                     device_info=node_device_info,
-                    unique_id=unique_id,
+                    unique_id=f"{node_device_id}-{description.key}",
                     device_id=via_device_id or device_id,
                     node_name=node_type,
                 )
-            )
+                for description in NODE_SENSORS.get(node_type, [])
+            ]
+        )
 
     return entities
 
 def create_box_sensors(coordinator: DucoboxCoordinator, node: dict, node_device_id: str, device_id: str) -> list[SensorEntity]:
     """Create sensors for a BOX node, including calibration and network sensors."""
     entities = []
-    node_id = node.get("Node")
-    general = node.get("General", {})
-    ventilation = node.get("Ventilation", {})
-
-    box_name = general.get("Name", {}).get("Val", f"Box {node_id}")
-    box_sw_version = ventilation.get("SwVersion", {}).get("Val", "")
-    box_serial_number = general.get("SerialNumber", {}).get("Val", "")
-
+    box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "")
+    box_sw_version = coordinator.data.get("General", {}).get("Board", {}).get("SwVersionBox", {}).get("Val", "")
+    box_serial_number = coordinator.data.get("General", {}).get("Board", {}).get("SerialBoardBox", {}).get("Val", "")
     box_device_info = DeviceInfo(
         identifiers={(DOMAIN, node_device_id)},
         name=box_name,
         manufacturer=MANUFACTURER,
-        model=general.get("Type", {}).get("Val", "BOX"),
+        model=box_name,
         sw_version=box_sw_version,
         serial_number=box_serial_number,
         via_device=(DOMAIN, device_id),
     )
 
-    # Add box-specific sensors (based on known types in BOX_SENSORS)
-    node_type = general.get("Type", {}).get("Val", "BOX")
-    if node_type in BOX_SENSORS:
-        for description in BOX_SENSORS[node_type]:
+    # Add box-specific sensors
+    if box_name in BOX_SENSORS:
+        for description in BOX_SENSORS[box_name]:
             entities.append(
                 DucoboxNodeSensorEntity(
                     coordinator=coordinator,
-                    node_id=node_id,
+                    node_id=node.get("Node"),
                     description=description,
                     device_info=box_device_info,
                     unique_id=f"{node_device_id}-{description.key}",
@@ -199,12 +186,12 @@ def create_box_sensors(coordinator: DucoboxCoordinator, node: dict, node_device_
                 )
             )
 
-    # Add Duco network sensors
+    # Add Duco network sensors as diagnostic sensors
     for description in DUCONETWORK_SENSORS:
         entities.append(
             DucoboxNodeSensorEntity(
                 coordinator=coordinator,
-                node_id=node_id,
+                node_id=node.get("Node"),
                 description=description,
                 device_info=box_device_info,
                 unique_id=f"{node_device_id}-{description.key}",
@@ -213,12 +200,12 @@ def create_box_sensors(coordinator: DucoboxCoordinator, node: dict, node_device_
             )
         )
 
-    # Add calibration sensors
+    # Add calibration sensors as diagnostic sensors
     for description in CALIBRATION_SENSORS:
         entities.append(
             DucoboxNodeSensorEntity(
                 coordinator=coordinator,
-                node_id=node_id,
+                node_id=node.get("Node"),
                 description=description,
                 device_info=box_device_info,
                 unique_id=f"{node_device_id}-{description.key}",
