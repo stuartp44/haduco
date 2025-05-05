@@ -8,12 +8,13 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from .const import DOMAIN, SCAN_INTERVAL
+
+from .const import DOMAIN, SCAN_INTERVAL, MANUFACTURER
 from .coordinator import DucoboxCoordinator
 
 _LOGGER = logging.getLogger(__name__)
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -32,16 +33,13 @@ async def async_setup_entry(
         return
 
     device_id = mac_address.replace(":", "").lower()
-    device_info = DeviceInfo(
-        identifiers={(DOMAIN, device_id)},
-        name=coordinator.data.get("General", {}).get("Lan", {}).get("HostName", {}).get("Val", "DucoBox"),
-    )
-
     entities = []
 
     for node in coordinator.data.get("Nodes", []):
         node_id = node.get("Node")
+        node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
         mode = node.get("Ventilation", {}).get("Mode")
+
         if mode in (None, "-"):
             _LOGGER.info(f"Skipping node {node_id}: no valid ventilation mode")
             continue
@@ -58,7 +56,18 @@ async def async_setup_entry(
                 continue
 
             mode_options = [opt.strip() for opt in ventilation_action.Enum if isinstance(opt, str)]
-            unique_id = f"{device_id}-{node_id}-select-ventilation_mode"
+            node_device_id = f"{device_id}-{node_id}"
+
+            # Build device_info per node
+            device_info = DeviceInfo(
+                identifiers={(DOMAIN, node_device_id)},
+                name=f"{node_type} Node {node_id}",
+                manufacturer=MANUFACTURER,
+                model=node_type,
+                via_device=(DOMAIN, device_id),
+            )
+
+            unique_id = f"{node_device_id}-select-ventilation_mode"
             entities.append(
                 DucoboxModeSelect(
                     coordinator=coordinator,
@@ -68,6 +77,8 @@ async def async_setup_entry(
                     options=mode_options,
                 )
             )
+
+            _LOGGER.debug(f"Added select entity for node {node_id} with options: {mode_options}")
 
         except Exception as e:
             _LOGGER.warning(f"Failed to retrieve SetVentilationState actions for node {node_id}: {e}")
@@ -91,7 +102,7 @@ class DucoboxModeSelect(CoordinatorEntity[DucoboxCoordinator], SelectEntity):
         super().__init__(coordinator)
         self._attr_device_info = device_info
         self._attr_unique_id = unique_id
-        self._attr_name = "Ventilation Mode"
+        self._attr_name = f"{device_info['name']} Ventilation Mode"
         self._attr_options = options
         self._node_id = node_id
 
