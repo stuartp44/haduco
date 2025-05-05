@@ -109,26 +109,40 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list
             box_device_ids[node_id] = node_device_id
             entities.extend(create_box_sensors(coordinator, node, node_device_id, device_id))
 
-    # Then create sensors for non-BOX, non-UC nodes using their parent BOX
+    # Then create sensors for other nodes using their actual BOX parent
     for node in nodes:
         node_id = node.get("Node")
         node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
 
         if node_type == "BOX" or node_type == "UC":
-            continue  # BOX already handled, UC intentionally skipped
+            continue  # already handled or unsupported
 
         parent_box_id = node.get("General", {}).get("Parent", {}).get("Val")
-        via_device_id = box_device_ids.get(parent_box_id, device_id)  # fallback to base device
+        via_device_id = box_device_ids.get(parent_box_id)
+        via_device = (DOMAIN, via_device_id) if via_device_id else None
 
         node_device_id = f"{device_id}-{node_id}"
+        node_device_info = DeviceInfo(
+            identifiers={(DOMAIN, node_device_id)},
+            name=node_type,
+            manufacturer=MANUFACTURER,
+            model=node_type,
+            via_device=via_device,
+        )
+
         entities.extend(
-            create_generic_node_sensors(
-                coordinator=coordinator,
-                node=node,
-                node_device_id=node_device_id,
-                node_type=node_type,
-                via_device_id=via_device_id,
-            )
+            [
+                DucoboxNodeSensorEntity(
+                    coordinator=coordinator,
+                    node_id=node_id,
+                    description=description,
+                    device_info=node_device_info,
+                    unique_id=f"{node_device_id}-{description.key}",
+                    device_id=via_device_id or device_id,
+                    node_name=node_type,
+                )
+                for description in NODE_SENSORS.get(node_type, [])
+            ]
         )
 
     return entities
