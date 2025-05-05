@@ -43,25 +43,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
             icon="mdi:fan-chevron-up",
             sensor_key='FlowLvlTgt',
             node_type='BOX',
-        ),
-        DucoboxNodeSensorEntityDescription(
-            key='TimeStateRemain',
-            name='Time State Remaining',
-            native_unit_of_measurement=UnitOfTime.SECONDS,
-            value_fn=lambda node: node.get('node_data').get('Ventilation', {}).get('TimeStateRemain'),
-            icon="mdi:fan-clock",
-            sensor_key='TimeStateRemain',
-            node_type='BOX',
-        ),
-        DucoboxNodeSensorEntityDescription(
-            key='TimeStateEnd',
-            name='Time State End',
-            native_unit_of_measurement=UnitOfTime.SECONDS,
-            value_fn=lambda node: node.get('node_data').get('Ventilation', {}).get('TimeStateEnd'),
-            icon="mdi:fan-off",
-            sensor_key='TimeStateEnd',
-            node_type='BOX',
-        ),
+        )
     ],
     'NOT_SURE': [
         # Temperature sensors
