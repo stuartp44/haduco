@@ -50,6 +50,12 @@ async def async_setup_entry(
     for node in coordinator.data.get("Nodes", []):
         node_id = node.get("Node")
 
+        # Skip if this node has no settable ventilation mode
+        current_mode = node.get("Ventilation", {}).get("Mode")
+        if current_mode in (None, "-"):
+            _LOGGER.info(f"Skipping node {node_id} — unsupported ventilation mode: {current_mode}")
+            continue
+
         try:
             actions_response = await hass.async_add_executor_job(
                 coordinator.client.get_actions_node, node_id
@@ -62,12 +68,13 @@ async def async_setup_entry(
             )
 
             if not ventilation_action or not ventilation_action.Enum:
+                _LOGGER.info(f"Node {node_id} does not support SetVentilationState or has no enum options")
                 continue
 
-            mode_options = ventilation_action.Enum
+            mode_options = [opt.strip() for opt in ventilation_action.Enum if isinstance(opt, str)]
             _LOGGER.debug(f"Ventilation action found for node {node_id}: {mode_options}")
-            unique_id = f"{device_id}-{node_id}-select-ventilation_mode"
 
+            unique_id = f"{device_id}-{node_id}-select-ventilation_mode"
             entities.append(
                 DucoboxModeSelect(
                     coordinator=coordinator,
@@ -77,7 +84,6 @@ async def async_setup_entry(
                     options=mode_options,
                 )
             )
-
             _LOGGER.debug(f"Added mode selector for node {node_id} with options: {mode_options}")
 
         except Exception as e:
