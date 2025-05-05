@@ -54,6 +54,14 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         if user_input is not None:
             return await self._create_entry_from_discovery(discovery)
 
+        # Fetch board info to customize the title
+        try:
+            comm_info = await self._get_duco_comm_board_info(discovery["host"])
+            board_type = comm_info["communication_board_info"].get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "Board")
+            self.context["title_placeholders"] = {"board_type": board_type}
+        except Exception:
+            self.context["title_placeholders"] = {"board_type": "Connectivity Board"}
+
         return self._show_confirm_form(discovery)
 
     async def _handle_user_input(self, user_input: dict) -> FlowResult:
@@ -120,6 +128,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
     def _show_confirm_form(self, discovery: dict) -> FlowResult:
         """Show the confirmation form for discovered devices."""
+        self._set_confirm_only()
         return self.async_show_form(
             step_id="confirm",
             description_placeholders={
@@ -133,15 +142,16 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         communication_board_info = result["communication_board_info"]
         mac = communication_board_info.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val", "").replace(':', '')
         ip = communication_board_info.get("General", {}).get("Lan", {}).get("Ip", {}).get("Val", "")
+        board_type = communication_board_info.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "Connectivity Board")
 
         product = {
-            "title": f"Connectivity Board ({mac})",
+            "title": f"{board_type} ({mac})",
             "data": {
                 "base_url": f"https://{ip}",
                 "unique_id": mac,
             },
         }
-        discovery_context = {"name": f"Connectivity Board ({mac})"} if discovery_context else None
+        discovery_context = {"name": f"{board_type} ({mac})"} if discovery_context else None
         return product, discovery_context
 
     async def _get_duco_comm_board_info(self, host: str) -> dict:
