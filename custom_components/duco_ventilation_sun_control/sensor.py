@@ -122,6 +122,7 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list
         if node_type != "BOX" and node_type != "UC":
             # Use the parent box's device ID as the via_device
             via_device_id = box_device_ids.get(parent_box_id, device_id)
+            _LOGGER.debug(f"Using via_device_id: {via_device_id} for node ID: {node_id}")
             node_device_id = f"{device_id}-{node_id}"
             entities.extend(create_generic_node_sensors(coordinator, node, node_device_id, node_type, via_device_id))
 
