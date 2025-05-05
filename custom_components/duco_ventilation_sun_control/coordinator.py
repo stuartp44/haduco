@@ -43,21 +43,8 @@ class DucoboxCoordinator(DataUpdateCoordinator):
         nodes_response = duco_client.get_nodes()
         _LOGGER.debug(f"Data received from /nodes: {nodes_response}")
 
-        enriched_nodes = []
-        for node in nodes_response.Nodes:
-            node_dict = node.dict()
-            try:
-                detailed = duco_client.get_node_info(node.Node)
-                node_dict["General"] = detailed.General.dict() if detailed.General else node_dict.get("General", {})
-                node_dict["Ventilation"] = detailed.Ventilation.dict() if detailed.Ventilation else node_dict.get("Ventilation", {})
-                node_dict["Sensor"] = detailed.Sensor.dict() if detailed.Sensor else node_dict.get("Sensor", {})
-                node_dict["NetworkDuco"] = detailed.NetworkDuco.dict() if detailed.NetworkDuco else node_dict.get("NetworkDuco", {})
-            except Exception as e:
-                _LOGGER.warning(f"Failed to enrich node {node.Node} with get_node_info: {e}")
-
-            enriched_nodes.append(node_dict)
-
-        data['Nodes'] = enriched_nodes
+        # Convert nodes_response.Nodes (which is a list of NodeInfo objects) to list of dicts
+        data['Nodes'] = [node.dict() for node in nodes_response.Nodes]
         return data
 
     @property
