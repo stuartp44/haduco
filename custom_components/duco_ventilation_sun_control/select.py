@@ -61,7 +61,7 @@ async def async_setup_entry(
             # Build device_info per node
             device_info = DeviceInfo(
                 identifiers={(DOMAIN, node_device_id)},
-                name=f"{node_type} Node {node_id}",
+                name=node_type,
                 manufacturer=MANUFACTURER,
                 model=node_type,
                 via_device=(DOMAIN, device_id),
