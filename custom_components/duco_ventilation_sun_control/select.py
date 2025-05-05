@@ -37,18 +37,21 @@ class DucoboxModeSelect(CoordinatorEntity[DucoboxCoordinator], SelectEntity):
         for node in nodes:
             if node.get("Node") == self._node_id:
                 ventilation = node.get("Ventilation", {})
-                if not isinstance(ventilation, dict):
-                    _LOGGER.warning(f"Node {self._node_id} 'Ventilation' is not a dict: {ventilation}")
-                    return None
+                mode = ventilation.get("Mode")
 
-                current = ventilation.get("Mode")
-                if isinstance(current, str):
-                    return current
-                else:
-                    _LOGGER.warning(f"Node {self._node_id} 'Mode' is not a string: {current}")
-                    return None
+                _LOGGER.debug(
+                    f"[SELECT] Node {self._node_id} current mode: {mode} | Allowed options: {self._attr_options}"
+                )
 
-        _LOGGER.warning(f"No matching node with id {self._node_id} found")
+                if isinstance(mode, str) and mode in self._attr_options:
+                    return mode
+
+                _LOGGER.warning(
+                    f"[SELECT] Current mode '{mode}' is not in allowed options for node {self._node_id}"
+                )
+                return None
+
+        _LOGGER.warning(f"[SELECT] No matching node for ID {self._node_id}")
         return None
 
     async def async_select_option(self, option: str) -> None:
