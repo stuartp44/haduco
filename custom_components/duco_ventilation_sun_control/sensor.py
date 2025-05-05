@@ -99,7 +99,6 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list
     entities = []
     nodes = coordinator.data.get("Nodes", [])
     box_device_ids = {}
-
     # First, collect all BOX nodes and build their device IDs
     for node in nodes:
         node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
@@ -108,20 +107,24 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list
             node_device_id = f"{device_id}-{node_id}"
             box_device_ids[node_id] = node_device_id
             entities.extend(create_box_sensors(coordinator, node, node_device_id, device_id))
-
-    # Then create sensors for other nodes using their actual BOX parent
     for node in nodes:
         node_id = node.get("Node")
         node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
 
-        if node_type == "BOX" or node_type == "UC":
-            continue  # already handled or unsupported
+        # Only skip BOX, allow UC and others
+        if node_type == "BOX":
+            continue
 
         parent_box_id = node.get("General", {}).get("Parent", {}).get("Val")
-        _LOGGER.debug(f"Node {node_id} parent box ID: {parent_box_id}")
+        try:
+            parent_box_id = int(parent_box_id)
+        except (TypeError, ValueError):
+            parent_box_id = None
+
         via_device_id = box_device_ids.get(parent_box_id)
-        _LOGGER.debug(f"Node {node_id} via device ID: {via_device_id}")
         via_device = (DOMAIN, via_device_id) if via_device_id else None
+
+        _LOGGER.debug(f"Node {node_id} type {node_type}: parent_box_id={parent_box_id}, via_device_id={via_device_id}")
 
         node_device_id = f"{device_id}-{node_id}"
         node_device_info = DeviceInfo(
