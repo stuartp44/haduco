@@ -112,8 +112,11 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list
     # Then, create sensors for other nodes, linking them via their box
     for node in nodes:
         node_id = node.get("Node")
+        _LOGGER.debug(f"Processing node {node_id}")
         node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
+        _LOGGER.debug(f"Node {node_id} type {node_type}")
         parent_box_id = node.get("General", {}).get("Parent", {}).get("Val")
+        _LOGGER.debug(f"Node {node_id} parent_box_id {parent_box_id}")
 
         try:
             parent_box_id = int(parent_box_id)
