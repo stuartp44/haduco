@@ -65,6 +65,7 @@ async def async_setup_entry(
                 continue
 
             mode_options = ventilation_action.Enum
+            _LOGGER.debug(f"Ventilation action found for node {node_id}: {mode_options}")
             unique_id = f"{device_id}-{node_id}-select-ventilation_mode"
 
             entities.append(
