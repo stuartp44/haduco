@@ -1,0 +1,9 @@
+{
+  "config": {
+    "step": {
+      "confirm": {
+        "description": "A DUCO device was discovered at {host} (ID: {unique_id}). Do you want to set it up?"
+      }
+    }
+  }
+}

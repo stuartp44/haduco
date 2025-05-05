@@ -120,13 +120,13 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
     def _show_confirm_form(self, discovery: dict) -> FlowResult:
         """Show the confirmation form for discovered devices."""
-        self._set_confirm_only()
         return self.async_show_form(
             step_id="confirm",
             description_placeholders={
                 "host": discovery["host"],
                 "unique_id": discovery["unique_id"],
             },
+            title="DUCO Ventilation & Sun Control"
         )
 
     async def _get_entry_info(self, result: dict, discovery_context=None) -> tuple[dict, dict]:
