@@ -95,30 +95,29 @@ def create_main_sensors(coordinator: DucoboxCoordinator, device_info: DeviceInfo
 
 
 def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list[SensorEntity]:
-    """Create sensors for each node, connecting them via the box."""
+    """Create sensors for each node, connecting them via the parent BOX if available."""
     entities = []
     nodes = coordinator.data.get("Nodes", [])
     box_device_ids = {}
 
-    # First, create box sensors and store their device IDs
+    # Step 1: Register BOX devices and collect their device IDs
     for node in nodes:
         node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
         if node_type == "BOX":
             node_id = node.get("Node")
             node_device_id = f"{device_id}-{node_id}"
-            box_device_ids[int(node_id)] = node_device_id  # ensure keys are int
+            box_device_ids[int(node_id)] = node_device_id
             entities.extend(create_box_sensors(coordinator, node, node_device_id, device_id))
 
-    # Then, create sensors for other nodes, linking them via their box
+    # Step 2: Create other node sensors, attaching them to their BOX via `via_device`
     for node in nodes:
         node_id = node.get("Node")
-        _LOGGER.debug(f"Processing node {node_id}")
-        _LOGGER.debug(f"Node {node_id} data: {node}")
         node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
-        _LOGGER.debug(f"Node {node_id} type {node_type}")
-        parent_box_id = node.get("General", {}).get("Parent", {}).get("Val")
-        _LOGGER.debug(f"Node {node_id} parent_box_id {parent_box_id}")
 
+        if node_type == "BOX":
+            continue  # already handled
+
+        parent_box_id = node.get("General", {}).get("Parent", {}).get("Val")
         try:
             parent_box_id = int(parent_box_id)
         except (TypeError, ValueError):
@@ -130,9 +129,6 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list
         _LOGGER.debug(
             f"Node {node_id} type {node_type} — parent_box_id={parent_box_id}, via_device_id={via_device_id}"
         )
-
-        if node_type == "BOX":
-            continue  # already processed
 
         node_device_id = f"{device_id}-{node_id}"
         node_device_info = DeviceInfo(
