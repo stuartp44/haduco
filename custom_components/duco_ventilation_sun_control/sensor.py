@@ -118,6 +118,7 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list
             continue  # already handled or unsupported
 
         parent_box_id = node.get("General", {}).get("Parent", {}).get("Val")
+        _LOGGER.debug(f"Node {node_id} parent box ID: {parent_box_id}")
         via_device_id = box_device_ids.get(parent_box_id)
         _LOGGER.debug(f"Node {node_id} via device ID: {via_device_id}")
         via_device = (DOMAIN, via_device_id) if via_device_id else None
