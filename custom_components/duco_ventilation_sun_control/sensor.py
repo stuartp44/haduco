@@ -93,65 +93,33 @@ def create_main_sensors(coordinator: DucoboxCoordinator, device_info: DeviceInfo
         for description in COMMBOARD_SENSORS
     ]
 
+
 def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list[SensorEntity]:
-    """Create sensors for each node, connecting them via the parent BOX if available."""
+    """Create sensors for each node, connecting them via the box."""
     entities = []
     nodes = coordinator.data.get("Nodes", [])
     box_device_ids = {}
 
-    # Step 1: Register BOX devices and collect their device IDs
+    # First, create box sensors and store their device IDs
     for node in nodes:
         node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
         if node_type == "BOX":
             node_id = node.get("Node")
             node_device_id = f"{device_id}-{node_id}"
-            box_device_ids[int(node_id)] = node_device_id
+            box_device_ids[node_id] = node_device_id
             entities.extend(create_box_sensors(coordinator, node, node_device_id, device_id))
 
-    # Step 2: Create other node sensors, attaching them to their BOX via `via_device`
+    # Then, create sensors for other nodes, linking them via their box
     for node in nodes:
         node_id = node.get("Node")
         node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
+        parent_box_id = find_box_addr(nodes)
 
-        if node_type == "BOX":
-            continue  # already handled
-
-        parent_box_id = node.get("General", {}).get("Parent", {}).get("Val")
-        try:
-            parent_box_id = int(parent_box_id)
-        except (TypeError, ValueError):
-            parent_box_id = None
-
-        via_device_id = box_device_ids.get(parent_box_id)
-        via_device = (DOMAIN, via_device_id) if via_device_id else None
-
-        _LOGGER.debug(
-            f"Node {node_id} type {node_type} — parent_box_id={parent_box_id}, via_device_id={via_device_id}"
-        )
-
-        node_device_id = f"{device_id}-{node_id}"
-        node_device_info = DeviceInfo(
-            identifiers={(DOMAIN, node_device_id)},
-            name=node_type,
-            manufacturer=MANUFACTURER,
-            model=node_type,
-            via_device=via_device,
-        )
-
-        entities.extend(
-            [
-                DucoboxNodeSensorEntity(
-                    coordinator=coordinator,
-                    node_id=node_id,
-                    description=description,
-                    device_info=node_device_info,
-                    unique_id=f"{node_device_id}-{description.key}",
-                    device_id=via_device_id or device_id,
-                    node_name=node_type,
-                )
-                for description in NODE_SENSORS.get(node_type, [])
-            ]
-        )
+        if node_type != "BOX" and node_type != "UC":
+            # Use the parent box's device ID as the via_device
+            via_device_id = box_device_ids.get(parent_box_id, device_id)
+            node_device_id = f"{device_id}-{node_id}"
+            entities.extend(create_generic_node_sensors(coordinator, node, node_device_id, node_type, via_device_id))
 
     return entities
 
