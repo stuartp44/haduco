@@ -95,27 +95,26 @@ def create_main_sensors(coordinator: DucoboxCoordinator, device_info: DeviceInfo
 
 
 def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list[SensorEntity]:
-    """Create sensors for each node, connecting them via their parent box."""
+    """Create sensors for each node, connecting them via the box."""
     entities = []
     nodes = coordinator.data.get("Nodes", [])
     box_device_ids = {}
-    # First, collect all BOX nodes and build their device IDs
+
+    # First, create box sensors and store their device IDs
     for node in nodes:
         node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
         if node_type == "BOX":
             node_id = node.get("Node")
             node_device_id = f"{device_id}-{node_id}"
-            box_device_ids[node_id] = node_device_id
+            box_device_ids[int(node_id)] = node_device_id  # ensure keys are int
             entities.extend(create_box_sensors(coordinator, node, node_device_id, device_id))
+
+    # Then, create sensors for other nodes, linking them via their box
     for node in nodes:
         node_id = node.get("Node")
         node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
-
-        # Only skip BOX, allow UC and others
-        if node_type == "BOX":
-            continue
-
         parent_box_id = node.get("General", {}).get("Parent", {}).get("Val")
+
         try:
             parent_box_id = int(parent_box_id)
         except (TypeError, ValueError):
@@ -124,7 +123,12 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list
         via_device_id = box_device_ids.get(parent_box_id)
         via_device = (DOMAIN, via_device_id) if via_device_id else None
 
-        _LOGGER.debug(f"Node {node_id} type {node_type}: parent_box_id={parent_box_id}, via_device_id={via_device_id}")
+        _LOGGER.debug(
+            f"Node {node_id} type {node_type} — parent_box_id={parent_box_id}, via_device_id={via_device_id}"
+        )
+
+        if node_type == "BOX":
+            continue  # already processed
 
         node_device_id = f"{device_id}-{node_id}"
         node_device_info = DeviceInfo(
