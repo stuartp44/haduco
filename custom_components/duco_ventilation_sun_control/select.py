@@ -139,17 +139,17 @@ class DucoboxModeSelect(CoordinatorEntity[DucoboxCoordinator], SelectEntity):
         for node in nodes:
             if node.get("Node") == self._node_id:
                 ventilation = node.get("Ventilation", {})
-                mode = ventilation.get("State")
+                state = ventilation.get("State")
 
                 _LOGGER.debug(
-                    f"[SELECT] Node {self._node_id} current mode: {mode} | Allowed options: {self._attr_options}"
+                    f"[SELECT] Node {self._node_id} current state: {state} | Allowed options: {self._attr_options}"
                 )
 
-                if isinstance(mode, str) and mode in self._attr_options:
-                    return mode
+                if isinstance(state, str) and state in self._attr_options:
+                    return state
 
                 _LOGGER.warning(
-                    f"[SELECT] Current mode '{mode}' is not in allowed options for node {self._node_id}"
+                    f"[SELECT] Current state '{state}' is not in allowed options for node {self._node_id}"
                 )
                 return None
 
