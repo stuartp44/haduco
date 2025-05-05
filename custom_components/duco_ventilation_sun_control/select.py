@@ -61,6 +61,7 @@ class DucoboxModeSelect(CoordinatorEntity[DucoboxCoordinator], SelectEntity):
                 option,
                 self._node_id,
             )
+            _LOGGER.debug(f"Mode set successfully for node {self._node_id} to {option}")
             await self.coordinator.async_request_refresh()
         except Exception as e:
             _LOGGER.error(f"Failed to set ventilation mode '{option}' for node {self._node_id}: {e}")

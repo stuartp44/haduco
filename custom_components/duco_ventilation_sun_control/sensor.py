@@ -82,18 +82,6 @@ async def async_setup_entry(
         except Exception as e:
             _LOGGER.warning(f"Failed to retrieve SetVentilationState actions for node {node_id}: {e}")
 
-        if mode_options:
-            unique_id = f"{device_id}-{node_id}-mode"
-            entities.append(
-                DucoboxModeSelect(
-                    coordinator=coordinator,
-                    device_info=device_info,
-                    unique_id=unique_id,
-                    node_id=node_id,
-                    options=mode_options,
-                )
-            )
-
     if entities:
         async_add_entities(entities, update_before_add=True)
 
