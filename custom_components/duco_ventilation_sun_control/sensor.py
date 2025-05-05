@@ -93,7 +93,6 @@ def create_main_sensors(coordinator: DucoboxCoordinator, device_info: DeviceInfo
         for description in COMMBOARD_SENSORS
     ]
 
-
 def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list[SensorEntity]:
     """Create sensors for each node, connecting them via the parent BOX if available."""
     entities = []
