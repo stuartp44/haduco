@@ -95,12 +95,12 @@ def create_main_sensors(coordinator: DucoboxCoordinator, device_info: DeviceInfo
 
 
 def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list[SensorEntity]:
-    """Create sensors for each node, connecting them via the box."""
+    """Create sensors for each node, connecting them via their parent box."""
     entities = []
     nodes = coordinator.data.get("Nodes", [])
     box_device_ids = {}
 
-    # First, create box sensors and store their device IDs
+    # First, collect all BOX nodes and build their device IDs
     for node in nodes:
         node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
         if node_type == "BOX":
@@ -109,17 +109,27 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list
             box_device_ids[node_id] = node_device_id
             entities.extend(create_box_sensors(coordinator, node, node_device_id, device_id))
 
-    # Then, create sensors for other nodes, linking them via their box
+    # Then create sensors for non-BOX, non-UC nodes using their parent BOX
     for node in nodes:
         node_id = node.get("Node")
         node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
-        parent_box_id = find_box_addr(nodes)
 
-        if node_type != "BOX" and node_type != "UC":
-            # Use the parent box's device ID as the via_device
-            via_device_id = box_device_ids.get(parent_box_id, device_id)
-            node_device_id = f"{device_id}-{node_id}"
-            entities.extend(create_generic_node_sensors(coordinator, node, node_device_id, node_type, via_device_id))
+        if node_type == "BOX" or node_type == "UC":
+            continue  # BOX already handled, UC intentionally skipped
+
+        parent_box_id = node.get("General", {}).get("Parent", {}).get("Val")
+        via_device_id = box_device_ids.get(parent_box_id, device_id)  # fallback to base device
+
+        node_device_id = f"{device_id}-{node_id}"
+        entities.extend(
+            create_generic_node_sensors(
+                coordinator=coordinator,
+                node=node,
+                node_device_id=node_device_id,
+                node_type=node_type,
+                via_device_id=via_device_id,
+            )
+        )
 
     return entities
 
