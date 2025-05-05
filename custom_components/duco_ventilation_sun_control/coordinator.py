@@ -45,6 +45,7 @@ class DucoboxCoordinator(DataUpdateCoordinator):
 
         # Convert nodes_response.Nodes (which is a list of NodeInfo objects) to list of dicts
         data['Nodes'] = [node.dict() for node in nodes_response.Nodes]
+        _LOGGER.debug(f"Data after processing nodes: {data}")
         return data
 
     @property
