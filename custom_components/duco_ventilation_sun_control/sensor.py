@@ -119,6 +119,7 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list
 
         parent_box_id = node.get("General", {}).get("Parent", {}).get("Val")
         via_device_id = box_device_ids.get(parent_box_id)
+        _LOGGER.debug(f"Node {node_id} via device ID: {via_device_id}")
         via_device = (DOMAIN, via_device_id) if via_device_id else None
 
         node_device_id = f"{device_id}-{node_id}"
