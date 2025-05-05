@@ -36,7 +36,9 @@ class DucoboxModeSelect(CoordinatorEntity[DucoboxCoordinator], SelectEntity):
         nodes = self.coordinator.data.get("Nodes", [])
         _LOGGER.debug(f"Current nodes data: {nodes}")
         for node in nodes:
+            _LOGGER.debug(f"Checking node: {node}")
             if node.get("Node") == self._node_id:
+                _LOGGER.debug(f"Found node with ID {self._node_id}: {node}")
                 return node.get("Ventilation", {}).get("State", {}).get("Val")
         return None
 
