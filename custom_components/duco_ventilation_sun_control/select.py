@@ -34,12 +34,21 @@ class DucoboxModeSelect(CoordinatorEntity[DucoboxCoordinator], SelectEntity):
     def current_option(self) -> str | None:
         """Return the currently selected ventilation mode."""
         nodes = self.coordinator.data.get("Nodes", [])
-        _LOGGER.debug(f"Current nodes data: {nodes}")
         for node in nodes:
-            _LOGGER.debug(f"Checking node: {node}")
             if node.get("Node") == self._node_id:
-                _LOGGER.debug(f"Found node with ID {self._node_id}: {node}")
-                return node.get("Ventilation", {}).get("State", {}).get("Val")
+                ventilation = node.get("Ventilation", {})
+                if not isinstance(ventilation, dict):
+                    _LOGGER.warning(f"Node {self._node_id} 'Ventilation' is not a dict: {ventilation}")
+                    return None
+
+                current = ventilation.get("Mode")
+                if isinstance(current, str):
+                    return current
+                else:
+                    _LOGGER.warning(f"Node {self._node_id} 'Mode' is not a string: {current}")
+                    return None
+
+        _LOGGER.warning(f"No matching node with id {self._node_id} found")
         return None
 
     async def async_select_option(self, option: str) -> None:
