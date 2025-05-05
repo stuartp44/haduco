@@ -19,33 +19,19 @@ class DucoboxCoordinator(DataUpdateCoordinator):
             update_interval=update_interval,
         )
 
-
-    async def _async_update_data(self):
-        """Fetch and enrich data from the DucoBox."""
-        data = await self.hass.async_add_executor_job(self.client.get_info)
-
-        # Enrich node data with detailed info
-        nodes = data.get("Nodes", [])
-        enriched_nodes = []
-        for node in nodes:
-            node_id = node.get("Node")
-            if node_id is None:
-                continue
-
-            try:
-                detailed_info = await self.hass.async_add_executor_job(
-                    self.client.get_node_info, node_id
-                )
-                # Merge or replace node data with detailed info
-                if isinstance(detailed_info, dict):
-                    node.update(detailed_info)
-            except Exception as e:
-                _LOGGER.warning(f"Failed to enrich node {node_id} with get_node_info: {e}")
-
-            enriched_nodes.append(node)
-
-        data["Nodes"] = enriched_nodes
-        return data
+    async def _async_update_data(self) -> dict:
+        """Fetch data from the Ducobox API with a timeout."""
+        try:
+            return await asyncio.wait_for(
+                self.hass.async_add_executor_job(self._fetch_data),
+                timeout=30
+            )
+        except asyncio.TimeoutError:
+            _LOGGER.error("Timeout occurred while fetching data from Ducobox API")
+            return {}
+        except Exception as e:
+            _LOGGER.error("Failed to fetch data from Ducobox API: %s", e)
+            return {}
 
     @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
     def _fetch_data(self) -> dict:
@@ -57,8 +43,21 @@ class DucoboxCoordinator(DataUpdateCoordinator):
         nodes_response = duco_client.get_nodes()
         _LOGGER.debug(f"Data received from /nodes: {nodes_response}")
 
-        # Convert nodes_response.Nodes (which is a list of NodeInfo objects) to list of dicts
-        data['Nodes'] = [node.dict() for node in nodes_response.Nodes]
+        enriched_nodes = []
+        for node in nodes_response.Nodes:
+            node_dict = node.dict()
+            try:
+                detailed = duco_client.get_node_info(node.Node)
+                node_dict["General"] = detailed.General.dict() if detailed.General else node_dict.get("General", {})
+                node_dict["Ventilation"] = detailed.Ventilation.dict() if detailed.Ventilation else node_dict.get("Ventilation", {})
+                node_dict["Sensor"] = detailed.Sensor.dict() if detailed.Sensor else node_dict.get("Sensor", {})
+                node_dict["NetworkDuco"] = detailed.NetworkDuco.dict() if detailed.NetworkDuco else node_dict.get("NetworkDuco", {})
+            except Exception as e:
+                _LOGGER.warning(f"Failed to enrich node {node.Node} with get_node_info: {e}")
+
+            enriched_nodes.append(node_dict)
+
+        data['Nodes'] = enriched_nodes
         return data
 
     @property
