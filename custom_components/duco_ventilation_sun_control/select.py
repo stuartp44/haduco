@@ -34,6 +34,7 @@ class DucoboxModeSelect(CoordinatorEntity[DucoboxCoordinator], SelectEntity):
     def current_option(self) -> str | None:
         """Return the currently selected ventilation mode."""
         nodes = self.coordinator.data.get("Nodes", [])
+        _LOGGER.debug(f"Current nodes data: {nodes}")
         for node in nodes:
             if node.get("Node") == self._node_id:
                 return node.get("Ventilation", {}).get("State", {}).get("Val")
