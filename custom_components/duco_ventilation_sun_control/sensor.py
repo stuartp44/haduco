@@ -17,7 +17,6 @@ from .nodes import NODE_SENSORS
 from .boxes import BOX_SENSORS
 from .calibration import CALIBRATION_SENSORS
 from .ducobox_classes import DucoboxSensorEntityDescription, DucoboxNodeSensorEntityDescription
-from .select import DucoboxModeSelect
 from .coordinator import DucoboxCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -46,48 +45,6 @@ async def async_setup_entry(
     entities = []
     entities.extend(create_main_sensors(coordinator, device_info, device_id))
     entities.extend(create_node_sensors(coordinator, device_id))
-
-    for node in coordinator.data.get("Nodes", []):
-        node_id = node.get("Node")
-
-        # Skip if this node has no settable ventilation mode
-        current_mode = node.get("Ventilation", {}).get("Mode")
-        if current_mode in (None, "-"):
-            _LOGGER.info(f"Skipping node {node_id} — unsupported ventilation mode: {current_mode}")
-            continue
-
-        try:
-            actions_response = await hass.async_add_executor_job(
-                coordinator.client.get_actions_node, node_id
-            )
-
-            # Look for the action object with Action == "SetVentilationState"
-            ventilation_action = next(
-                (a for a in actions_response.Actions if a.Action == "SetVentilationState" and hasattr(a, "Enum")),
-                None
-            )
-
-            if not ventilation_action or not ventilation_action.Enum:
-                _LOGGER.info(f"Node {node_id} does not support SetVentilationState or has no enum options")
-                continue
-
-            mode_options = [opt.strip() for opt in ventilation_action.Enum if isinstance(opt, str)]
-            _LOGGER.debug(f"Ventilation action found for node {node_id}: {mode_options}")
-
-            unique_id = f"{device_id}-{node_id}-select-ventilation_mode"
-            entities.append(
-                DucoboxModeSelect(
-                    coordinator=coordinator,
-                    device_info=device_info,
-                    unique_id=unique_id,
-                    node_id=node_id,
-                    options=mode_options,
-                )
-            )
-            _LOGGER.debug(f"Added mode selector for node {node_id} with options: {mode_options}")
-
-        except Exception as e:
-            _LOGGER.warning(f"Failed to retrieve SetVentilationState actions for node {node_id}: {e}")
 
     if entities:
         async_add_entities(entities, update_before_add=True)

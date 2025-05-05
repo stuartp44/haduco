@@ -2,13 +2,78 @@ from __future__ import annotations
 
 import logging
 from typing import Any
+from datetime import timedelta
 from homeassistant.components.select import SelectEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.device_registry import DeviceInfo
-from .const import DOMAIN
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from .const import DOMAIN, SCAN_INTERVAL
 from .coordinator import DucoboxCoordinator
 
 _LOGGER = logging.getLogger(__name__)
+
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Set up Ducobox select entities."""
+    refresh_time = entry.options.get("refresh_time", SCAN_INTERVAL.total_seconds())
+
+    coordinator = DucoboxCoordinator(hass, update_interval=timedelta(seconds=refresh_time))
+    await coordinator.async_config_entry_first_refresh()
+
+    mac_address = coordinator.data.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val")
+    if not mac_address:
+        _LOGGER.error("No MAC address found; skipping select entities.")
+        return
+
+    device_id = mac_address.replace(":", "").lower()
+    device_info = DeviceInfo(
+        identifiers={(DOMAIN, device_id)},
+        name=coordinator.data.get("General", {}).get("Lan", {}).get("HostName", {}).get("Val", "DucoBox"),
+    )
+
+    entities = []
+
+    for node in coordinator.data.get("Nodes", []):
+        node_id = node.get("Node")
+        mode = node.get("Ventilation", {}).get("Mode")
+        if mode in (None, "-"):
+            _LOGGER.info(f"Skipping node {node_id}: no valid ventilation mode")
+            continue
+
+        try:
+            actions_response = await hass.async_add_executor_job(
+                coordinator.client.get_actions_node, node_id
+            )
+            ventilation_action = next(
+                (a for a in actions_response.Actions if a.Action == "SetVentilationState" and hasattr(a, "Enum")),
+                None
+            )
+            if not ventilation_action or not ventilation_action.Enum:
+                continue
+
+            mode_options = [opt.strip() for opt in ventilation_action.Enum if isinstance(opt, str)]
+            unique_id = f"{device_id}-{node_id}-select-ventilation_mode"
+            entities.append(
+                DucoboxModeSelect(
+                    coordinator=coordinator,
+                    device_info=device_info,
+                    unique_id=unique_id,
+                    node_id=node_id,
+                    options=mode_options,
+                )
+            )
+
+        except Exception as e:
+            _LOGGER.warning(f"Failed to retrieve SetVentilationState actions for node {node_id}: {e}")
+
+    if entities:
+        async_add_entities(entities, update_before_add=True)
 
 
 class DucoboxModeSelect(CoordinatorEntity[DucoboxCoordinator], SelectEntity):
