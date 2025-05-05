@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any
 from datetime import timedelta
@@ -167,6 +168,7 @@ class DucoboxModeSelect(CoordinatorEntity[DucoboxCoordinator], SelectEntity):
                 self._node_id,
             )
             _LOGGER.debug(f"Mode set successfully for node {self._node_id} to {option}")
+            await asyncio.sleep(0.5)
             await self.coordinator.async_request_refresh()
         except Exception as e:
             _LOGGER.error(f"Failed to set ventilation mode '{option}' for node {self._node_id}: {e}")
