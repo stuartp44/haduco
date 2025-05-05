@@ -35,14 +35,41 @@ async def async_setup_entry(
     device_id = mac_address.replace(":", "").lower()
     entities = []
 
-    for node in coordinator.data.get("Nodes", []):
+    nodes = coordinator.data.get("Nodes", [])
+    box_device_ids = {}
+
+    # First pass: register all boxes
+    for node in nodes:
+        node_id = node.get("Node")
+        node_type = node.get("General", {}).get("Type", {}).get("Val")
+        if node_type == "BOX":
+            box_device_ids[int(node_id)] = f"{device_id}-{node_id}"
+
+    _LOGGER.debug(f"[SELECT] Registered BOX device IDs: {box_device_ids}")
+
+    for node in nodes:
         node_id = node.get("Node")
         node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
         mode = node.get("Ventilation", {}).get("Mode")
 
         if mode in (None, "-"):
-            _LOGGER.info(f"Skipping node {node_id}: no valid ventilation mode")
+            _LOGGER.info(f"[SELECT] Skipping node {node_id}: no valid ventilation mode")
             continue
+
+        # Get the parent BOX ID
+        parent_val = node.get("General", {}).get("Parent", {}).get("Val")
+        try:
+            parent_box_id = int(parent_val)
+        except (TypeError, ValueError):
+            parent_box_id = None
+
+        via_device_id = box_device_ids.get(parent_box_id)
+        via_device = (DOMAIN, via_device_id) if via_device_id else None
+
+        _LOGGER.debug(
+            f"[SELECT] Node {node_id} ({node_type}) — parent_box_id={parent_box_id}, "
+            f"via_device_id={via_device_id}"
+        )
 
         try:
             actions_response = await hass.async_add_executor_job(
@@ -58,13 +85,12 @@ async def async_setup_entry(
             mode_options = [opt.strip() for opt in ventilation_action.Enum if isinstance(opt, str)]
             node_device_id = f"{device_id}-{node_id}"
 
-            # Build device_info per node
             device_info = DeviceInfo(
                 identifiers={(DOMAIN, node_device_id)},
                 name=node_type,
                 manufacturer=MANUFACTURER,
                 model=node_type,
-                via_device=(DOMAIN, device_id),
+                via_device=via_device,
             )
 
             unique_id = f"{node_device_id}-select-ventilation_mode"
@@ -78,10 +104,10 @@ async def async_setup_entry(
                 )
             )
 
-            _LOGGER.debug(f"Added select entity for node {node_id} with options: {mode_options}")
+            _LOGGER.debug(f"[SELECT] Added select entity for node {node_id} with options: {mode_options}")
 
         except Exception as e:
-            _LOGGER.warning(f"Failed to retrieve SetVentilationState actions for node {node_id}: {e}")
+            _LOGGER.warning(f"[SELECT] Failed to retrieve SetVentilationState actions for node {node_id}: {e}")
 
     if entities:
         async_add_entities(entities, update_before_add=True)
