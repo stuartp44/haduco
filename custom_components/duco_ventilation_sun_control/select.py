@@ -37,7 +37,7 @@ async def async_setup_entry(
     nodes = coordinator.data.get("Nodes", [])
     box_device_ids = get_box_device_ids(device_id, nodes)
 
-    entities = create_select_entities(hass, coordinator, device_id, nodes, box_device_ids)
+    entities = await create_select_entities(hass, coordinator, device_id, nodes, box_device_ids)
     if entities:
         async_add_entities(entities, update_before_add=True)
 
