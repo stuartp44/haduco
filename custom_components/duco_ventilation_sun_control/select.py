@@ -99,7 +99,7 @@ async def create_select_entities(
                 continue
 
             if node_type == "BOX":
-                model = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "Unknown")
+                model = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "Unknown").capitalize()
             else:
                 model = node_type
 
