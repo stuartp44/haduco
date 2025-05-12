@@ -114,7 +114,7 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list
         node_id = node.get("Node")
         _LOGGER.debug(f"Processing node ID: {node_id}")
         _LOGGER.debug(f"Node data: {node}")
-        node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
+        node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown").capitalize()
         _LOGGER.debug(f"Node ID: {node_id}, Type: {node_type}")
         parent_box_id = find_box_addr(nodes)
         _LOGGER.debug(f"Parent Box ID: {parent_box_id}")
