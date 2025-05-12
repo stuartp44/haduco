@@ -106,6 +106,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             }
 
             return self.async_create_entry(
+                title="",
                 data=product_entry_info["data"],  # No title
             )
 
