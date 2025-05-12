@@ -70,7 +70,6 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         except Exception as e:
             _LOGGER.warning("Failed to fetch board info for confirm step: %s", e)
 
-        # 🚨 Log what's actually being passed to the translation engine
         _LOGGER.debug("Setting title_placeholders: board_type=%s, unique_id=%s", board_type, unique_id)
         _LOGGER.debug("Setting description_placeholders: host=%s, unique_id=%s", host, unique_id)
 
@@ -84,6 +83,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             description_placeholders={
                 "host": host,
                 "unique_id": unique_id,
+                "board_type": board_type
             },
         )
 
