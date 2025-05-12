@@ -159,10 +159,11 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         board_type = info.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "Connectivity Board")
 
         return {
-            "title": f"{board_type} ({mac})",
+            "title": f"{board_type} ({mac})",  # only used if flow_title not applied
             "data": {
                 "base_url": f"https://{ip}",
                 "unique_id": mac,
+                "board_type": board_type,  # ← ensure this is present
             },
         }, {"name": f"{board_type} ({mac})"} if discovery_context else None
 
