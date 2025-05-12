@@ -99,8 +99,7 @@ async def create_select_entities(
                 continue
 
             if node_type == "BOX":
-                model = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "Unknown")
-            else:
+                model = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "Unknown").capitalize()
                 model = node_type
 
             options = [opt.strip() for opt in ventilation_action.Enum if isinstance(opt, str)]
