@@ -6,7 +6,7 @@
           "title": "Connect to your DUCO device"
         },
         "confirm": {
-          "title": "{board_type} Discovered",
+          "title": "Discovered",
           "description": "DUCO device with MAC {unique_id} found at {host}. Do you want to add it?"
         }
       }
