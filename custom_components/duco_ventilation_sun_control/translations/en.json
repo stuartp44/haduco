@@ -1,6 +1,6 @@
 {
     "config": {
-      "flow_title": "{board_type} Configuration",
+      "flow_title": "{board_type} Board ({unique_id})",
       "step": {
         "user": {
           "title": "Connect to your DUCO device"
