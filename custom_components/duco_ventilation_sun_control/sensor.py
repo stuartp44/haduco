@@ -138,7 +138,7 @@ def create_box_sensors(coordinator: DucoboxCoordinator, node: dict, node_device_
         identifiers={(DOMAIN, node_device_id)},
         name=box_name,
         manufacturer=MANUFACTURER,
-        model=box_name,
+        model=box_name.capitalize(),
         sw_version=box_sw_version,
         serial_number=box_serial_number,
         via_device=(DOMAIN, device_id),
