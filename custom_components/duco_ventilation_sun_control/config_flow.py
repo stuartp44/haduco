@@ -52,22 +52,34 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
     async def async_step_confirm(self, user_input=None) -> FlowResult:
         """Ask user to confirm adding the discovered device."""
         discovery = self.context["discovery"]
+        host = discovery.get("host")
+        unique_id = discovery.get("unique_id", "unknown")
 
         if user_input is not None:
             return await self._create_entry_from_discovery(discovery)
 
-        try:
-            comm_info = await self._get_duco_comm_board_info(discovery["host"])
-            board_type = comm_info["communication_board_info"].get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "Board").capitalize()
-            mac_address = comm_info["communication_board_info"].get("General", {}).get("Lan", {}).get("Mac", {}).get("Val", "").replace(':', '')
-            self.context["title_placeholders"] = {
-                "board_type": board_type,
-                "unique_id": mac_address,
-            }
-        except Exception:
-            self.context["title_placeholders"] = {"board_type": "Connectivity Board"}
+        board_type = "Connectivity Board"
 
-        return self._show_confirm_form(discovery)
+        try:
+            comm_info = await self._get_duco_comm_board_info(host)
+            board_type = comm_info["communication_board_info"].get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", board_type).capitalize()
+            unique_id = comm_info["communication_board_info"].get("General", {}).get("Lan", {}).get("Mac", {}).get("Val", "").replace(":", "") or unique_id
+        except Exception as e:
+            _LOGGER.warning("Failed to retrieve board info: %s", e)
+
+        # Ensure both keys are always present
+        self.context["title_placeholders"] = {
+            "board_type": board_type,
+            "unique_id": unique_id,
+        }
+
+        return self.async_show_form(
+            step_id="confirm",
+            description_placeholders={
+                "host": host or "unknown",
+                "unique_id": unique_id,
+            },
+        )
 
     async def _handle_user_input(self, user_input: dict) -> FlowResult:
         """Handle manual input."""
