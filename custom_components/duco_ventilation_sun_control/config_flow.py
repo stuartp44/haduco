@@ -57,7 +57,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         # Fetch board info to customize the title
         try:
             comm_info = await self._get_duco_comm_board_info(discovery["host"])
-            board_type = comm_info["communication_board_info"].get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "Board")
+            board_type = comm_info["communication_board_info"].get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "Board").capitalize()
             self.context["title_placeholders"] = {"board_type": board_type}
         except Exception:
             self.context["title_placeholders"] = {"board_type": "Connectivity Board"}
