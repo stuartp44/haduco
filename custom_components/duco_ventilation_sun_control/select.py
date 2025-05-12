@@ -109,7 +109,7 @@ async def create_select_entities(
                 identifiers={(DOMAIN, node_device_id)},
                 name=node_type,
                 manufacturer=MANUFACTURER,
-                model=model.capitalize(),
+                model=model,
                 via_device=via_device,
             )
             unique_id = f"{node_device_id}-select-ventilation_mode"
