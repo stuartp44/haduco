@@ -76,15 +76,21 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             comm_info = await self._get_duco_comm_board_info(host)
             product_entry_info, _ = await self._get_entry_info(comm_info)
             unique_id = product_entry_info["data"]["unique_id"]
+            board_type = product_entry_info["data"].get("board_type", "Duco")
 
             await self.async_set_unique_id(unique_id)
             if self._is_existing_entry(unique_id):
                 return self.async_abort(reason="already_configured")
 
+            self.context["title_placeholders"] = {
+                "board_type": board_type,
+                "unique_id": unique_id,
+            }
+
             return self.async_create_entry(
-                title=product_entry_info["title"],
-                data=product_entry_info["data"],
+                data=product_entry_info["data"],  # No title
             )
+
         except ValueError:
             return self._show_user_form(errors={"host": "invalid_url"})
         except ConnectionError:
@@ -119,11 +125,21 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         return False
 
     async def _create_entry_from_discovery(self, discovery: dict) -> FlowResult:
+        """Create a config entry from discovery data."""
         comm_info = await self._get_duco_comm_board_info(discovery["host"])
         product_entry_info, _ = await self._get_entry_info(comm_info)
+
+        # Set placeholders for flow_title
+        board_type = product_entry_info["data"].get("board_type", "Duco")
+        unique_id = product_entry_info["data"]["unique_id"]
+
+        self.context["title_placeholders"] = {
+            "board_type": board_type,
+            "unique_id": unique_id,
+        }
+
         return self.async_create_entry(
-            title=product_entry_info["title"],
-            data=product_entry_info["data"],
+            data=product_entry_info["data"],  # No title provided
         )
 
     def _show_confirm_form(self, discovery: dict) -> FlowResult:
