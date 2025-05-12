@@ -75,7 +75,7 @@ def create_device_info(coordinator: DucoboxCoordinator, device_id: str) -> Devic
         identifiers={(DOMAIN, device_id)},
         name=data.get("General", {}).get("Lan", {}).get("HostName", {}).get("Val", "Unknown"),
         manufacturer=MANUFACTURER,
-        model=data.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "Unknown"),
+        model=data.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "Unknown").capitalize(),
         serial_number=data.get("General", {}).get("Board", {}).get("SerialBoardComm", {}).get("Val", "Unknown"),
         sw_version=data.get("General", {}).get("Board", {}).get("SwVersionComm", {}).get("Val", "Unknown"),
     )
