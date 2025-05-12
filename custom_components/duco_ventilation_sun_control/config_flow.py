@@ -51,23 +51,29 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
     async def async_step_confirm(self, user_input=None) -> FlowResult:
         """Ask user to confirm adding the discovered device."""
-        discovery = self.context["discovery"]
-        host = discovery.get("host")
+        discovery = self.context.get("discovery", {})
+        host = discovery.get("host", "unknown")
         unique_id = discovery.get("unique_id", "unknown")
+        board_type = "Connectivity Board"
 
         if user_input is not None:
             return await self._create_entry_from_discovery(discovery)
 
-        board_type = "Connectivity Board"
-
         try:
             comm_info = await self._get_duco_comm_board_info(host)
-            board_type = comm_info["communication_board_info"].get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", board_type).capitalize()
-            unique_id = comm_info["communication_board_info"].get("General", {}).get("Lan", {}).get("Mac", {}).get("Val", "").replace(":", "") or unique_id
+            board_type = comm_info["communication_board_info"].get(
+                "General", {}
+            ).get("Board", {}).get("CommSubTypeName", {}).get("Val", board_type).capitalize()
+            unique_id = comm_info["communication_board_info"].get(
+                "General", {}
+            ).get("Lan", {}).get("Mac", {}).get("Val", "").replace(":", "") or unique_id
         except Exception as e:
-            _LOGGER.warning("Failed to retrieve board info: %s", e)
+            _LOGGER.warning("Failed to fetch board info for confirm step: %s", e)
 
-        # Ensure both keys are always present
+        # 🚨 Log what's actually being passed to the translation engine
+        _LOGGER.debug("Setting title_placeholders: board_type=%s, unique_id=%s", board_type, unique_id)
+        _LOGGER.debug("Setting description_placeholders: host=%s, unique_id=%s", host, unique_id)
+
         self.context["title_placeholders"] = {
             "board_type": board_type,
             "unique_id": unique_id,
@@ -76,7 +82,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         return self.async_show_form(
             step_id="confirm",
             description_placeholders={
-                "host": host or "unknown",
+                "host": host,
                 "unique_id": unique_id,
             },
         )
