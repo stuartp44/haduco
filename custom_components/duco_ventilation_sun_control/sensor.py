@@ -114,7 +114,7 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list
         node_id = node.get("Node")
         _LOGGER.debug(f"Processing node ID: {node_id}")
         _LOGGER.debug(f"Node data: {node}")
-        node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown").capitalize()
+        node_type = node.get("General", {}).get("Type", {}).get("Val", "Unknown")
         _LOGGER.debug(f"Node ID: {node_id}, Type: {node_type}")
         parent_box_id = find_box_addr(nodes)
         _LOGGER.debug(f"Parent Box ID: {parent_box_id}")
@@ -131,7 +131,7 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list
 def create_box_sensors(coordinator: DucoboxCoordinator, node: dict, node_device_id: str, device_id: str) -> list[SensorEntity]:
     """Create sensors for a BOX node, including calibration and network sensors."""
     entities = []
-    box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "").capitalize()
+    box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "")
     box_sw_version = coordinator.data.get("General", {}).get("Board", {}).get("SwVersionBox", {}).get("Val", "")
     box_serial_number = coordinator.data.get("General", {}).get("Board", {}).get("SerialBoardBox", {}).get("Val", "")
     box_device_info = DeviceInfo(
