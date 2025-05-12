@@ -45,7 +45,27 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             return self.async_abort(reason="already_configured")
 
         self.context["discovery"] = {"host": host, "unique_id": unique_id}
-        return await self._create_entry_from_discovery(discovery_info)
+        return await self.async_step_confirm()
+
+    async def async_step_confirm(self, user_input=None) -> FlowResult:
+        """Ask user to confirm adding the discovered device."""
+        discovery = self.context["discovery"]
+
+        if user_input is not None:
+            return await self._create_entry_from_discovery(discovery)
+
+        try:
+            comm_info = await self._get_duco_comm_board_info(discovery["host"])
+            board_type = comm_info["communication_board_info"].get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "Board").capitalize()
+            mac_address = comm_info["communication_board_info"].get("General", {}).get("Lan", {}).get("Mac", {}).get("Val", "").replace(':', '')
+            self.context["title_placeholders"] = {
+                "board_type": board_type,
+                "unique_id": mac_address,
+                }
+        except Exception:
+            self.context["title_placeholders"] = {"board_type": "Connectivity Board"}
+
+        return self._show_confirm_form(discovery)
 
     async def _handle_user_input(self, user_input: dict) -> FlowResult:
         """Handle user input for manual configuration."""
