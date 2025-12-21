@@ -23,7 +23,7 @@ classifiers = [
 ]
 dependencies = [
     "ducopy==18",
-    "retrying==1.3.4",
+    "retrying==1.4.2",
 ]
 
 [tool.ruff]
