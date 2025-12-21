@@ -1,5 +1,4 @@
 # Testing dependencies
-pytest==9.0.2
 pytest-homeassistant-custom-component==0.13.109
 
 # Linting and formatting
