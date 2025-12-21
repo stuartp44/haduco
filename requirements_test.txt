@@ -9,5 +9,5 @@ mypy==1.19.1
 homeassistant==2024.3.3
 
 # Project dependencies (from manifest.json)
-ducopy==18
-retrying==1.4.2
+ducopy==17
+retrying==1.3.4
