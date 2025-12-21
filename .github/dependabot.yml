@@ -1,0 +1,56 @@
+version: 2
+updates:
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    reviewers:
+      - "stuartp44"
+
+  # Python dependencies
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "python"
+    reviewers:
+      - "stuartp44"
+    # Group updates for related packages
+    groups:
+      testing:
+        patterns:
+          - "pytest*"
+          - "*test*"
+        update-types:
+          - "minor"
+          - "patch"
+      linting:
+        patterns:
+          - "ruff"
+          - "mypy"
+        update-types:
+          - "minor"
+          - "patch"
+      homeassistant:
+        patterns:
+          - "homeassistant*"
+        update-types:
+          - "minor"
+          - "patch"

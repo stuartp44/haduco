@@ -179,3 +179,15 @@ sandbox/
 # devcontainers
 data/**
 devcontainers/data/**
+
+# Node modules (for semantic-release)
+node_modules/
+package-lock.json
+package.json
+
+# macOS
+.DS_Store
+
+# Home Assistant
+home-assistant_v2.db
+home-assistant.log
