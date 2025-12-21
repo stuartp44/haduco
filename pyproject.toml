@@ -22,7 +22,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-    "ducopy==17",
+    "ducopy==18",
     "retrying==1.3.4",
 ]
 
