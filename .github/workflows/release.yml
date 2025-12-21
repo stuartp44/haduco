@@ -203,11 +203,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 release_id: latestRelease.id,
-                body: `Thank you to all our contributors for making this release possible! 
-                
-Special thanks to [@Sikerdebaard](https://github.com/Sikerdebaard) for creating this project.
-
-Check out [CONTRIBUTORS.md](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/CONTRIBUTORS.md) for the full list of contributors.`
+                body: 'Thank you to all our contributors for making this release possible!\n\nSpecial thanks to [@Sikerdebaard](https://github.com/Sikerdebaard) for creating this project.\n\nCheck out [CONTRIBUTORS.md](https://github.com/' + context.repo.owner + '/' + context.repo.repo + '/blob/main/CONTRIBUTORS.md) for the full list of contributors.'
               }).catch(() => {
                 console.log('Could not create release discussion');
               });
