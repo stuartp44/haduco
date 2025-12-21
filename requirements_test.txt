@@ -13,4 +13,4 @@ homeassistant==2024.3.3
 
 # Project dependencies (from manifest.json)
 ducopy==18
-retrying==1.3.4
+retrying==1.4.2
