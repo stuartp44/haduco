@@ -66,7 +66,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     name: Semantic Release
-    needs: [test-python-3-11, test-python-3-12, lint, hacs-validation, hassfest]
+    needs: [lint, hacs-validation, hassfest]
     if: "!contains(github.event.head_commit.message, 'skip ci')"
     steps:
       - name: Check out code from GitHub
