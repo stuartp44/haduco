@@ -1,7 +1,7 @@
 # Testing dependencies
 pytest==9.0.2
 pytest-cov==7.0.0
-pytest-homeassistant-custom-component==0.13.106
+pytest-homeassistant-custom-component==0.13.109
 pytest-asyncio==1.3.0
 
 # Linting and formatting
