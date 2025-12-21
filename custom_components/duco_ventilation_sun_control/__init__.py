@@ -1,10 +1,14 @@
 import logging
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
+from homeassistant.helpers import config_validation as cv
 from .const import DOMAIN
 from ducopy import DucoPy
 
 _LOGGER = logging.getLogger(__name__)
+
+# This integration is configured via config flow only
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up the Ducobox Connectivity Board integration."""
