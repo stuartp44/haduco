@@ -9,7 +9,26 @@ This project was created by **[@Sikerdebaard](https://github.com/Sikerdebaard)**
 Thank you to all the people who have contributed to this project!
 
 <!-- readme: contributors -start -->
-<!-- This section will be automatically updated by the contributors-readme-action -->
+<table>
+	<tbody>
+		<tr>
+            <td align="center">
+                <a href="https://github.com/stuartp44">
+                    <img src="https://avatars.githubusercontent.com/u/1926002?v=4" width="100;" alt="stuartp44"/>
+                    <br />
+                    <sub><b>Stuart Pearson</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/Sikerdebaard">
+                    <img src="https://avatars.githubusercontent.com/u/801853?v=4" width="100;" alt="Sikerdebaard"/>
+                    <br />
+                    <sub><b>Thomas Phil</b></sub>
+                </a>
+            </td>
+		</tr>
+	<tbody>
+</table>
 <!-- readme: contributors -end -->
 
 ## How to Contribute
