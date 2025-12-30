@@ -1,14 +1,21 @@
 {
   "domain": "duco_ventilation_sun_control",
   "name": "DUCO Ventilation & Sun Control",
-  "codeowners": ["@Sikerdebaard"],
+  "codeowners": [
+    "@Sikerdebaard"
+  ],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/stuartp44/haduco",
   "integration_type": "device",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/stuartp44/haduco/issues",
-  "requirements": ["ducopy==17", "retrying==1.3.4"],
-  "version": "1.2.0",
-  "zeroconf": ["_https._tcp.local."]
+  "requirements": [
+    "ducopy==17",
+    "retrying==1.3.4"
+  ],
+  "version": "1.0.0",
+  "zeroconf": [
+    "_https._tcp.local."
+  ]
 }
