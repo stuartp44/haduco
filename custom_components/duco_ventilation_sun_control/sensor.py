@@ -61,12 +61,7 @@ def find_box_addr(nodes: list[dict]) -> int | None:
 
 def get_mac_address(coordinator: DucoboxCoordinator) -> str | None:
     """Retrieve the MAC address from the coordinator data."""
-    return (
-        coordinator.data.get("General", {})
-        .get("Lan", {})
-        .get("Mac", {})
-        .get("Val")
-    )
+    return coordinator.data.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val")
 
 
 def create_device_info(coordinator: DucoboxCoordinator, device_id: str) -> DeviceInfo:
@@ -129,7 +124,10 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list
 
     return entities
 
-def create_box_sensors(coordinator: DucoboxCoordinator, node: dict, node_device_id: str, device_id: str) -> list[SensorEntity]:
+
+def create_box_sensors(
+    coordinator: DucoboxCoordinator, node: dict, node_device_id: str, device_id: str
+) -> list[SensorEntity]:
     """Create sensors for a BOX node, including calibration and network sensors."""
     entities = []
     box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "")
@@ -217,7 +215,9 @@ def create_generic_node_sensors(
     ]
 
 
-def create_duco_network_sensors(coordinator: DucoboxCoordinator, device_info: DeviceInfo, device_id: str) -> list[SensorEntity]:
+def create_duco_network_sensors(
+    coordinator: DucoboxCoordinator, device_info: DeviceInfo, device_id: str
+) -> list[SensorEntity]:
     """Create Duco network sensors."""
     return [
         DucoboxSensorEntity(
@@ -230,7 +230,9 @@ def create_duco_network_sensors(coordinator: DucoboxCoordinator, device_info: De
     ]
 
 
-def create_calibration_sensors(coordinator: DucoboxCoordinator, device_info: DeviceInfo, device_id: str) -> list[SensorEntity]:
+def create_calibration_sensors(
+    coordinator: DucoboxCoordinator, device_info: DeviceInfo, device_id: str
+) -> list[SensorEntity]:
     """Create calibration sensors."""
     return [
         DucoboxSensorEntity(
@@ -293,5 +295,5 @@ class DucoboxNodeSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntit
         nodes = self.coordinator.data.get("Nodes", [])
         for node in nodes:
             if node.get("Node") == self._node_id:
-                return self.entity_description.value_fn({'node_data': node, 'general_data': self.coordinator.data})
+                return self.entity_description.value_fn({"node_data": node, "general_data": self.coordinator.data})
         return None

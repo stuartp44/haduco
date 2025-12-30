@@ -13,15 +13,19 @@ from .const import DOMAIN, SCAN_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
 
-CONFIG_SCHEMA = vol.Schema({
-    vol.Required("host"): str,
-})
+CONFIG_SCHEMA = vol.Schema(
+    {
+        vol.Required("host"): str,
+    }
+)
 
-OPTIONS_SCHEMA = vol.Schema({
-    vol.Required("refresh_time", default=SCAN_INTERVAL.total_seconds()): vol.All(
-        vol.Coerce(int), vol.Range(min=10, max=3600)
-    ),
-})
+OPTIONS_SCHEMA = vol.Schema(
+    {
+        vol.Required("refresh_time", default=SCAN_INTERVAL.total_seconds()): vol.All(
+            vol.Coerce(int), vol.Range(min=10, max=3600)
+        ),
+    }
+)
 
 
 class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -61,12 +65,23 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
         try:
             comm_info = await self._get_duco_comm_board_info(host)
-            board_type = comm_info["communication_board_info"].get(
-                "General", {}
-            ).get("Board", {}).get("CommSubTypeName", {}).get("Val", board_type).capitalize()
-            unique_id = comm_info["communication_board_info"].get(
-                "General", {}
-            ).get("Lan", {}).get("Mac", {}).get("Val", "").replace(":", "") or unique_id
+            board_type = (
+                comm_info["communication_board_info"]
+                .get("General", {})
+                .get("Board", {})
+                .get("CommSubTypeName", {})
+                .get("Val", board_type)
+                .capitalize()
+            )
+            unique_id = (
+                comm_info["communication_board_info"]
+                .get("General", {})
+                .get("Lan", {})
+                .get("Mac", {})
+                .get("Val", "")
+                .replace(":", "")
+                or unique_id
+            )
         except Exception as e:
             _LOGGER.warning("Failed to fetch board info for confirm step: %s", e)
 
@@ -80,11 +95,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
         return self.async_show_form(
             step_id="confirm",
-            description_placeholders={
-                "host": host,
-                "unique_id": unique_id,
-                "board_type": board_type
-            },
+            description_placeholders={"host": host, "unique_id": unique_id, "board_type": board_type},
         )
 
     async def _handle_user_input(self, user_input: dict) -> FlowResult:
@@ -124,7 +135,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         )
 
     def _is_valid_discovery(self, discovery_info: ZeroconfServiceInfo) -> bool:
-        valid_names = ['duco_', 'duco ']
+        valid_names = ["duco_", "duco "]
         return any(discovery_info.name.lower().startswith(x) for x in valid_names)
 
     def _extract_discovery_info(self, discovery_info: ZeroconfServiceInfo) -> tuple[str, str]:
@@ -175,7 +186,9 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         info = result["communication_board_info"]
         mac = info.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val", "").replace(":", "")
         ip = info.get("General", {}).get("Lan", {}).get("Ip", {}).get("Val", "")
-        board_type = info.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "Connectivity Board")
+        board_type = (
+            info.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "Connectivity Board")
+        )
 
         return {
             "title": f"{board_type} ({mac})",  # only used if flow_title not applied

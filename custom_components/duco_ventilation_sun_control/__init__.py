@@ -12,10 +12,12 @@ _LOGGER = logging.getLogger(__name__)
 # This integration is configured via config flow only
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
+
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up the Ducobox Connectivity Board integration."""
     _LOGGER.debug("Setting up Ducobox Connectivity Board integration")
     return True
+
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Ducobox from a config entry."""
@@ -34,12 +36,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await hass.config_entries.async_forward_entry_setups(entry, ["sensor", "select"])
     return True
 
+
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, ["sensor", "select"])
     # if unload_ok:
-        # # Retrieve and close the DucoPy instance
-        # ducopy = hass.data[DOMAIN].pop(entry.entry_id, None)
-        # if ducopy:
-        #     ducopy.close()
+    # # Retrieve and close the DucoPy instance
+    # ducopy = hass.data[DOMAIN].pop(entry.entry_id, None)
+    # if ducopy:
+    #     ducopy.close()
     return unload_ok

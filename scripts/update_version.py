@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Update version in manifest.json for semantic-release."""
+
 import json
 import sys
 from pathlib import Path
@@ -7,7 +8,9 @@ from pathlib import Path
 
 def update_version(new_version: str) -> None:
     """Update the version in manifest.json."""
-    manifest_path = Path(__file__).parent.parent / "custom_components" / "duco_ventilation_sun_control" / "manifest.json"
+    manifest_path = (
+        Path(__file__).parent.parent / "custom_components" / "duco_ventilation_sun_control" / "manifest.json"
+    )
 
     if not manifest_path.exists():
         print(f"Error: manifest.json not found at {manifest_path}")

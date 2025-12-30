@@ -88,9 +88,7 @@ async def create_select_entities(
         via_device = (DOMAIN, via_device_id) if via_device_id else None
 
         try:
-            actions_response = await hass.async_add_executor_job(
-                coordinator.client.get_actions_node, node_id
-            )
+            actions_response = await hass.async_add_executor_job(coordinator.client.get_actions_node, node_id)
             ventilation_action = next(
                 (a for a in actions_response.Actions if a.Action == "SetVentilationState" and hasattr(a, "Enum")),
                 None,
@@ -99,7 +97,13 @@ async def create_select_entities(
                 continue
 
             if node_type == "BOX":
-                model = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "Unknown").capitalize()
+                model = (
+                    coordinator.data.get("General", {})
+                    .get("Board", {})
+                    .get("BoxName", {})
+                    .get("Val", "Unknown")
+                    .capitalize()
+                )
             else:
                 model = node_type
 

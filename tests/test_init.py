@@ -1,4 +1,5 @@
 """Test the DUCO Ventilation & Sun Control integration setup."""
+
 from unittest.mock import patch
 
 import pytest

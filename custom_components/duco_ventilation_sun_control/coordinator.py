@@ -10,6 +10,7 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
+
 class DucoboxCoordinator(DataUpdateCoordinator):
     """Coordinator to manage data updates for Ducobox sensors."""
 
@@ -24,10 +25,7 @@ class DucoboxCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self) -> dict:
         """Fetch data from the Ducobox API with a timeout."""
         try:
-            return await asyncio.wait_for(
-                self.hass.async_add_executor_job(self._fetch_data),
-                timeout=30
-            )
+            return await asyncio.wait_for(self.hass.async_add_executor_job(self._fetch_data), timeout=30)
         except TimeoutError:
             _LOGGER.error("Timeout occurred while fetching data from Ducobox API")
             return {}
@@ -46,7 +44,7 @@ class DucoboxCoordinator(DataUpdateCoordinator):
         _LOGGER.debug(f"Data received from /nodes: {nodes_response}")
 
         # Convert nodes_response.Nodes (which is a list of NodeInfo objects) to list of dicts
-        data['Nodes'] = [node.dict() for node in nodes_response.Nodes]
+        data["Nodes"] = [node.dict() for node in nodes_response.Nodes]
         _LOGGER.debug(f"Data after processing nodes: {data}")
         return data
 
