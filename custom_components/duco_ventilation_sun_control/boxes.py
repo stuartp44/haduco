@@ -138,7 +138,11 @@ BOX_SENSORS: dict[str, list[DucoboxSensorEntityDescription | DucoboxNodeSensorEn
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.DURATION,
             value_fn=lambda data: _process_timefilterremain(
-                data.get("node_data", {}).get("HeatRecovery", {}).get("General", {}).get("TimeFilterRemain", {}).get("Val"),
+                data.get("node_data", {})
+                .get("HeatRecovery", {})
+                .get("General", {})
+                .get("TimeFilterRemain", {})
+                .get("Val"),
             ),
         ),
         # Bypass position

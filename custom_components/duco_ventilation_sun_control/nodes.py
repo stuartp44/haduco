@@ -28,7 +28,9 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             name="CO₂",
             native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
             device_class=SensorDeviceClass.CO2,
-            value_fn=lambda node: _process_node_co2(node.get("node_data", {}).get("Sensor", {}).get("data", {}).get("Co2")),
+            value_fn=lambda node: _process_node_co2(
+                node.get("node_data", {}).get("Sensor", {}).get("data", {}).get("Co2")
+            ),
             sensor_key="Co2",
             node_type="UCCO2",
         ),
@@ -113,7 +115,9 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             name="Humidity",
             native_unit_of_measurement=PERCENTAGE,
             device_class=SensorDeviceClass.HUMIDITY,
-            value_fn=lambda node: _process_node_iaq(node.get("node_data", {}).get("Sensor", {}).get("data", {}).get("Rh")),
+            value_fn=lambda node: _process_node_iaq(
+                node.get("node_data", {}).get("Sensor", {}).get("data", {}).get("Rh")
+            ),
             sensor_key="Rh",
             node_type="VLVRH",
         ),
