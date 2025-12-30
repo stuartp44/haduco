@@ -1,7 +1,6 @@
 # DUCO Ventilation & Sun Control
 
 [![CI/CD Pipeline](https://github.com/stuartp44/haduco/actions/workflows/release.yml/badge.svg)](https://github.com/stuartp44/haduco/actions/workflows/release.yml)
-[![codecov](https://codecov.io/gh/stuartp44/haduco/branch/main/graph/badge.svg)](https://codecov.io/gh/stuartp44/haduco)
 [![HACS](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 [![GitHub Release](https://img.shields.io/github/release/stuartp44/haduco.svg)](https://github.com/stuartp44/haduco/releases)
 [![License](https://img.shields.io/github/license/stuartp44/haduco.svg)](LICENSE)
