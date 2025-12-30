@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1](https://github.com/stuartp44/haduco/compare/v1.0.0...v1.0.1) (2025-12-30)
+
+
+### Documentation
+
+* update contributors [skip ci] ([859611f](https://github.com/stuartp44/haduco/commit/859611fdf112adf515c180dc3c90ef9a0599e2ff))
+
 ## 1.0.0 (2025-12-30)
 
 
