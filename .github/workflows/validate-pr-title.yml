@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   validate-title:
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Validate PR title
