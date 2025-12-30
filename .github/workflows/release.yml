@@ -139,12 +139,26 @@ jobs:
             
             if (releases.length > 0) {
               const latestRelease = releases[0];
-              await github.rest.repos.createReleaseDiscussion({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                release_id: latestRelease.id,
-                body: 'Thank you to all our contributors for making this release possible!\n\nSpecial thanks to [@Sikerdebaard](https://github.com/Sikerdebaard) for creating this project.\n\nCheck out [CONTRIBUTORS.md](https://github.com/' + context.repo.owner + '/' + context.repo.repo + '/blob/main/CONTRIBUTORS.md) for the full list of contributors.'
-              }).catch(() => {
-                console.log('Could not create release discussion');
-              });
+              try {
+                await github.graphql(`
+                  mutation createReleaseDiscussion($repositoryId: ID!, $releaseId: ID!, $body: String!) {
+                    createDiscussion(input: {
+                      repositoryId: $repositoryId
+                      title: "Release ${latestRelease.tag_name}"
+                      body: $body
+                      categoryId: "DIC_kwDON2gBKM4CcKnZ"
+                    }) {
+                      discussion {
+                        id
+                      }
+                    }
+                  }
+                `, {
+                  repositoryId: context.payload.repository.node_id,
+                  releaseId: latestRelease.id,
+                  body: 'Thank you to all our contributors for making this release possible!\n\nSpecial thanks to [@Sikerdebaard](https://github.com/Sikerdebaard) for creating this project.\n\nCheck out [CONTRIBUTORS.md](https://github.com/' + context.repo.owner + '/' + context.repo.repo + '/blob/main/CONTRIBUTORS.md) for the full list of contributors.'
+                });
+              } catch (error) {
+                console.log('Could not create release discussion:', error.message);
+              }
             }
