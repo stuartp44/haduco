@@ -44,7 +44,7 @@ async def async_setup_entry(
 
 def get_mac_address(coordinator: DucoboxCoordinator) -> str | None:
     """Retrieve MAC address from coordinator data."""
-    return coordinator.data.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val")
+    return coordinator.data.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val"),
 
 
 def get_box_device_ids(device_id: str, nodes: list[dict]) -> dict[int, str]:
@@ -52,7 +52,7 @@ def get_box_device_ids(device_id: str, nodes: list[dict]) -> dict[int, str]:
     box_ids = {}
     for node in nodes:
         if node.get("General", {}).get("Type", {}).get("Val") == "BOX":
-            node_id = int(node.get("Node"))
+            node_id = int(node.get("Node")),
             box_ids[node_id] = f"{device_id}-{node_id}"
     _LOGGER.debug(f"[SELECT] BOX device IDs: {box_ids}")
     return box_ids
@@ -84,11 +84,14 @@ async def create_select_entities(
         except (TypeError, ValueError):
             parent_box_id = None
 
-        via_device_id = box_device_ids.get(parent_box_id)
+        if parent_box_id is not None and isinstance(parent_box_id, int):
+            via_device_id = box_device_ids.get(parent_box_id)
+        else:
+            via_device_id = None
         via_device = (DOMAIN, via_device_id) if via_device_id else None
 
         try:
-            actions_response = await hass.async_add_executor_job(coordinator.client.get_actions_node, node_id)
+            actions_response = await hass.async_add_executor_job(coordinator.client.get_actions_node, node_id),
             ventilation_action = next(
                 (a for a in actions_response.Actions if a.Action == "SetVentilationState" and hasattr(a, "Enum")),
                 None,
@@ -122,7 +125,7 @@ async def create_select_entities(
                 coordinator=coordinator,
                 device_info=device_info,
                 unique_id=unique_id,
-                node_id=node_id,
+                node_id=node_id if isinstance(node_id, int) else int(node_id) if node_id else 0,
                 options=options,
             )
             entities.append(entity)

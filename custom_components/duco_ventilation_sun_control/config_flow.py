@@ -33,7 +33,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
     VERSION = 1
 
-    async def async_step_user(self, user_input=None) -> FlowResult:
+    async def async_step_user(self, user_input: dict[str, str] | None = None) -> FlowResult:
         """Handle the initial step."""
         if user_input is not None:
             return await self._handle_user_input(user_input)
@@ -53,7 +53,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         self.context["discovery"] = {"host": host, "unique_id": unique_id}
         return await self.async_step_confirm()
 
-    async def async_step_confirm(self, user_input=None) -> FlowResult:
+    async def async_step_confirm(self, user_input: dict[str, str] | None = None) -> FlowResult:
         """Ask user to confirm adding the discovered device."""
         discovery = self.context.get("discovery", {})
         host = discovery.get("host", "unknown")
@@ -127,7 +127,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         except RuntimeError:
             return self._show_user_form(errors={"host": "unknown_error"})
 
-    def _show_user_form(self, errors=None) -> FlowResult:
+    def _show_user_form(self, errors: dict[str, str] | None = None) -> FlowResult:
         return self.async_show_form(
             step_id="user",
             data_schema=CONFIG_SCHEMA,
@@ -143,7 +143,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         unique_id = (discovery_info.properties.get("MAC") or "").replace(":", "")
         return host, unique_id
 
-    def _is_existing_entry(self, unique_id: str, host: str = None) -> bool:
+    def _is_existing_entry(self, unique_id: str, host: str | None = None) -> bool:
         for entry in self.hass.config_entries.async_entries(DOMAIN):
             if entry.unique_id == unique_id:
                 if host and entry.data.get("base_url") != f"https://{host}":
@@ -182,7 +182,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             },
         )
 
-    async def _get_entry_info(self, result: dict, discovery_context=None) -> tuple[dict, dict]:
+    async def _get_entry_info(self, result: dict, discovery_context: dict | None = None) -> tuple[dict[str, str | dict], dict | None]:
         info = result["communication_board_info"]
         mac = info.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val", "").replace(":", "")
         ip = info.get("General", {}).get("Lan", {}).get("Ip", {}).get("Val", "")
@@ -223,17 +223,17 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry):
+    def async_get_options_flow(config_entry: config_entries.ConfigEntry) -> "DucoboxOptionsFlowHandler":
         return DucoboxOptionsFlowHandler(config_entry)
 
 
 class DucoboxOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle options flow."""
 
-    def __init__(self, config_entry):
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         self.config_entry = config_entry
 
-    async def async_step_init(self, user_input=None):
+    async def async_step_init(self, user_input: dict[str, int] | None = None) -> FlowResult:
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
 

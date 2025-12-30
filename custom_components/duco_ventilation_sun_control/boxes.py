@@ -13,12 +13,12 @@ from .common import (
 )
 from .ducobox_classes import DucoboxNodeSensorEntityDescription, DucoboxSensorEntityDescription
 
-BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
+BOX_SENSORS: dict[str, list[DucoboxSensorEntityDescription | DucoboxNodeSensorEntityDescription]] = {
     "FOCUS": [
         DucoboxNodeSensorEntityDescription(
             key="Mode",
             name="Ventilation Mode",
-            value_fn=lambda node: node.get("node_data").get("Ventilation", {}).get("Mode"),
+            value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("Mode"),
             icon="mdi:fan",
             sensor_key="Mode",
             node_type="BOX",
@@ -26,7 +26,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
         DucoboxNodeSensorEntityDescription(
             key="State",
             name="Ventilation State",
-            value_fn=lambda node: node.get("node_data").get("Ventilation", {}).get("State"),
+            value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("State"),
             icon="mdi:fan-auto",
             sensor_key="State",
             node_type="BOX",
@@ -35,7 +35,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
             key="FlowLvlTgt",
             name="Flow Level Target",
             native_unit_of_measurement=PERCENTAGE,
-            value_fn=lambda node: node.get("node_data").get("Ventilation", {}).get("FlowLvlTgt"),
+            value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("FlowLvlTgt"),
             icon="mdi:fan-chevron-up",
             sensor_key="FlowLvlTgt",
             node_type="BOX",
@@ -52,7 +52,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.TEMPERATURE,
             value_fn=lambda data: _process_temperature(
-                data.get("node_data").get("Ventilation", {}).get("Sensor", {}).get("TempOda", {}).get("Val")
+                data.get("node_data").get("Ventilation", {}).get("Sensor", {}).get("TempOda", {}).get("Val"),
             ),
         ),
         # Sup = box -> house
@@ -63,7 +63,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.TEMPERATURE,
             value_fn=lambda data: _process_temperature(
-                data.get("node_data").get("Ventilation", {}).get("Sensor", {}).get("TempSup", {}).get("Val")
+                data.get("node_data").get("Ventilation", {}).get("Sensor", {}).get("TempSup", {}).get("Val"),
             ),
         ),
         # Eta = house -> box
@@ -74,7 +74,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.TEMPERATURE,
             value_fn=lambda data: _process_temperature(
-                data.get("node_data").get("Ventilation", {}).get("Sensor", {}).get("TempEta", {}).get("Val")
+                data.get("node_data").get("Ventilation", {}).get("Sensor", {}).get("TempEta", {}).get("Val"),
             ),
         ),
         # Eha = box -> outdoor
@@ -85,7 +85,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.TEMPERATURE,
             value_fn=lambda data: _process_temperature(
-                data.get("node_data").get("Ventilation", {}).get("Sensor", {}).get("TempEha", {}).get("Val")
+                data.get("node_data").get("Ventilation", {}).get("Sensor", {}).get("TempEha", {}).get("Val"),
             ),
         ),
         # Fan speed sensors
@@ -96,7 +96,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.SPEED,
             value_fn=lambda data: _process_speed(
-                data.get("node_data").get("Ventilation", {}).get("Fan", {}).get("SpeedSup", {}).get("Val")
+                data.get("node_data").get("Ventilation", {}).get("Fan", {}).get("SpeedSup", {}).get("Val"),
             ),
         ),
         DucoboxSensorEntityDescription(
@@ -106,7 +106,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.SPEED,
             value_fn=lambda data: _process_speed(
-                data.get("node_data").get("Ventilation", {}).get("Fan", {}).get("SpeedEha", {}).get("Val")
+                data.get("node_data").get("Ventilation", {}).get("Fan", {}).get("SpeedEha", {}).get("Val"),
             ),
         ),
         # Pressure sensors
@@ -117,7 +117,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.PRESSURE,
             value_fn=lambda data: _process_pressure(
-                data.get("node_data").get("Ventilation", {}).get("Fan", {}).get("PressSup", {}).get("Val")
+                data.get("node_data").get("Ventilation", {}).get("Fan", {}).get("PressSup", {}).get("Val"),
             ),
         ),
         DucoboxSensorEntityDescription(
@@ -138,7 +138,7 @@ BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.DURATION,
             value_fn=lambda data: _process_timefilterremain(
-                data.get("node_data").get("HeatRecovery", {}).get("General", {}).get("TimeFilterRemain", {}).get("Val")
+                data.get("node_data").get("HeatRecovery", {}).get("General", {}).get("TimeFilterRemain", {}).get("Val"),
             ),
         ),
         # Bypass position

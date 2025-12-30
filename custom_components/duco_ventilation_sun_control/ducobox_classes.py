@@ -17,6 +17,6 @@ class DucoboxSensorEntityDescription(SensorEntityDescription):
 class DucoboxNodeSensorEntityDescription(SensorEntityDescription):
     """Describes a Ducobox node sensor entity."""
 
-    value_fn: Callable[[dict], float | None]
+    value_fn: Callable[[dict], float | str | int | None]
     sensor_key: str
     node_type: str

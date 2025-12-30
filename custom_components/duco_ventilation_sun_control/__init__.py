@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from ducopy import DucoPy
 from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady

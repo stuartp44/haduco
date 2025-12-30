@@ -34,7 +34,7 @@ class DucoboxCoordinator(DataUpdateCoordinator):
             return {}
 
     @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
-    def _fetch_data(self) -> dict:
+    def _fetch_data(self) -> dict[str, list]:
         """Fetch data from the Duco API."""
         duco_client = self.hass.data[DOMAIN]
         data = duco_client.get_info()
@@ -49,5 +49,5 @@ class DucoboxCoordinator(DataUpdateCoordinator):
         return data
 
     @property
-    def client(self):
+    def client(self) -> object:
         return self.hass.data[DOMAIN]
