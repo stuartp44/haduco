@@ -1,11 +1,9 @@
-from .ducobox_classes import DucoboxSensorEntityDescription, DucoboxNodeSensorEntityDescription
-from .common import ( 
-    _process_calibration_state, 
-    _process_calibration_status
-)
 from homeassistant.const import (
     EntityCategory,
 )
+
+from .common import _process_calibration_state, _process_calibration_status
+from .ducobox_classes import DucoboxNodeSensorEntityDescription, DucoboxSensorEntityDescription
 
 CALIBRATION_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
     DucoboxNodeSensorEntityDescription(

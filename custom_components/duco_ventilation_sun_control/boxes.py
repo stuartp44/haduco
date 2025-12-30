@@ -1,21 +1,17 @@
-from .ducobox_classes import DucoboxSensorEntityDescription, DucoboxNodeSensorEntityDescription
-from homeassistant.const import (
-    UnitOfTemperature,
-    UnitOfTime,
-    PERCENTAGE,
-    UnitOfPressure
-)
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorStateClass,
 )
+from homeassistant.const import PERCENTAGE, UnitOfPressure, UnitOfTemperature, UnitOfTime
+
 from .common import (
-    _process_bypass_position, 
-    _process_pressure, 
-    _process_speed, 
-    _process_temperature, 
+    _process_bypass_position,
+    _process_pressure,
+    _process_speed,
+    _process_temperature,
     _process_timefilterremain,
 )
+from .ducobox_classes import DucoboxNodeSensorEntityDescription, DucoboxSensorEntityDescription
 
 BOX_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = {
     'FOCUS': [

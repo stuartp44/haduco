@@ -1,9 +1,11 @@
 import logging
-from homeassistant.core import HomeAssistant
-from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
-from homeassistant.helpers import config_validation as cv
-from .const import DOMAIN
+
 from ducopy import DucoPy
+from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import config_validation as cv
+
+from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 

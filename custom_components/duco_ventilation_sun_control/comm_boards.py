@@ -1,16 +1,14 @@
-from .ducobox_classes import DucoboxSensorEntityDescription
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorStateClass,
 )
 from homeassistant.const import (
-    UnitOfTime,
     EntityCategory,
+    UnitOfTime,
 )
-from .common import (
-    _process_rssi,
-    _process_uptime
-)
+
+from .common import _process_rssi, _process_uptime
+from .ducobox_classes import DucoboxSensorEntityDescription
 
 COMMBOARD_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = (
     # Wi-Fi signal strength

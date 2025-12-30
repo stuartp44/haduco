@@ -1,23 +1,24 @@
 from __future__ import annotations
+
 import logging
-from typing import Any
 from datetime import timedelta
-from retrying import retry
+from typing import Any
+
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity, DataUpdateCoordinator
-from homeassistant.components.sensor import SensorEntity
-from .const import DOMAIN, SCAN_INTERVAL, MANUFACTURER
-import asyncio
-from .comm_boards import COMMBOARD_SENSORS
-from .network import DUCONETWORK_SENSORS
-from .nodes import NODE_SENSORS
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
 from .boxes import BOX_SENSORS
 from .calibration import CALIBRATION_SENSORS
-from .ducobox_classes import DucoboxSensorEntityDescription, DucoboxNodeSensorEntityDescription
+from .comm_boards import COMMBOARD_SENSORS
+from .const import DOMAIN, MANUFACTURER, SCAN_INTERVAL
 from .coordinator import DucoboxCoordinator
+from .ducobox_classes import DucoboxNodeSensorEntityDescription, DucoboxSensorEntityDescription
+from .network import DUCONETWORK_SENSORS
+from .nodes import NODE_SENSORS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up Ducobox sensors from a config entry."""
     refresh_time = entry.options.get("refresh_time", SCAN_INTERVAL.total_seconds())
-    
+
     coordinator = DucoboxCoordinator(hass, update_interval=timedelta(seconds=refresh_time))
     await coordinator.async_config_entry_first_refresh()
 
@@ -118,7 +119,7 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list
         _LOGGER.debug(f"Node ID: {node_id}, Type: {node_type}")
         parent_box_id = find_box_addr(nodes)
         _LOGGER.debug(f"Parent Box ID: {parent_box_id}")
-        
+
         if node_type != "BOX" and node_type != "UC":
             # Use the parent box's device ID as the via_device
             via_device_id = box_device_ids.get(parent_box_id, device_id)

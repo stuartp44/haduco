@@ -1,8 +1,10 @@
 from collections.abc import Callable
 from dataclasses import dataclass
+
 from homeassistant.components.sensor import (
     SensorEntityDescription,
 )
+
 
 @dataclass(frozen=True, kw_only=True)
 class DucoboxSensorEntityDescription(SensorEntityDescription):

@@ -1,9 +1,11 @@
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from homeassistant.core import HomeAssistant
-from datetime import timedelta
 import asyncio
 import logging
+from datetime import timedelta
+
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from retrying import retry
+
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -26,7 +28,7 @@ class DucoboxCoordinator(DataUpdateCoordinator):
                 self.hass.async_add_executor_job(self._fetch_data),
                 timeout=30
             )
-        except asyncio.TimeoutError:
+        except TimeoutError:
             _LOGGER.error("Timeout occurred while fetching data from Ducobox API")
             return {}
         except Exception as e:

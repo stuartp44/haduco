@@ -1,14 +1,14 @@
 import asyncio
 import logging
+
 import requests
 import voluptuous as vol
-
+from ducopy import DucoPy
 from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 
-from ducopy import DucoPy
 from .const import DOMAIN, SCAN_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
@@ -193,12 +193,12 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             info = await asyncio.get_running_loop().run_in_executor(None, duco_client.get_info)
             duco_client.close()
             return {"base_url": base_url, "communication_board_info": info}
-        except ValueError:
-            raise ValueError("invalid_url")
-        except requests.exceptions.RequestException:
-            raise ConnectionError("cannot_connect")
-        except Exception:
-            raise RuntimeError("unknown_error")
+        except ValueError as err:
+            raise ValueError("invalid_url") from err
+        except requests.exceptions.RequestException as err:
+            raise ConnectionError("cannot_connect") from err
+        except Exception as err:
+            raise RuntimeError("unknown_error") from err
 
     def _format_base_url(self, host: str) -> str:
         parsed_url = requests.utils.urlparse(host)
@@ -224,7 +224,6 @@ class DucoboxOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
 
-        current_refresh_time = self.config_entry.options.get("refresh_time", SCAN_INTERVAL.total_seconds())
         return self.async_show_form(
             step_id="init",
             data_schema=OPTIONS_SCHEMA,

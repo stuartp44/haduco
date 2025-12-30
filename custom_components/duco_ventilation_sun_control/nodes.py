@@ -1,19 +1,14 @@
-from .ducobox_classes import DucoboxNodeSensorEntityDescription
-from .common import (
-    _process_node_co2, 
-    _process_node_humidity, 
-    _process_node_iaq, 
-    _process_node_temperature
-)
 from homeassistant.components.sensor import (
     SensorDeviceClass,
 )
 from homeassistant.const import (
-    UnitOfTemperature,
-    PERCENTAGE,
     CONCENTRATION_PARTS_PER_MILLION,
-
+    PERCENTAGE,
+    UnitOfTemperature,
 )
+
+from .common import _process_node_co2, _process_node_humidity, _process_node_iaq, _process_node_temperature
+from .ducobox_classes import DucoboxNodeSensorEntityDescription
 
 NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
     'UCCO2': [
