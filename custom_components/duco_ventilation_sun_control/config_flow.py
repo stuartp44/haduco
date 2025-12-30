@@ -182,7 +182,9 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             },
         )
 
-    async def _get_entry_info(self, result: dict, discovery_context: dict | None = None) -> tuple[dict[str, str | dict], dict | None]:
+    async def _get_entry_info(
+        self, result: dict, discovery_context: dict | None = None
+    ) -> tuple[dict[str, str | dict], dict | None]:
         info = result["communication_board_info"]
         mac = info.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val", "").replace(":", "")
         ip = info.get("General", {}).get("Lan", {}).get("Ip", {}).get("Val", "")
