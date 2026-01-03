@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from typing import Any
 
@@ -32,7 +33,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     log_level = log_level_map.get(debug_verbosity, "WARNING")
 
     try:
-        duco_client = DucoPy(base_url=base_url, verify=False, log_level=log_level)
+        # Initialize DucoPy in executor to avoid blocking the event loop
+        def _init_client():
+            return DucoPy(base_url=base_url, verify=False, log_level=log_level)
+        
+        duco_client = await asyncio.get_running_loop().run_in_executor(None, _init_client)
         _LOGGER.debug(f"DucoPy initialized with base URL: {base_url}")
         hass.data.setdefault(DOMAIN, {})
         hass.data[DOMAIN] = duco_client
