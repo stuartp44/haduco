@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.2](https://github.com/stuartp44/haduco/compare/v1.1.1...v1.1.2) (2026-01-03)
+
+
+### Bug Fixes
+
+* simplify return values in find_box_addr and get_mac_address functions ([486e3ec](https://github.com/stuartp44/haduco/commit/486e3ec9390570d29404434775029fb4fad9f7a2))
+
 ## [1.1.1](https://github.com/stuartp44/haduco/compare/v1.1.0...v1.1.1) (2026-01-03)
 
 
