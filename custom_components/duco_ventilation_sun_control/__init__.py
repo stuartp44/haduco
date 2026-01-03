@@ -37,15 +37,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # The library auto-detects board generation (Connectivity vs Communication/Print)
         def _init_client():
             return DucoPy(base_url=base_url, verify=False, log_level=log_level)
-        
+
         duco_client = await asyncio.get_running_loop().run_in_executor(None, _init_client)
         _LOGGER.info(f"DucoPy initialized with base URL: {base_url}")
-        
+
         # Log detected board information
-        if hasattr(duco_client.client, '_board_type') and duco_client.client._board_type:
+        if hasattr(duco_client.client, "_board_type") and duco_client.client._board_type:
             _LOGGER.info(f"Detected board type: {duco_client.client._board_type}")
             _LOGGER.info(f"API generation: {duco_client.client._generation}")
-        
+
         hass.data.setdefault(DOMAIN, {})
         hass.data[DOMAIN] = duco_client
     except Exception as ex:
