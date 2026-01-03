@@ -23,10 +23,16 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Ducobox from a config entry."""
     base_url = entry.data["base_url"]
+    debug_verbosity = entry.options.get("debug_verbosity", 0)
     _LOGGER.debug(f"Base URL from config entry: {base_url}")
+    _LOGGER.debug(f"Debug verbosity: {debug_verbosity}")
+
+    # Map verbosity level to log level string
+    log_level_map = {0: "WARNING", 1: "INFO", 2: "DEBUG", 3: "DEBUG"}
+    log_level = log_level_map.get(debug_verbosity, "WARNING")
 
     try:
-        duco_client = DucoPy(base_url=base_url, verify=False)
+        duco_client = DucoPy(base_url=base_url, verify=False, log_level=log_level)
         _LOGGER.debug(f"DucoPy initialized with base URL: {base_url}")
         hass.data.setdefault(DOMAIN, {})
         hass.data[DOMAIN] = duco_client

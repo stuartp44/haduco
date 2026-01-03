@@ -24,6 +24,9 @@ OPTIONS_SCHEMA = vol.Schema(
         vol.Required("refresh_time", default=SCAN_INTERVAL.total_seconds()): vol.All(
             vol.Coerce(int), vol.Range(min=10, max=3600)
         ),
+        vol.Optional("debug_verbosity", default=0): vol.All(
+            vol.Coerce(int), vol.Range(min=0, max=3)
+        ),
     }
 )
 
@@ -44,13 +47,13 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         if not self._is_valid_discovery(discovery_info):
             return self.async_abort(reason="not_duco_air_device")
 
-        host, unique_id = self._extract_discovery_info(discovery_info)
+        host, unique_id, scheme = self._extract_discovery_info(discovery_info)
         await self.async_set_unique_id(unique_id)
 
-        if self._is_existing_entry(unique_id, host):
+        if self._is_existing_entry(unique_id, host, scheme):
             return self.async_abort(reason="already_configured")
 
-        self.context["discovery"] = {"host": host, "unique_id": unique_id}
+        self.context["discovery"] = {"host": host, "unique_id": unique_id, "scheme": scheme}
         return await self.async_step_confirm()
 
     async def async_step_confirm(self, user_input: dict[str, str] | None = None) -> FlowResult:
@@ -138,25 +141,29 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         valid_names = ["duco_", "duco "]
         return any(discovery_info.name.lower().startswith(x) for x in valid_names)
 
-    def _extract_discovery_info(self, discovery_info: ZeroconfServiceInfo) -> tuple[str, str]:
+    def _extract_discovery_info(self, discovery_info: ZeroconfServiceInfo) -> tuple[str, str, str]:
         host = discovery_info.addresses[0]
         unique_id = (discovery_info.properties.get("MAC") or "").replace(":", "")
-        return host, unique_id
+        # Determine scheme from service type
+        scheme = "https" if "_https._tcp.local." in discovery_info.type else "http"
+        return host, unique_id, scheme
 
-    def _is_existing_entry(self, unique_id: str, host: str | None = None) -> bool:
+    def _is_existing_entry(self, unique_id: str, host: str | None = None, scheme: str = "http") -> bool:
         for entry in self.hass.config_entries.async_entries(DOMAIN):
             if entry.unique_id == unique_id:
-                if host and entry.data.get("base_url") != f"https://{host}":
+                if host and entry.data.get("base_url") != f"{scheme}://{host}":
                     self.hass.config_entries.async_update_entry(
-                        entry, data={**entry.data, "base_url": f"https://{host}"}
+                        entry, data={**entry.data, "base_url": f"{scheme}://{host}"}
                     )
                 return True
         return False
 
     async def _create_entry_from_discovery(self, discovery: dict) -> FlowResult:
         """Create a config entry from discovery data."""
-        comm_info = await self._get_duco_comm_board_info(discovery["host"])
-        product_entry_info, _ = await self._get_entry_info(comm_info)
+        scheme = discovery.get("scheme", "http")
+        base_url = f"{scheme}://{discovery['host']}"
+        comm_info = await self._get_duco_comm_board_info(base_url)
+        product_entry_info, _ = await self._get_entry_info(comm_info, scheme)
 
         # Set placeholders for flow_title
         board_type = product_entry_info["data"].get("board_type", "Duco")
@@ -183,7 +190,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         )
 
     async def _get_entry_info(
-        self, result: dict, discovery_context: dict | None = None
+        self, result: dict, scheme: str = "http", discovery_context: dict | None = None
     ) -> tuple[dict[str, str | dict], dict | None]:
         info = result["communication_board_info"]
         mac = info.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val", "").replace(":", "")
@@ -195,18 +202,25 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         return {
             "title": f"{board_type} ({mac})",  # only used if flow_title not applied
             "data": {
-                "base_url": f"https://{ip}",
+                "base_url": f"{scheme}://{ip}",
                 "unique_id": mac,
                 "board_type": board_type,  # ← ensure this is present
             },
         }, {"name": f"{board_type} ({mac})"} if discovery_context else None
 
-    async def _get_duco_comm_board_info(self, host: str) -> dict:
+    async def _get_duco_comm_board_info(self, url: str) -> dict:
         try:
-            base_url = self._format_base_url(host)
-            duco_client = DucoPy(base_url=base_url, verify=False)
-            info = await asyncio.get_running_loop().run_in_executor(None, duco_client.get_info)
-            duco_client.close()
+            base_url = self._format_base_url(url)
+            
+            def _get_info():
+                # Use WARNING level for config flow to avoid cluttering logs during setup
+                client = DucoPy(base_url=base_url, verify=False, log_level="WARNING")
+                try:
+                    return client.get_info()
+                finally:
+                    client.close()
+            
+            info = await asyncio.get_running_loop().run_in_executor(None, _get_info)
             return {"base_url": base_url, "communication_board_info": info}
         except ValueError as err:
             raise ValueError("invalid_url") from err
@@ -218,8 +232,8 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
     def _format_base_url(self, host: str) -> str:
         parsed_url = requests.utils.urlparse(host)
         if not parsed_url.scheme:
-            return f"https://{host}"
-        if parsed_url.scheme != "https":
+            return f"http://{host}"
+        if parsed_url.scheme not in ("http", "https"):
             raise ValueError("Invalid URL scheme")
         return host
 
