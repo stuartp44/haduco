@@ -24,9 +24,7 @@ OPTIONS_SCHEMA = vol.Schema(
         vol.Required("refresh_time", default=SCAN_INTERVAL.total_seconds()): vol.All(
             vol.Coerce(int), vol.Range(min=10, max=3600)
         ),
-        vol.Optional("debug_verbosity", default=0): vol.All(
-            vol.Coerce(int), vol.Range(min=0, max=3)
-        ),
+        vol.Optional("debug_verbosity", default=0): vol.All(vol.Coerce(int), vol.Range(min=0, max=3)),
     }
 )
 
