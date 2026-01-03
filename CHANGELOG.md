@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.4](https://github.com/stuartp44/haduco/compare/v1.0.3...v1.0.4) (2026-01-03)
+
+
+### Bug Fixes
+
+* correct URL encoding in requirements for ducopy branch ([2e50d73](https://github.com/stuartp44/haduco/commit/2e50d731f88e935441c41c1e9927b615f45d6b47))
+
 ## [1.0.3](https://github.com/stuartp44/haduco/compare/v1.0.2...v1.0.3) (2026-01-03)
 
 
