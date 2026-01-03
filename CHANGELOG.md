@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0](https://github.com/stuartp44/haduco/compare/v1.0.5...v1.1.0) (2026-01-03)
+
+
+### Features
+
+* add debug verbosity option and improve logging in Ducobox integration ([13cb96f](https://github.com/stuartp44/haduco/commit/13cb96fc5fab3800221e9969fe5ae6258da5b6c0))
+
+
+### Bug Fixes
+
+* remove unnecessary blank lines in Ducobox config flow ([09fe2a8](https://github.com/stuartp44/haduco/commit/09fe2a8103dfb450782306802cb42f1c62a5f131))
+* streamline debug verbosity option definition in OPTIONS_SCHEMA ([e8d33f8](https://github.com/stuartp44/haduco/commit/e8d33f82bb6ac3e9c4fdd06d8e313ddf6edf64da))
+
 ## [1.0.5](https://github.com/stuartp44/haduco/compare/v1.0.4...v1.0.5) (2026-01-03)
 
 
