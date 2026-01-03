@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.2](https://github.com/stuartp44/haduco/compare/v1.0.1...v1.0.2) (2026-01-03)
+
+
+### Bug Fixes
+
+* update requirements to use specific ducopy branch for enhanced functionality ([d9c55bb](https://github.com/stuartp44/haduco/commit/d9c55bbb1f75b6af10b8c3a81dda59d81cf5f728))
+
 ## [1.0.1](https://github.com/stuartp44/haduco/compare/v1.0.0...v1.0.1) (2025-12-30)
 
 
