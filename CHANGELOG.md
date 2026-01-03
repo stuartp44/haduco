@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.5](https://github.com/stuartp44/haduco/compare/v1.0.4...v1.0.5) (2026-01-03)
+
+
+### Bug Fixes
+
+* correct requirements format for ducopy dependency in manifest.json ([901497d](https://github.com/stuartp44/haduco/commit/901497dc4099dd71b9d3a40114be89e827b50d0a))
+
 ## [1.0.4](https://github.com/stuartp44/haduco/compare/v1.0.3...v1.0.4) (2026-01-03)
 
 
