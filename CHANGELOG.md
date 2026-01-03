@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1](https://github.com/stuartp44/haduco/compare/v1.1.0...v1.1.1) (2026-01-03)
+
+
+### Bug Fixes
+
+* enhance DucoPy initialization error handling for older board types ([da5fc16](https://github.com/stuartp44/haduco/commit/da5fc1618dc3fd94f74ab1162713a577bfdc5ba2))
+* improve DucoPy client initialization and logging for detected board information ([e701c79](https://github.com/stuartp44/haduco/commit/e701c79a410174d5a13fd9882b3122272447b916))
+* improve DucoPy initialization and logging for better error handling and board detection ([c8691a7](https://github.com/stuartp44/haduco/commit/c8691a7b2bdb093aa083d4a2204a51f61e0808b4))
+* initialize DucoPy in executor to prevent blocking the event loop ([fd22a70](https://github.com/stuartp44/haduco/commit/fd22a70258b89bdb31f0478c2874170a1d640663))
+
 ## [1.1.0](https://github.com/stuartp44/haduco/compare/v1.0.5...v1.1.0) (2026-01-03)
 
 
