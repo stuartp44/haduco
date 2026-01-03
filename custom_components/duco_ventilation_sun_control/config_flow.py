@@ -211,7 +211,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
     async def _get_duco_comm_board_info(self, url: str) -> dict:
         try:
             base_url = self._format_base_url(url)
-            
+
             def _get_info():
                 # Use WARNING level for config flow to avoid cluttering logs during setup
                 client = DucoPy(base_url=base_url, verify=False, log_level="WARNING")
@@ -219,7 +219,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
                     return client.get_info()
                 finally:
                     client.close()
-            
+
             info = await asyncio.get_running_loop().run_in_executor(None, _get_info)
             return {"base_url": base_url, "communication_board_info": info}
         except ValueError as err:
