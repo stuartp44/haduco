@@ -55,13 +55,13 @@ def find_box_addr(nodes: list[dict]) -> int | None:
     """Find the Addr of the first node where the type is BOX."""
     for node in nodes:
         if node.get("General", {}).get("Type", {}).get("Val") == "BOX":
-            return (node.get("General", {}).get("Addr"),)
+            return node.get("General", {}).get("Addr", {}).get("Val")
     return None
 
 
 def get_mac_address(coordinator: DucoboxCoordinator) -> str | None:
     """Retrieve the MAC address from the coordinator data."""
-    return (coordinator.data.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val"),)
+    return coordinator.data.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val")
 
 
 def create_device_info(coordinator: DucoboxCoordinator, device_id: str) -> DeviceInfo:
