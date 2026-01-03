@@ -2,6 +2,7 @@ import asyncio
 import logging
 from typing import Any
 
+import urllib3.exceptions
 from ducopy import DucoPy
 from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
 from homeassistant.core import HomeAssistant
@@ -35,12 +36,32 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     try:
         # Initialize DucoPy in executor to avoid blocking the event loop
         def _init_client():
-            return DucoPy(base_url=base_url, verify=False, log_level=log_level)
+            try:
+                return DucoPy(base_url=base_url, verify=False, log_level=log_level)
+            except urllib3.exceptions.HeaderParsingError as e:
+                # Communication and Print boards may return malformed headers
+                # This is expected for older board types that don't support API keys
+                _LOGGER.warning(
+                    "Communication/Print board detected (older generation). "
+                    "API key authentication not available: %s", str(e)
+                )
+                # Try again without expecting proper API key support
+                # The library should handle this internally
+                raise
+            except Exception as e:
+                _LOGGER.error("Error initializing DucoPy client: %s", str(e))
+                raise
         
         duco_client = await asyncio.get_running_loop().run_in_executor(None, _init_client)
         _LOGGER.debug(f"DucoPy initialized with base URL: {base_url}")
         hass.data.setdefault(DOMAIN, {})
         hass.data[DOMAIN] = duco_client
+    except urllib3.exceptions.HeaderParsingError as ex:
+        _LOGGER.error(
+            "Could not connect to Ducobox. This appears to be a Communication/Print board "
+            "with malformed HTTP headers. This board type may not be fully supported yet: %s", ex
+        )
+        raise ConfigEntryNotReady from ex
     except Exception as ex:
         _LOGGER.error("Could not connect to Ducobox: %s", ex)
         raise ConfigEntryNotReady from ex
