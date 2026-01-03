@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.3](https://github.com/stuartp44/haduco/compare/v1.0.2...v1.0.3) (2026-01-03)
+
+
+### Bug Fixes
+
+* add missing zeroconf service for HTTP in manifest.json ([826edd5](https://github.com/stuartp44/haduco/commit/826edd53bc137fddcd852d41746453b866cb367c))
+
 ## [1.0.2](https://github.com/stuartp44/haduco/compare/v1.0.1...v1.0.2) (2026-01-03)
 
 
