@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.2](https://github.com/stuartp44/haduco/compare/v1.4.1...v1.4.2) (2026-01-04)
+
+
+### Bug Fixes
+
+* update calibration and sensor creation logic to improve data retrieval and filtering ([5e294c6](https://github.com/stuartp44/haduco/commit/5e294c6cc968be61f83d11ecfd6b51444db2bc8d))
+
 ## [1.4.1](https://github.com/stuartp44/haduco/compare/v1.4.0...v1.4.1) (2026-01-04)
 
 
