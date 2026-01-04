@@ -38,8 +38,9 @@ async def async_setup_entry(
     device_id = mac_address.lower()
     nodes = coordinator.data.get("Nodes", [])
     box_device_ids = get_box_device_ids(device_id, nodes)
+    board_type = entry.data.get("board_type", "")
 
-    entities = await create_select_entities(hass, coordinator, device_id, nodes, box_device_ids)
+    entities = await create_select_entities(hass, coordinator, device_id, nodes, box_device_ids, board_type)
     if entities:
         async_add_entities(entities, update_before_add=True)
 
@@ -70,9 +71,21 @@ async def create_select_entities(
     device_id: str,
     nodes: list[dict],
     box_device_ids: dict[int, str],
+    board_type: str,
 ) -> list[SelectEntity]:
     """Create all select entities for Ducobox nodes."""
     entities = []
+    is_comm_print_board = "Communication" in board_type or "Print" in board_type
+    
+    # Default options for Communication/Print boards (standard DUCO ventilation states)
+    default_options = [
+        "AUTO", "AUT1", "AUT2", "AUT3",
+        "MAN1", "MAN2", "MAN3",
+        "EMPT",
+        "CNT1", "CNT2", "CNT3",
+        "MANx2", "MAN2x2", "MAN3x2",
+        "MAN1x3", "MAN2x3", "MAN3x3"
+    ]
 
     for node in nodes:
         node_id = node.get("Node")
@@ -96,50 +109,58 @@ async def create_select_entities(
             via_device_id = None
         via_device = (DOMAIN, via_device_id) if via_device_id else None
 
-        try:
-            actions_response = await hass.async_add_executor_job(coordinator.client.get_actions_node, node_id)
-            ventilation_action = next(
-                (a for a in actions_response.Actions if a.Action == "SetVentilationState" and hasattr(a, "Enum")),
-                None,
+        if node_type == "BOX":
+            model = (
+                coordinator.data.get("General", {})
+                .get("Board", {})
+                .get("BoxName", {})
+                .get("Val", "Unknown")
+                .capitalize()
             )
-            if not ventilation_action or not ventilation_action.Enum:
+        else:
+            model = node_type
+
+        node_device_id = f"{device_id}-{node_id}"
+        
+        # For Communication/Print boards, use default options without API call
+        if is_comm_print_board:
+            options = default_options
+            _LOGGER.debug(f"[SELECT] Using default options for node {node_id} (Communication/Print board)")
+        else:
+            # For Connectivity boards, query available actions from API
+            try:
+                actions_response = await hass.async_add_executor_job(coordinator.client.get_actions_node, node_id)
+                ventilation_action = next(
+                    (a for a in actions_response.Actions if a.Action == "SetVentilationState" and hasattr(a, "Enum")),
+                    None,
+                )
+                if not ventilation_action or not ventilation_action.Enum:
+                    _LOGGER.debug(f"[SELECT] No ventilation action found for node {node_id}")
+                    continue
+                options = [opt.strip() for opt in ventilation_action.Enum if isinstance(opt, str)]
+            except Exception as e:
+                _LOGGER.warning(f"[SELECT] Failed to retrieve ventilation actions for node {node_id}: {e}")
                 continue
 
-            if node_type == "BOX":
-                model = (
-                    coordinator.data.get("General", {})
-                    .get("Board", {})
-                    .get("BoxName", {})
-                    .get("Val", "Unknown")
-                    .capitalize()
-                )
-            else:
-                model = node_type
+        device_info = DeviceInfo(
+            identifiers={(DOMAIN, node_device_id)},
+            name=node_type,
+            manufacturer=MANUFACTURER,
+            model=model,
+            via_device=via_device,
+        )
+        unique_id = f"{node_device_id}-select-ventilation_mode"
 
-            options = [opt.strip() for opt in ventilation_action.Enum if isinstance(opt, str)]
-            node_device_id = f"{device_id}-{node_id}"
-            device_info = DeviceInfo(
-                identifiers={(DOMAIN, node_device_id)},
-                name=node_type,
-                manufacturer=MANUFACTURER,
-                model=model,
-                via_device=via_device,
-            )
-            unique_id = f"{node_device_id}-select-ventilation_mode"
+        entity = DucoboxModeSelect(
+            coordinator=coordinator,
+            device_info=device_info,
+            unique_id=unique_id,
+            node_id=node_id if isinstance(node_id, int) else int(node_id) if node_id else 0,
+            options=options,
+        )
+        entities.append(entity)
 
-            entity = DucoboxModeSelect(
-                coordinator=coordinator,
-                device_info=device_info,
-                unique_id=unique_id,
-                node_id=node_id if isinstance(node_id, int) else int(node_id) if node_id else 0,
-                options=options,
-            )
-            entities.append(entity)
-
-            _LOGGER.debug(f"[SELECT] Created select for node {node_id} with options {options}")
-
-        except Exception as e:
-            _LOGGER.warning(f"[SELECT] Failed to retrieve ventilation actions for node {node_id}: {e}")
+        _LOGGER.debug(f"[SELECT] Created select for node {node_id} with options {options}")
 
     return entities
 
