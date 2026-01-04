@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.5](https://github.com/stuartp44/haduco/compare/v1.2.4...v1.2.5) (2026-01-04)
+
+
+### Bug Fixes
+
+* enhance discovery process to prefer HTTPS for modern Connectivity Boards ([bccbfa3](https://github.com/stuartp44/haduco/commit/bccbfa3d54c5051aef44667e53695f7900523342))
+* prefer HTTPS for modern Connectivity Boards during discovery process ([f4f5e6f](https://github.com/stuartp44/haduco/commit/f4f5e6f54b62bb01c1842d2313f721080a4501aa))
+
 ## [1.2.4](https://github.com/stuartp44/haduco/compare/v1.2.3...v1.2.4) (2026-01-04)
 
 
