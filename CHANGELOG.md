@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0](https://github.com/stuartp44/haduco/compare/v1.1.3...v1.2.0) (2026-01-04)
+
+
+### Features
+
+* enhance Zeroconf discovery logging and update manifest for service types ([440fe7d](https://github.com/stuartp44/haduco/commit/440fe7d2f9e84cae0dd2cfe74e5da02654570eee))
+
+
+### Bug Fixes
+
+* improve logging format in async_step_zeroconf for better readability ([78cc228](https://github.com/stuartp44/haduco/commit/78cc228499456672d2530ebd399bb8a379755776))
+
 ## [1.1.3](https://github.com/stuartp44/haduco/compare/v1.1.2...v1.1.3) (2026-01-04)
 
 
