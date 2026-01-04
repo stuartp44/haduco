@@ -143,7 +143,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         )
 
     def _is_valid_discovery(self, discovery_info: ZeroconfServiceInfo) -> bool:
-        valid_names = ["duco_", "duco "]
+        valid_names = ["duco_", "duco ", "duco["]
         return any(discovery_info.name.lower().startswith(x) for x in valid_names)
 
     def _extract_discovery_info(self, discovery_info: ZeroconfServiceInfo) -> tuple[str, str, str]:
