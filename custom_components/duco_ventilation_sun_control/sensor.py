@@ -251,7 +251,7 @@ def create_generic_node_sensors(
     # Get node-specific sw_version and serial from the node data
     node_sw_version = node.get("General", {}).get("SwVersion", {}).get("Val")
     node_serial = node.get("General", {}).get("SerialBoard")
-    
+
     node_device_info = DeviceInfo(
         identifiers={(DOMAIN, node_device_id)},
         name=node_type,
