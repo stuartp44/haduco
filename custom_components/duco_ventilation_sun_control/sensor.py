@@ -46,8 +46,8 @@ async def async_setup_entry(
     device_info = create_device_info(coordinator, entry, device_id)
 
     entities = []
-    entities.extend(create_main_sensors(coordinator, device_info, device_id))
-    entities.extend(create_node_sensors(coordinator, device_id))
+    entities.extend(create_main_sensors(coordinator, device_info, device_id, entry))
+    entities.extend(create_node_sensors(coordinator, device_id, entry))
 
     if entities:
         async_add_entities(entities, update_before_add=True)
@@ -101,14 +101,22 @@ def create_device_info(coordinator: DucoboxCoordinator, entry: ConfigEntry, devi
     )
 
 
-def create_main_sensors(coordinator: DucoboxCoordinator, device_info: DeviceInfo, device_id: str) -> list[SensorEntity]:
+def create_main_sensors(
+    coordinator: DucoboxCoordinator, device_info: DeviceInfo, device_id: str, entry: ConfigEntry
+) -> list[SensorEntity]:
     """Create main Ducobox sensors only for available data structures."""
     entities = []
     data = coordinator.data
+    board_type = entry.data.get("board_type", "")
+
+    # Filter out Wi-Fi sensor for Communication/Print boards (Ethernet only)
+    sensors = COMMBOARD_SENSORS
+    if "Communication" in board_type or "Print" in board_type:
+        sensors = [s for s in sensors if "Wifi" not in s.key]
 
     # Only create sensors if their parent data structure exists
     # For example, Wi-Fi sensor needs General.Lan, uptime needs General.Board
-    for description in COMMBOARD_SENSORS:
+    for description in sensors:
         # Check if the parent data structure exists by attempting to navigate the path
         # This is a heuristic: try to get one level before the final value
         try:
@@ -134,7 +142,7 @@ def create_main_sensors(coordinator: DucoboxCoordinator, device_info: DeviceInfo
     return entities
 
 
-def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list[SensorEntity]:
+def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str, entry: ConfigEntry) -> list[SensorEntity]:
     """Create sensors for each node, connecting them via the box."""
     entities = []
     nodes = coordinator.data.get("Nodes", [])
@@ -147,7 +155,7 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list
             node_id = node.get("Node")
             node_device_id = f"{device_id}-{node_id}"
             box_device_ids[node_id] = node_device_id
-            entities.extend(create_box_sensors(coordinator, node, node_device_id, device_id))
+            entities.extend(create_box_sensors(coordinator, node, node_device_id, device_id, entry))
 
     # Then, create sensors for other nodes, linking them via their box
     for node in nodes:
@@ -164,13 +172,15 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list
             via_device_id = box_device_ids.get(parent_box_id, device_id)
             _LOGGER.debug(f"Using via_device_id: {via_device_id} for node ID: {node_id}")
             node_device_id = f"{device_id}-{node_id}"
-            entities.extend(create_generic_node_sensors(coordinator, node, node_device_id, node_type, via_device_id))
+            entities.extend(
+                create_generic_node_sensors(coordinator, node, node_device_id, node_type, via_device_id, entry)
+            )
 
     return entities
 
 
 def create_box_sensors(
-    coordinator: DucoboxCoordinator, node: dict, node_device_id: str, device_id: str
+    coordinator: DucoboxCoordinator, node: dict, node_device_id: str, device_id: str, entry: ConfigEntry
 ) -> list[SensorEntity]:
     """Create sensors for a BOX node, including calibration and network sensors."""
     entities = []
@@ -211,21 +221,23 @@ def create_box_sensors(
             ]
         )
 
-    # Add Duco network sensors as diagnostic sensors
-    entities.extend(
-        [
-            DucoboxNodeSensorEntity(
-                coordinator=coordinator,
-                node_id=node.get("Node"),
-                description=description,
-                device_info=box_device_info,
-                unique_id=f"{node_device_id}-{description.key}",
-                device_id=device_id,
-                node_name=box_name,
-            )
-            for description in DUCONETWORK_SENSORS
-        ]
-    )
+    # Add Duco network sensors as diagnostic sensors (only for Connectivity boards)
+    board_type = entry.data.get("board_type", "")
+    if "Connectivity" in board_type:
+        entities.extend(
+            [
+                DucoboxNodeSensorEntity(
+                    coordinator=coordinator,
+                    node_id=node.get("Node"),
+                    description=description,
+                    device_info=box_device_info,
+                    unique_id=f"{node_device_id}-{description.key}",
+                    device_id=device_id,
+                    node_name=box_name,
+                )
+                for description in DUCONETWORK_SENSORS
+            ]
+        )
 
     # Add calibration sensors as diagnostic sensors
     entities.extend(
@@ -247,7 +259,12 @@ def create_box_sensors(
 
 
 def create_generic_node_sensors(
-    coordinator: DucoboxCoordinator, node: dict, node_device_id: str, node_type: str, via_device_id: str
+    coordinator: DucoboxCoordinator,
+    node: dict,
+    node_device_id: str,
+    node_type: str,
+    via_device_id: str,
+    entry: ConfigEntry,
 ) -> list[SensorEntity]:
     """Create sensors for a generic node, linking them via the specified device."""
     # Get node-specific sw_version and serial from the node data
@@ -265,6 +282,12 @@ def create_generic_node_sensors(
     )
 
     node_id = node.get("Node")
+    board_type = entry.data.get("board_type", "")
+
+    # Filter out IAQ sensors for Communication/Print boards (only available on Connectivity boards)
+    sensors = NODE_SENSORS.get(node_type, [])
+    if "Communication" in board_type or "Print" in board_type:
+        sensors = [s for s in sensors if "Iaq" not in s.key]
 
     return [
         DucoboxNodeSensorEntity(
@@ -276,7 +299,7 @@ def create_generic_node_sensors(
             device_id=via_device_id,
             node_name=node_type,
         )
-        for description in NODE_SENSORS.get(node_type, [])
+        for description in sensors
     ]
 
 
