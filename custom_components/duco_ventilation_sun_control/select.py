@@ -121,12 +121,7 @@ async def create_select_entities(
         via_device = (DOMAIN, via_device_id) if via_device_id else None
 
         if node_type == "BOX":
-            box_name = (
-                coordinator.data.get("General", {})
-                .get("Board", {})
-                .get("BoxName", {})
-                .get("Val", "")
-            )
+            box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "")
             # Fallback to node type if box_name is empty or "Unknown"
             if not box_name or box_name.lower() == "unknown":
                 model = node_type
