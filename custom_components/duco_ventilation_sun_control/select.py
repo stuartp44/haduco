@@ -44,7 +44,7 @@ async def async_setup_entry(
 
 def get_mac_address(coordinator: DucoboxCoordinator) -> str | None:
     """Retrieve MAC address from coordinator data."""
-    return (coordinator.data.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val"),)
+    return coordinator.data.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val")
 
 
 def get_box_device_ids(device_id: str, nodes: list[dict]) -> dict[int, str]:
@@ -52,7 +52,7 @@ def get_box_device_ids(device_id: str, nodes: list[dict]) -> dict[int, str]:
     box_ids = {}
     for node in nodes:
         if node.get("General", {}).get("Type", {}).get("Val") == "BOX":
-            node_id = (int(node.get("Node")),)
+            node_id = int(node.get("Node"))
             box_ids[node_id] = f"{device_id}-{node_id}"
     _LOGGER.debug(f"[SELECT] BOX device IDs: {box_ids}")
     return box_ids

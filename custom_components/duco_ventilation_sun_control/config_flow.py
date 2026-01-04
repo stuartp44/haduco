@@ -143,7 +143,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         host = discovery_info.addresses[0]
         unique_id = (discovery_info.properties.get("MAC") or "").replace(":", "")
         # Determine scheme from service type
-        scheme = "https" if "_https._tcp.local." in discovery_info.type else "http"
+        scheme = "https" if "_https._tcp" in discovery_info.type else "http"
         return host, unique_id, scheme
 
     def _is_existing_entry(self, unique_id: str, host: str | None = None, scheme: str = "http") -> bool:
