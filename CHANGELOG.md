@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.3](https://github.com/stuartp44/haduco/compare/v1.1.2...v1.1.3) (2026-01-04)
+
+
+### Bug Fixes
+
+* refine MAC address retrieval and improve node ID handling in select.py ([4c581c0](https://github.com/stuartp44/haduco/commit/4c581c0a3661fa88b94726ec1c615a95282f9c0c))
+
 ## [1.1.2](https://github.com/stuartp44/haduco/compare/v1.1.1...v1.1.2) (2026-01-03)
 
 
