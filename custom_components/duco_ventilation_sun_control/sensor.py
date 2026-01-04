@@ -248,11 +248,17 @@ def create_generic_node_sensors(
     coordinator: DucoboxCoordinator, node: dict, node_device_id: str, node_type: str, via_device_id: str
 ) -> list[SensorEntity]:
     """Create sensors for a generic node, linking them via the specified device."""
+    # Get node-specific sw_version and serial from the node data
+    node_sw_version = node.get("General", {}).get("SwVersion", {}).get("Val")
+    node_serial = node.get("General", {}).get("SerialBoard")
+    
     node_device_info = DeviceInfo(
         identifiers={(DOMAIN, node_device_id)},
         name=node_type,
         manufacturer=MANUFACTURER,
         model=node_type,
+        sw_version=node_sw_version,
+        serial_number=node_serial,
         via_device=(DOMAIN, via_device_id),
     )
 
