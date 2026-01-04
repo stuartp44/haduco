@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.3](https://github.com/stuartp44/haduco/compare/v1.2.2...v1.2.3) (2026-01-04)
+
+
+### Bug Fixes
+
+* add debug logging for existing entry checks in config flow ([c019ca5](https://github.com/stuartp44/haduco/commit/c019ca5dd98ac3cca7519c09f06d44c882f6b679))
+
 ## [1.2.2](https://github.com/stuartp44/haduco/compare/v1.2.1...v1.2.2) (2026-01-04)
 
 
