@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.11](https://github.com/stuartp44/haduco/compare/v1.3.10...v1.3.11) (2026-01-04)
+
+
+### Bug Fixes
+
+* enhance sensor creation logic by ensuring parent data structures exist before creating entities ([6e90161](https://github.com/stuartp44/haduco/commit/6e90161bf4aa6fd0491b9440180479405ceecd5c))
+
 ## [1.3.10](https://github.com/stuartp44/haduco/compare/v1.3.9...v1.3.10) (2026-01-04)
 
 
