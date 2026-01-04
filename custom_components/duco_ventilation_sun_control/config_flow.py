@@ -91,22 +91,30 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         """Ask user to confirm adding the discovered device."""
         discovery = self.context.get("discovery", {})
         host = discovery.get("host", "unknown")
+        scheme = discovery.get("scheme", "http")
         unique_id = discovery.get("unique_id", "unknown")
-        board_type = "Connectivity Board"
+        board_type = "DUCO Board"  # Generic fallback
 
         if user_input is not None:
             return await self._create_entry_from_discovery(discovery)
 
         try:
-            comm_info = await self._get_duco_comm_board_info(host)
+            base_url = f"{scheme}://{host}"
+            comm_info = await self._get_duco_comm_board_info(base_url)
+            # Try to get the actual board type from the API
             board_type = (
                 comm_info["communication_board_info"]
                 .get("General", {})
                 .get("Board", {})
                 .get("CommSubTypeName", {})
-                .get("Val", board_type)
-                .capitalize()
+                .get("Val", "")
             )
+            # If we got a board type, capitalize it, otherwise use generic name
+            if board_type:
+                board_type = f"{board_type} Board"
+            else:
+                board_type = "DUCO Board"
+            
             unique_id = (
                 comm_info["communication_board_info"]
                 .get("General", {})
