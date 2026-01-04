@@ -77,16 +77,17 @@ def get_mac_from_coordinator(coordinator: DucoboxCoordinator) -> str | None:
     return None
 
 
-def create_device_info(coordinator: DucoboxCoordinator, coordinator: DucoboxCoordinator, entry: ConfigEntry, device_id: str) -> DeviceInfo:
+def create_device_info(
+    coordinator: DucoboxCoordinator, coordinator: DucoboxCoordinator, entry: ConfigEntry, device_id: str
+) -> DeviceInfo:
     """Create device info for the main Ducobox."""
     # Try to get board info from coordinator (library should normalize this)
     data = coordinator.data
-    board_type = (
-        data.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val")
-        or entry.data.get("board_type", "DUCO Board")
+    board_type = data.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val") or entry.data.get(
+        "board_type", "DUCO Board"
     )
     hostname = data.get("General", {}).get("Lan", {}).get("HostName", {}).get("Val")
-    
+
     return DeviceInfo(
         identifiers={(DOMAIN, device_id)},
         name=hostname or f"{board_type} ({device_id})",
