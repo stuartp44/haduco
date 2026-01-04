@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.8](https://github.com/stuartp44/haduco/compare/v1.2.7...v1.2.8) (2026-01-04)
+
+
+### Bug Fixes
+
+* clean up DucoPy client on unload by ensuring proper closure of HTTP session ([96e4821](https://github.com/stuartp44/haduco/commit/96e48215a93508f855f0b07d47dc1ee7a729c635))
+* correct log level mapping and enhance cleanup of DucoPy client on unload ([c771336](https://github.com/stuartp44/haduco/commit/c771336a123e7fd8ed20596c0997844c720b145d))
+* enhance logging and increase sleep duration for device command processing in DucoboxModeSelect ([302474c](https://github.com/stuartp44/haduco/commit/302474cff42ccaa9d06496a44aa89ecfdc6c1718))
+* enhance mock setup for DucoPy client and improve integration tests ([925924c](https://github.com/stuartp44/haduco/commit/925924c4be4886f7e8fbeb23e02b66bdf07fc543))
+* improve error handling and data retrieval in DucoboxCoordinator ([69c1613](https://github.com/stuartp44/haduco/commit/69c161345e6acb94d8f6e204b7f3b56875c1ba24))
+* remove unused import of MagicMock in test_init.py ([26c873e](https://github.com/stuartp44/haduco/commit/26c873e36ce7e486592dae7916c07d46665674fc))
+* update IP address if changed for existing device configurations and improve error handling in data fetching ([a054eb3](https://github.com/stuartp44/haduco/commit/a054eb38028e6b093dae16d60bc30deab34b2ded))
+* update type hints and improve documentation in coordinator.py; enhance commit instructions ([ad72e39](https://github.com/stuartp44/haduco/commit/ad72e3909229b06eadbb93776126b7aa28a1f16e))
+
+
+### Documentation
+
+* add instructions for running ruff checks and formatting before committing ([a27ae86](https://github.com/stuartp44/haduco/commit/a27ae863c5290997b64294cb89d68307143e7844))
+
 ## [1.2.7](https://github.com/stuartp44/haduco/compare/v1.2.6...v1.2.7) (2026-01-04)
 
 
