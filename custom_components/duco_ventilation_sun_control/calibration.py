@@ -10,7 +10,8 @@ CALIBRATION_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = (
         key="CalibrationStatus",
         name="Calibration Status",
         value_fn=lambda data: _process_calibration_status(
-            data.get("general_data", {}).get("Calibration", {}).get("CalibIsValid", {}).get("Val"),
+            # Library normalizes calibration data for both board types
+            data.get("general_data", {}).get("Calibration", {}).get("CalibIsValid", {}).get("Val")
         ),
         icon="mdi:progress-wrench",
         sensor_key="CalibrationStatus",
@@ -21,7 +22,8 @@ CALIBRATION_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = (
         key="CalibrationState",
         name="Calibration State",
         value_fn=lambda data: _process_calibration_state(
-            data.get("general_data", {}).get("Calibration", {}).get("CalibState", {}).get("Val"),
+            # Library normalizes calibration data for both board types
+            data.get("general_data", {}).get("Calibration", {}).get("CalibState", {}).get("Val")
         ),
         icon="mdi:progress-wrench",
         sensor_key="CalibrationState",
