@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.8](https://github.com/stuartp44/haduco/compare/v1.3.7...v1.3.8) (2026-01-04)
+
+
+### Bug Fixes
+
+* enhance MAC address extraction and improve unique ID handling in config flow ([157a990](https://github.com/stuartp44/haduco/commit/157a9901303c0552db16e7191d3a19648783984c))
+* handle MAC address extraction error in config flow ([205a610](https://github.com/stuartp44/haduco/commit/205a61021ff84b5eeada2c93dc1fed006f818d8c))
+
 ## [1.3.7](https://github.com/stuartp44/haduco/compare/v1.3.6...v1.3.7) (2026-01-04)
 
 
