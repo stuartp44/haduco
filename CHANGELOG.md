@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.7](https://github.com/stuartp44/haduco/compare/v1.2.6...v1.2.7) (2026-01-04)
+
+
+### Bug Fixes
+
+* handle both normalized and non-normalized formats in find_box_addr function ([e96616e](https://github.com/stuartp44/haduco/commit/e96616eae5d224f11b6d8260796675d9db90215f))
+
 ## [1.2.6](https://github.com/stuartp44/haduco/compare/v1.2.5...v1.2.6) (2026-01-04)
 
 
