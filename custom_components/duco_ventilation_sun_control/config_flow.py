@@ -307,7 +307,20 @@ class DucoboxOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
 
+        # Get current values or use defaults
+        current_refresh_time = self.config_entry.options.get("refresh_time", SCAN_INTERVAL.total_seconds())
+        current_debug_verbosity = self.config_entry.options.get("debug_verbosity", 0)
+
         return self.async_show_form(
             step_id="init",
-            data_schema=OPTIONS_SCHEMA,
+            data_schema=vol.Schema(
+                {
+                    vol.Required("refresh_time", default=current_refresh_time): vol.All(
+                        vol.Coerce(int), vol.Range(min=10, max=3600)
+                    ),
+                    vol.Optional("debug_verbosity", default=current_debug_verbosity): vol.All(
+                        vol.Coerce(int), vol.Range(min=0, max=3)
+                    ),
+                }
+            ),
         )
