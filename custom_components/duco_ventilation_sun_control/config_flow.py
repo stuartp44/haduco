@@ -159,7 +159,12 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         return host, unique_id, scheme
 
     def _is_existing_entry(self, unique_id: str, host: str | None = None, scheme: str = "http") -> bool:
-        for entry in self.hass.config_entries.async_entries(DOMAIN):
+        entries = self.hass.config_entries.async_entries(DOMAIN)
+        _LOGGER.debug("Checking if device exists. unique_id=%s, entries=%s", unique_id, len(entries))
+        for entry in entries:
+            _LOGGER.debug(
+                "Comparing with entry: unique_id=%s, base_url=%s", entry.unique_id, entry.data.get("base_url")
+            )
             if entry.unique_id == unique_id:
                 if host and entry.data.get("base_url") != f"{scheme}://{host}":
                     self.hass.config_entries.async_update_entry(
