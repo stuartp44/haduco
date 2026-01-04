@@ -161,8 +161,15 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         host = user_input["host"]
         try:
             comm_info = await self._get_duco_comm_board_info(host)
-            product_entry_info, _ = await self._get_entry_info(comm_info, host)
-            unique_id = product_entry_info["data"]["unique_id"]
+            # Extract MAC from the communication board info
+            info = comm_info["communication_board_info"]
+            mac = info.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val", "")
+            if mac:
+                unique_id = mac.replace(":", "").lower()
+            else:
+                raise ValueError("Could not extract MAC address from device")
+            
+            product_entry_info, _ = await self._get_entry_info(comm_info, host, unique_id)
             board_type = product_entry_info["data"].get("board_type", "Duco")
 
             await self.async_set_unique_id(unique_id)
@@ -239,13 +246,13 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         """Create a config entry from discovery data."""
         scheme = discovery.get("scheme", "http")
         host = discovery["host"]
+        unique_id = discovery["unique_id"]  # Use MAC from discovery
         base_url = f"{scheme}://{host}"
         comm_info = await self._get_duco_comm_board_info(base_url)
-        product_entry_info, _ = await self._get_entry_info(comm_info, host, scheme)
+        product_entry_info, _ = await self._get_entry_info(comm_info, host, unique_id, scheme)
 
         # Set placeholders for flow_title
         board_type = product_entry_info["data"].get("board_type", "Duco")
-        unique_id = product_entry_info["data"]["unique_id"]
 
         self.context["title_placeholders"] = {
             "board_type": board_type,
@@ -268,10 +275,12 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         )
 
     async def _get_entry_info(
-        self, result: dict, host: str, scheme: str = "http", discovery_context: dict | None = None
+        self, result: dict, host: str, unique_id: str, scheme: str = "http", discovery_context: dict | None = None
     ) -> tuple[dict[str, str | dict], dict | None]:
         info = result["communication_board_info"]
-        mac = info.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val", "").replace(":", "")
+        # Use provided unique_id instead of trying to extract from API
+        # (Communication/Print board doesn't return MAC in /info endpoint)
+        mac = unique_id
         board_type = (
             info.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "Connectivity Board")
         )
