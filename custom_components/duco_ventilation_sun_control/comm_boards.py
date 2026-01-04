@@ -30,7 +30,8 @@ COMMBOARD_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.DURATION,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda data: _process_uptime(
-            data.get("BoardInfo", {}).get("Uptime") or data.get("General", {}).get("Board", {}).get("UpTime", {}).get("Val")
+            data.get("BoardInfo", {}).get("Uptime")
+            or data.get("General", {}).get("Board", {}).get("UpTime", {}).get("Val")
         ),
     ),
 )
