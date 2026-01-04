@@ -55,7 +55,11 @@ def find_box_addr(nodes: list[dict]) -> int | None:
     """Find the Addr of the first node where the type is BOX."""
     for node in nodes:
         if node.get("General", {}).get("Type", {}).get("Val") == "BOX":
-            return node.get("General", {}).get("Addr", {}).get("Val")
+            addr = node.get("General", {}).get("Addr")
+            if addr is None:
+                # If Addr is None, use the Node ID
+                return node.get("Node")
+            return addr.get("Val")
     return None
 
 
