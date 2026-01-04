@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.11](https://github.com/stuartp44/haduco/compare/v1.2.10...v1.2.11) (2026-01-04)
+
+
+### Code Refactoring
+
+* remove unnecessary constructor from DucoboxOptionsFlowHandler ([353b2e7](https://github.com/stuartp44/haduco/commit/353b2e78d421b83ecf0f3714262e60aac6cac4c8))
+
 ## [1.2.10](https://github.com/stuartp44/haduco/compare/v1.2.9...v1.2.10) (2026-01-04)
 
 
