@@ -4,7 +4,6 @@ from datetime import timedelta
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from retrying import retry
 
 from .const import DOMAIN
 
@@ -21,19 +20,21 @@ class DucoboxCoordinator(DataUpdateCoordinator):
             name="Ducobox Connectivity Board",
             update_interval=update_interval,
         )
+        self._last_successful_data = {}
 
     async def _async_update_data(self) -> dict:
         """Fetch data from the Ducobox API with a timeout."""
         try:
-            return await asyncio.wait_for(self.hass.async_add_executor_job(self._fetch_data), timeout=30)
-        except TimeoutError:
-            _LOGGER.error("Timeout occurred while fetching data from Ducobox API")
-            return {}
+            data = await asyncio.wait_for(self.hass.async_add_executor_job(self._fetch_data), timeout=30)
+            self._last_successful_data = data
+            return data
+        except asyncio.TimeoutError:
+            _LOGGER.warning("Timeout occurred while fetching data from Ducobox API, using last known data")
+            return self._last_successful_data
         except Exception as e:
-            _LOGGER.error("Failed to fetch data from Ducobox API: %s", e)
-            return {}
+            _LOGGER.warning("Failed to fetch data from Ducobox API: %s, using last known data", e)
+            return self._last_successful_data
 
-    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
     def _fetch_data(self) -> dict[str, list]:
         """Fetch data from the Duco API."""
         duco_client = self.hass.data[DOMAIN]
