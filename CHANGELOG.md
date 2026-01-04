@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0](https://github.com/stuartp44/haduco/compare/v1.2.13...v1.3.0) (2026-01-04)
+
+
+### Features
+
+* add configuration options for DUCO integration ([9c808f1](https://github.com/stuartp44/haduco/commit/9c808f165b1a5df253c593bd7c3d0b04be5a90af))
+
 ## [1.2.13](https://github.com/stuartp44/haduco/compare/v1.2.12...v1.2.13) (2026-01-04)
 
 
