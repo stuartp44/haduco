@@ -77,9 +77,7 @@ def get_mac_from_coordinator(coordinator: DucoboxCoordinator) -> str | None:
     return None
 
 
-def create_device_info(
-    coordinator: DucoboxCoordinator, coordinator: DucoboxCoordinator, entry: ConfigEntry, device_id: str
-) -> DeviceInfo:
+def create_device_info(coordinator: DucoboxCoordinator, entry: ConfigEntry, device_id: str) -> DeviceInfo:
     """Create device info for the main Ducobox."""
     # Try to get board info from coordinator (library should normalize this)
     data = coordinator.data
