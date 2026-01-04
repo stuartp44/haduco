@@ -11,7 +11,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .boxes import BOX_SENSORS
+from .boxes import BOX_SENSORS, COMMON_BOX_SENSORS
 from .calibration import CALIBRATION_SENSORS
 from .comm_boards import COMMBOARD_SENSORS
 from .const import DOMAIN, MANUFACTURER, SCAN_INTERVAL
@@ -202,6 +202,22 @@ def create_box_sensors(
         sw_version=box_sw_version,
         serial_number=box_serial_number,
         via_device=(DOMAIN, device_id),
+    )
+
+    # Add common BOX sensors (available for all BOX types)
+    entities.extend(
+        [
+            DucoboxNodeSensorEntity(
+                coordinator=coordinator,
+                node_id=node.get("Node"),
+                description=description,
+                device_info=box_device_info,
+                unique_id=f"{node_device_id}-{description.key}",
+                device_id=device_id,
+                node_name=box_name,
+            )
+            for description in COMMON_BOX_SENSORS
+        ]
     )
 
     # Add box-specific sensors

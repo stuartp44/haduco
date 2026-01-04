@@ -13,34 +13,37 @@ from .common import (
 )
 from .ducobox_classes import DucoboxNodeSensorEntityDescription, DucoboxSensorEntityDescription
 
+# Common sensors for all BOX types
+COMMON_BOX_SENSORS: list[DucoboxNodeSensorEntityDescription] = [
+    DucoboxNodeSensorEntityDescription(
+        key="Mode",
+        name="Ventilation Mode",
+        value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("Mode"),
+        icon="mdi:fan",
+        sensor_key="Mode",
+        node_type="BOX",
+    ),
+    DucoboxNodeSensorEntityDescription(
+        key="State",
+        name="Ventilation State",
+        value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("State"),
+        icon="mdi:fan-auto",
+        sensor_key="State",
+        node_type="BOX",
+    ),
+    DucoboxNodeSensorEntityDescription(
+        key="FlowLvlTgt",
+        name="Flow Level Target",
+        native_unit_of_measurement=PERCENTAGE,
+        value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("FlowLvlTgt"),
+        icon="mdi:fan-chevron-up",
+        sensor_key="FlowLvlTgt",
+        node_type="BOX",
+    ),
+]
+
 BOX_SENSORS: dict[str, list[DucoboxSensorEntityDescription | DucoboxNodeSensorEntityDescription]] = {
-    "FOCUS": [
-        DucoboxNodeSensorEntityDescription(
-            key="Mode",
-            name="Ventilation Mode",
-            value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("Mode"),
-            icon="mdi:fan",
-            sensor_key="Mode",
-            node_type="BOX",
-        ),
-        DucoboxNodeSensorEntityDescription(
-            key="State",
-            name="Ventilation State",
-            value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("State"),
-            icon="mdi:fan-auto",
-            sensor_key="State",
-            node_type="BOX",
-        ),
-        DucoboxNodeSensorEntityDescription(
-            key="FlowLvlTgt",
-            name="Flow Level Target",
-            native_unit_of_measurement=PERCENTAGE,
-            value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("FlowLvlTgt"),
-            icon="mdi:fan-chevron-up",
-            sensor_key="FlowLvlTgt",
-            node_type="BOX",
-        ),
-    ],
+    "FOCUS": [],
     "NOT_SURE": [
         # Temperature sensors
         # relevant ducobox documentation: https://www.duco.eu/Wes/CDN/1/Attachments/installation-guide-DucoBox-Energy-Comfort-(Plus)-(en)_638635518879333838.pdf
