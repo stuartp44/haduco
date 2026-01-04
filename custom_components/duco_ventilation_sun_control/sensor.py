@@ -183,7 +183,7 @@ def create_box_sensors(
     # Get sw_version and serial from node data (library normalizes for all board types)
     box_sw_version = node.get("General", {}).get("SwVersion", {}).get("Val")
     box_serial_number = node.get("General", {}).get("SerialBoard")
-    
+
     box_device_info = DeviceInfo(
         identifiers={(DOMAIN, node_device_id)},
         name=box_name,
