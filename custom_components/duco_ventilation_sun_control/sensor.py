@@ -186,6 +186,26 @@ def create_box_sensors(
     # Add box-specific sensors
     if box_name in BOX_SENSORS:
         for description in BOX_SENSORS[box_name]:
+            # Check if the sensor data exists before creating
+            value = description.value_fn(coordinator.data)
+            if value is not None:
+                entities.append(
+                    DucoboxNodeSensorEntity(
+                        coordinator=coordinator,
+                        node_id=node.get("Node"),
+                        description=description,
+                        device_info=box_device_info,
+                        unique_id=f"{node_device_id}-{description.key}",
+                        device_id=device_id,
+                        node_name=box_name,
+                    )
+                )
+
+    # Add Duco network sensors as diagnostic sensors
+    for description in DUCONETWORK_SENSORS:
+        # Check if the sensor data exists before creating
+        value = description.value_fn(coordinator.data)
+        if value is not None:
             entities.append(
                 DucoboxNodeSensorEntity(
                     coordinator=coordinator,
@@ -198,33 +218,22 @@ def create_box_sensors(
                 )
             )
 
-    # Add Duco network sensors as diagnostic sensors
-    for description in DUCONETWORK_SENSORS:
-        entities.append(
-            DucoboxNodeSensorEntity(
-                coordinator=coordinator,
-                node_id=node.get("Node"),
-                description=description,
-                device_info=box_device_info,
-                unique_id=f"{node_device_id}-{description.key}",
-                device_id=device_id,
-                node_name=box_name,
-            )
-        )
-
     # Add calibration sensors as diagnostic sensors
     for description in CALIBRATION_SENSORS:
-        entities.append(
-            DucoboxNodeSensorEntity(
-                coordinator=coordinator,
-                node_id=node.get("Node"),
-                description=description,
-                device_info=box_device_info,
-                unique_id=f"{node_device_id}-{description.key}",
-                device_id=device_id,
-                node_name=box_name,
+        # Check if the sensor data exists before creating
+        value = description.value_fn(coordinator.data)
+        if value is not None:
+            entities.append(
+                DucoboxNodeSensorEntity(
+                    coordinator=coordinator,
+                    node_id=node.get("Node"),
+                    description=description,
+                    device_info=box_device_info,
+                    unique_id=f"{node_device_id}-{description.key}",
+                    device_id=device_id,
+                    node_name=box_name,
+                )
             )
-        )
 
     return entities
 
@@ -242,48 +251,69 @@ def create_generic_node_sensors(
     )
 
     node_id = node.get("Node")
-    return [
-        DucoboxNodeSensorEntity(
-            coordinator=coordinator,
-            node_id=node_id,
-            description=description,
-            device_info=node_device_info,
-            unique_id=f"{node_device_id}-{description.key}",
-            device_id=via_device_id,
-            node_name=node_type,
-        )
-        for description in NODE_SENSORS.get(node_type, [])
-    ]
+    entities = []
+    
+    for description in NODE_SENSORS.get(node_type, []):
+        # Check if the sensor data exists before creating
+        value = description.value_fn(coordinator.data)
+        if value is not None:
+            entities.append(
+                DucoboxNodeSensorEntity(
+                    coordinator=coordinator,
+                    node_id=node_id,
+                    description=description,
+                    device_info=node_device_info,
+                    unique_id=f"{node_device_id}-{description.key}",
+                    device_id=via_device_id,
+                    node_name=node_type,
+                )
+            )
+    
+    return entities
 
 
 def create_duco_network_sensors(
     coordinator: DucoboxCoordinator, device_info: DeviceInfo, device_id: str
 ) -> list[SensorEntity]:
     """Create Duco network sensors."""
-    return [
-        DucoboxSensorEntity(
-            coordinator=coordinator,
-            description=description,
-            device_info=device_info,
-            unique_id=f"{device_id}-{description.key}",
-        )
-        for description in DUCONETWORK_SENSORS
-    ]
+    entities = []
+    
+    for description in DUCONETWORK_SENSORS:
+        # Check if the sensor data exists before creating
+        value = description.value_fn(coordinator.data)
+        if value is not None:
+            entities.append(
+                DucoboxSensorEntity(
+                    coordinator=coordinator,
+                    description=description,
+                    device_info=device_info,
+                    unique_id=f"{device_id}-{description.key}",
+                )
+            )
+    
+    return entities
 
 
 def create_calibration_sensors(
     coordinator: DucoboxCoordinator, device_info: DeviceInfo, device_id: str
 ) -> list[SensorEntity]:
     """Create calibration sensors."""
-    return [
-        DucoboxSensorEntity(
-            coordinator=coordinator,
-            description=description,
-            device_info=device_info,
-            unique_id=f"{device_id}-{description.key}",
-        )
-        for description in CALIBRATION_SENSORS
-    ]
+    entities = []
+    
+    for description in CALIBRATION_SENSORS:
+        # Check if the sensor data exists before creating
+        value = description.value_fn(coordinator.data)
+        if value is not None:
+            entities.append(
+                DucoboxSensorEntity(
+                    coordinator=coordinator,
+                    description=description,
+                    device_info=device_info,
+                    unique_id=f"{device_id}-{description.key}",
+                )
+            )
+    
+    return entities
 
 
 class DucoboxSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntity):
