@@ -182,9 +182,10 @@ class DucoboxModeSelect(CoordinatorEntity[DucoboxCoordinator], SelectEntity):
                 self._node_id,
             )
             _LOGGER.debug("[SELECT] Successfully sent command, waiting for device to process")
-            await asyncio.sleep(5.0)  # Give device time to process the change
+            await asyncio.sleep(2.0)  # Give device 2 seconds to process the change
             _LOGGER.debug("[SELECT] Refreshing coordinator data")
             await self.coordinator.async_refresh()  # Force immediate refresh and wait for completion
-            _LOGGER.debug("[SELECT] Coordinator refresh completed")
+            _LOGGER.debug("[SELECT] Coordinator refresh completed, updating entity state")
+            self.async_write_ha_state()  # Force UI update
         except Exception as e:
             _LOGGER.error(f"[SELECT] Failed to set mode '{option}' for node {self._node_id}: {e}")
