@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0](https://github.com/stuartp44/haduco/compare/v1.4.4...v1.5.0) (2026-01-04)
+
+
+### Features
+
+* add common sensors for all BOX types in the ventilation system ([61523fa](https://github.com/stuartp44/haduco/commit/61523fa8a2dd2b5d49a228c3956d8dd46dc6b47b))
+
 ## [1.4.4](https://github.com/stuartp44/haduco/compare/v1.4.3...v1.4.4) (2026-01-04)
 
 
