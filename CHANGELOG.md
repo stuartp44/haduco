@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.10](https://github.com/stuartp44/haduco/compare/v1.3.9...v1.3.10) (2026-01-04)
+
+
+### Bug Fixes
+
+* add base URL to device info and fallback for box name in box sensors creation ([8e558e2](https://github.com/stuartp44/haduco/commit/8e558e252a90345eaa220d8d996f4e985de37d3e))
+* add checks for sensor data existence before creating entities in box and network sensor functions ([b0f96ce](https://github.com/stuartp44/haduco/commit/b0f96ce4fd23c4ac48d3f519012ef9724f0a9a81))
+* enhance data retrieval by adding board info and improving sensor creation logic ([03d21d0](https://github.com/stuartp44/haduco/commit/03d21d0ed38414c5b8dd3befef87e8261a1d3cda))
+* improve formatting and add checks for sensor data existence in device info and sensor creation functions ([0ce43da](https://github.com/stuartp44/haduco/commit/0ce43da073ee742588d4e49d565ddff36e932846))
+
 ## [1.3.9](https://github.com/stuartp44/haduco/compare/v1.3.8...v1.3.9) (2026-01-04)
 
 
