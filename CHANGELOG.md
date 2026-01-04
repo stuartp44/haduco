@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.2](https://github.com/stuartp44/haduco/compare/v1.5.1...v1.5.2) (2026-01-04)
+
+
+### Bug Fixes
+
+* improve sensor creation order and fallback logic for box name ([85bce6d](https://github.com/stuartp44/haduco/commit/85bce6d02265331701b0e8daa34400594cfb875f))
+
 ## [1.5.1](https://github.com/stuartp44/haduco/compare/v1.5.0...v1.5.1) (2026-01-04)
 
 
