@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from datetime import timedelta
+from typing import Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
@@ -20,7 +21,7 @@ class DucoboxCoordinator(DataUpdateCoordinator):
             name="Ducobox Connectivity Board",
             update_interval=update_interval,
         )
-        self._last_successful_data = {}
+        self._last_successful_data: dict[str, Any] = {}
 
     async def _async_update_data(self) -> dict:
         """Fetch data from the Ducobox API with a timeout."""
