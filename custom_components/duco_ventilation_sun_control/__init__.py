@@ -29,8 +29,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     _LOGGER.debug(f"Debug verbosity: {debug_verbosity}")
 
     # Map verbosity level to log level string
-    log_level_map = {0: "WARNING", 1: "INFO", 2: "DEBUG", 3: "DEBUG"}
-    log_level = log_level_map.get(debug_verbosity, "WARNING")
+    # 0 = ERROR (quietest), 1 = WARNING, 2 = INFO, 3 = DEBUG (most verbose)
+    log_level_map = {0: "ERROR", 1: "WARNING", 2: "INFO", 3: "DEBUG"}
+    log_level = log_level_map.get(debug_verbosity, "ERROR")
 
     try:
         # Initialize DucoPy in executor to avoid blocking the event loop
@@ -59,9 +60,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, ["sensor", "select"])
-    # if unload_ok:
-    # # Retrieve and close the DucoPy instance
-    # ducopy = hass.data[DOMAIN].pop(entry.entry_id, None)
-    # if ducopy:
-    #     ducopy.close()
+    
+    if unload_ok:
+        # Retrieve and close the DucoPy instance to clean up the HTTP session
+        duco_client = hass.data.get(DOMAIN)
+        if duco_client:
+            # Close the session in executor to avoid blocking
+            await asyncio.get_running_loop().run_in_executor(None, duco_client.close)
+            hass.data.pop(DOMAIN, None)
+            _LOGGER.debug("DucoPy client closed and removed from hass.data")
+    
     return unload_ok
