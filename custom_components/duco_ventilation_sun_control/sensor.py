@@ -87,27 +87,42 @@ def create_device_info(coordinator: DucoboxCoordinator, entry: ConfigEntry, devi
     hostname = data.get("General", {}).get("Lan", {}).get("HostName", {}).get("Val")
     base_url = entry.data.get("base_url")
 
+    # Try to get sw_version and serial from BoardInfo (Communication/Print boards)
+    # Fall back to General.Board for Connectivity boards
+    board_info = data.get("BoardInfo", {})
+    sw_version = board_info.get("swversion") or data.get("General", {}).get("Board", {}).get("SwVersionComm", {}).get("Val")
+    serial_number = board_info.get("serial") or data.get("General", {}).get("Board", {}).get("SerialBoardComm", {}).get("Val")
+
     return DeviceInfo(
         identifiers={(DOMAIN, device_id)},
         name=hostname or f"{board_type} ({device_id})",
         manufacturer=MANUFACTURER,
         model=board_type,
-        sw_version=data.get("General", {}).get("Board", {}).get("SwVersionComm", {}).get("Val"),
+        sw_version=sw_version,
+        serial_number=serial_number,
         configuration_url=base_url,
     )
 
 
 def create_main_sensors(coordinator: DucoboxCoordinator, device_info: DeviceInfo, device_id: str) -> list[SensorEntity]:
-    """Create main Ducobox sensors."""
-    return [
-        DucoboxSensorEntity(
-            coordinator=coordinator,
-            description=description,
-            device_info=device_info,
-            unique_id=f"{device_id}-{description.key}",
-        )
-        for description in COMMBOARD_SENSORS
-    ]
+    """Create main Ducobox sensors only if data exists."""
+    entities = []
+    data = coordinator.data
+    
+    for description in COMMBOARD_SENSORS:
+        # Check if the sensor data exists before creating the entity
+        value = description.value_fn(data)
+        if value is not None:
+            entities.append(
+                DucoboxSensorEntity(
+                    coordinator=coordinator,
+                    description=description,
+                    device_info=device_info,
+                    unique_id=f"{device_id}-{description.key}",
+                )
+            )
+    
+    return entities
 
 
 def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str) -> list[SensorEntity]:

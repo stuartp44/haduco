@@ -45,6 +45,14 @@ class DucoboxCoordinator(DataUpdateCoordinator):
         nodes_response = duco_client.get_nodes()
         _LOGGER.debug(f"Data received from /nodes: {nodes_response}")
 
+        # Get board info (contains serial, sw version, uptime for Communication/Print boards)
+        try:
+            board_info = duco_client.get_board_info()
+            data["BoardInfo"] = board_info
+            _LOGGER.debug(f"Data received from board_info: {board_info}")
+        except Exception as e:
+            _LOGGER.debug(f"Failed to fetch board_info (may not be available on this board type): {e}")
+
         # Convert nodes_response.Nodes (which is a list of NodeInfo objects) to list of dicts
         data["Nodes"] = [node.dict() for node in nodes_response.Nodes]
         _LOGGER.debug(f"Data after processing nodes: {data}")
