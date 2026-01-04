@@ -79,23 +79,16 @@ def get_mac_from_coordinator(coordinator: DucoboxCoordinator) -> str | None:
 
 def create_device_info(coordinator: DucoboxCoordinator, entry: ConfigEntry, device_id: str) -> DeviceInfo:
     """Create device info for the main Ducobox."""
-    # Try to get board info from coordinator (library should normalize this)
+    # Library normalizes board info across both board types
     data = coordinator.data
-    board_type = data.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val") or entry.data.get(
-        "board_type", "DUCO Board"
-    )
+    board_type = entry.data.get("board_type", "DUCO Board")
     hostname = data.get("General", {}).get("Lan", {}).get("HostName", {}).get("Val")
     base_url = entry.data.get("base_url")
 
-    # Try to get sw_version and serial from BoardInfo (Communication/Print boards)
-    # Fall back to General.Board for Connectivity boards
+    # Get sw_version and serial from BoardInfo (library normalizes for all board types)
     board_info = data.get("BoardInfo", {})
-    sw_version = board_info.get("swversion") or data.get("General", {}).get("Board", {}).get("SwVersionComm", {}).get(
-        "Val"
-    )
-    serial_number = board_info.get("serial") or data.get("General", {}).get("Board", {}).get("SerialBoardComm", {}).get(
-        "Val"
-    )
+    sw_version = board_info.get("swversion")
+    serial_number = board_info.get("serial")
 
     return DeviceInfo(
         identifiers={(DOMAIN, device_id)},
