@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.2](https://github.com/stuartp44/haduco/compare/v1.3.1...v1.3.2) (2026-01-04)
+
+
+### Bug Fixes
+
+* increase wait time for device processing and improve entity state update mechanism ([e13ddf2](https://github.com/stuartp44/haduco/commit/e13ddf2d9a0b9b49227ac0223cba6f2684a580be))
+
 ## [1.3.1](https://github.com/stuartp44/haduco/compare/v1.3.0...v1.3.1) (2026-01-04)
 
 
