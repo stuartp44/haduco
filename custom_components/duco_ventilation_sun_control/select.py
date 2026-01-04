@@ -76,15 +76,26 @@ async def create_select_entities(
     """Create all select entities for Ducobox nodes."""
     entities = []
     is_comm_print_board = "Communication" in board_type or "Print" in board_type
-    
+
     # Default options for Communication/Print boards (standard DUCO ventilation states)
     default_options = [
-        "AUTO", "AUT1", "AUT2", "AUT3",
-        "MAN1", "MAN2", "MAN3",
+        "AUTO",
+        "AUT1",
+        "AUT2",
+        "AUT3",
+        "MAN1",
+        "MAN2",
+        "MAN3",
         "EMPT",
-        "CNT1", "CNT2", "CNT3",
-        "MANx2", "MAN2x2", "MAN3x2",
-        "MAN1x3", "MAN2x3", "MAN3x3"
+        "CNT1",
+        "CNT2",
+        "CNT3",
+        "MANx2",
+        "MAN2x2",
+        "MAN3x2",
+        "MAN1x3",
+        "MAN2x3",
+        "MAN3x3",
     ]
 
     for node in nodes:
@@ -121,7 +132,7 @@ async def create_select_entities(
             model = node_type
 
         node_device_id = f"{device_id}-{node_id}"
-        
+
         # For Communication/Print boards, use default options without API call
         if is_comm_print_board:
             options = default_options
