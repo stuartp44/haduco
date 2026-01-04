@@ -42,7 +42,10 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
     async def async_step_zeroconf(self, discovery_info: ZeroconfServiceInfo) -> FlowResult:
         """Handle mDNS discovery."""
+        _LOGGER.debug("Zeroconf discovery triggered! Service: %s, Name: %s, Type: %s", 
+                     discovery_info, discovery_info.name, discovery_info.type)
         if not self._is_valid_discovery(discovery_info):
+            _LOGGER.debug("Discovery rejected - device name '%s' doesn't match required pattern", discovery_info.name)
             return self.async_abort(reason="not_duco_air_device")
 
         host, unique_id, scheme = self._extract_discovery_info(discovery_info)
