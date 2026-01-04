@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.7](https://github.com/stuartp44/haduco/compare/v1.3.6...v1.3.7) (2026-01-04)
+
+
+### Bug Fixes
+
+* improve MAC address retrieval from coordinator and enhance error logging ([35c73e1](https://github.com/stuartp44/haduco/commit/35c73e1d13420f907799cdbaf6c51df9270c513a))
+* remove duplicate parameter in create_device_info function ([99c03f1](https://github.com/stuartp44/haduco/commit/99c03f14fa6fb04713b7c403254f730462705225))
+
+
+### Code Refactoring
+
+* improve formatting and readability of create_device_info function ([263e830](https://github.com/stuartp44/haduco/commit/263e83007668c92efe001805a04f905b1f1e53ac))
+
 ## [1.3.6](https://github.com/stuartp44/haduco/compare/v1.3.5...v1.3.6) (2026-01-04)
 
 
