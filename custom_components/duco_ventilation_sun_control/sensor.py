@@ -180,8 +180,10 @@ def create_box_sensors(
         node_type = node.get("General", {}).get("Type", {}).get("Val", "BOX")
         box_name = node_type
 
-    box_sw_version = coordinator.data.get("General", {}).get("Board", {}).get("SwVersionBox", {}).get("Val", "")
-    box_serial_number = coordinator.data.get("General", {}).get("Board", {}).get("SerialBoardBox", {}).get("Val", "")
+    # Get sw_version and serial from node data (library normalizes for all board types)
+    box_sw_version = node.get("General", {}).get("SwVersion", {}).get("Val")
+    box_serial_number = node.get("General", {}).get("SerialBoard")
+    
     box_device_info = DeviceInfo(
         identifiers={(DOMAIN, node_device_id)},
         name=box_name,
