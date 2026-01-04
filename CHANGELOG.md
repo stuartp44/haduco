@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.4](https://github.com/stuartp44/haduco/compare/v1.5.3...v1.5.4) (2026-01-04)
+
+
+### Bug Fixes
+
+* add comments to clarify calibration data normalization in value functions ([02d0d0f](https://github.com/stuartp44/haduco/commit/02d0d0f7ac2d3e3d3b9365ee30c6ec98ab5f4264))
+
 ## [1.5.3](https://github.com/stuartp44/haduco/compare/v1.5.2...v1.5.3) (2026-01-04)
 
 
