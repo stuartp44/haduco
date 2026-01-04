@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.1](https://github.com/stuartp44/haduco/compare/v1.3.0...v1.3.1) (2026-01-04)
+
+
+### Bug Fixes
+
+* reduce wait time for device processing and ensure UI state update after command ([dfb9eca](https://github.com/stuartp44/haduco/commit/dfb9eca7b46cd12fe4d75af9c68307e1740384b9))
+
 ## [1.3.0](https://github.com/stuartp44/haduco/compare/v1.2.13...v1.3.0) (2026-01-04)
 
 
