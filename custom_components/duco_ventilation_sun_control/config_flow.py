@@ -102,18 +102,28 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             base_url = f"{scheme}://{host}"
             comm_info = await self._get_duco_comm_board_info(base_url)
             # Try to get the actual board type from the API
-            board_type = (
+            comm_subtype = (
                 comm_info["communication_board_info"]
                 .get("General", {})
                 .get("Board", {})
                 .get("CommSubTypeName", {})
                 .get("Val", "")
             )
-            # If we got a board type, capitalize it, otherwise use generic name
-            if board_type:
-                board_type = f"{board_type} Board"
+            # Determine board type based on API response
+            if comm_subtype:
+                if "connectivity" in comm_subtype.lower():
+                    board_type = "Connectivity Board"
+                elif "communication" in comm_subtype.lower() or "print" in comm_subtype.lower():
+                    board_type = "Communication and Print Board"
+                else:
+                    board_type = f"{comm_subtype} Board"
             else:
-                board_type = "DUCO Board"
+                # Fallback: check API version to determine board generation
+                api_version = comm_info["communication_board_info"].get("General", {}).get("Board", {}).get("ApiVersion", {}).get("Val")
+                if api_version and float(api_version) >= 2.0:
+                    board_type = "Connectivity Board"
+                else:
+                    board_type = "Communication and Print Board"
             
             unique_id = (
                 comm_info["communication_board_info"]
