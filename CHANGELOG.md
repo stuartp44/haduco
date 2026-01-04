@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.12](https://github.com/stuartp44/haduco/compare/v1.2.11...v1.2.12) (2026-01-04)
+
+
+### Bug Fixes
+
+* update async_get_options_flow to instantiate DucoboxOptionsFlowHandler without parameters ([b1519bb](https://github.com/stuartp44/haduco/commit/b1519bb4d97fd814246ad48e03b11af567a72dad))
+
 ## [1.2.11](https://github.com/stuartp44/haduco/compare/v1.2.10...v1.2.11) (2026-01-04)
 
 
