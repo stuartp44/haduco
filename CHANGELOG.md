@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.4](https://github.com/stuartp44/haduco/compare/v1.2.3...v1.2.4) (2026-01-04)
+
+
+### Bug Fixes
+
+* update device description to include board type in confirmation message ([3d63ba8](https://github.com/stuartp44/haduco/commit/3d63ba85658b4c163c387b0e5d6d6ad88663dd06))
+* update flow title format in English translation ([4204938](https://github.com/stuartp44/haduco/commit/42049384d52c08ef11f700dbe107a633ac9ae095))
+
 ## [1.2.3](https://github.com/stuartp44/haduco/compare/v1.2.2...v1.2.3) (2026-01-04)
 
 
