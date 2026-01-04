@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.3](https://github.com/stuartp44/haduco/compare/v1.5.2...v1.5.3) (2026-01-04)
+
+
+### Bug Fixes
+
+* enhance box name retrieval with fallback to node type ([16bd2c8](https://github.com/stuartp44/haduco/commit/16bd2c8457b729230e6225b1147cbc2110869ce2))
+* simplify box name retrieval logic in create_select_entities function ([c5c688b](https://github.com/stuartp44/haduco/commit/c5c688bd478bac9da836e5ae57e51c3092afde61))
+
 ## [1.5.2](https://github.com/stuartp44/haduco/compare/v1.5.1...v1.5.2) (2026-01-04)
 
 
