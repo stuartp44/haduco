@@ -45,12 +45,15 @@ async def async_setup_entry(
     device_id = mac_address.lower()
     device_info = create_device_info(coordinator, entry, device_id)
 
-    entities = []
-    entities.extend(create_main_sensors(coordinator, device_info, device_id, entry))
-    entities.extend(create_node_sensors(coordinator, device_id, entry))
+    # Create main board entities first to ensure the device exists
+    main_entities = create_main_sensors(coordinator, device_info, device_id, entry)
+    if main_entities:
+        async_add_entities(main_entities, update_before_add=True)
 
-    if entities:
-        async_add_entities(entities, update_before_add=True)
+    # Now create node entities - they can reference the main board via via_device
+    node_entities = create_node_sensors(coordinator, device_id, entry)
+    if node_entities:
+        async_add_entities(node_entities, update_before_add=True)
 
 
 def find_box_addr(nodes: list[dict]) -> int | None:
@@ -187,19 +190,20 @@ def create_box_sensors(
     dev_type = node.get("General", {}).get("Type", {}).get("Val", "BOX")
     box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "")
 
-    # Fallback to node type if box_name is empty (e.g., Communication/Print board doesn't provide BoxName)
-    if not box_name:
+    # Fallback to node type if box_name is empty or "Unknown"
+    if not box_name or box_name.lower() == "unknown":
         box_name = dev_type
 
     # Get sw_version and serial from node data (library normalizes for all board types)
     box_sw_version = node.get("General", {}).get("SwVersion", {}).get("Val")
     box_serial_number = node.get("General", {}).get("SerialBoard")
 
+    # BOX is connected via the main board (Communication/Print or Connectivity)
     box_device_info = DeviceInfo(
         identifiers={(DOMAIN, node_device_id)},
         name=box_name,
         manufacturer=MANUFACTURER,
-        model=dev_type if not box_name or box_name.lower() == "unknown" else box_name.capitalize(),
+        model=box_name,
         sw_version=box_sw_version,
         serial_number=box_serial_number,
         via_device=(DOMAIN, device_id),
