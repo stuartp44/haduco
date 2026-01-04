@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.9](https://github.com/stuartp44/haduco/compare/v1.3.8...v1.3.9) (2026-01-04)
+
+
+### Bug Fixes
+
+* store detected board type in discovery context and update entry info retrieval ([d015649](https://github.com/stuartp44/haduco/commit/d01564909dddd851564f72b7df35c8ffdc5cfb69))
+
 ## [1.3.8](https://github.com/stuartp44/haduco/compare/v1.3.7...v1.3.8) (2026-01-04)
 
 
