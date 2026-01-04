@@ -119,12 +119,18 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
                     board_type = f"{comm_subtype} Board"
             else:
                 # Fallback: check API version to determine board generation
-                api_version = comm_info["communication_board_info"].get("General", {}).get("Board", {}).get("ApiVersion", {}).get("Val")
+                api_version = (
+                    comm_info["communication_board_info"]
+                    .get("General", {})
+                    .get("Board", {})
+                    .get("ApiVersion", {})
+                    .get("Val")
+                )
                 if api_version and float(api_version) >= 2.0:
                     board_type = "Connectivity Board"
                 else:
                     board_type = "Communication and Print Board"
-            
+
             unique_id = (
                 comm_info["communication_board_info"]
                 .get("General", {})
