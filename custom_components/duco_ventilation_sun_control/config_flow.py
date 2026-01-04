@@ -52,12 +52,17 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             _LOGGER.debug("Discovery rejected - device name '%s' doesn't match required pattern", discovery_info.name)
             return self.async_abort(reason="not_duco_air_device")
 
+        _LOGGER.debug("Discovery validated successfully")
         host, unique_id, scheme = self._extract_discovery_info(discovery_info)
+        _LOGGER.debug("Extracted: host=%s, unique_id=%s, scheme=%s", host, unique_id, scheme)
         await self.async_set_unique_id(unique_id)
+        _LOGGER.debug("Unique ID set: %s", unique_id)
 
         if self._is_existing_entry(unique_id, host, scheme):
+            _LOGGER.debug("Device already configured, aborting")
             return self.async_abort(reason="already_configured")
 
+        _LOGGER.debug("Proceeding to confirmation step")
         self.context["discovery"] = {"host": host, "unique_id": unique_id, "scheme": scheme}
         return await self.async_step_confirm()
 
