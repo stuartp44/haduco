@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.3](https://github.com/stuartp44/haduco/compare/v1.4.2...v1.4.3) (2026-01-04)
+
+
+### Bug Fixes
+
+* improve readability of uptime data retrieval logic ([390f915](https://github.com/stuartp44/haduco/commit/390f91513467fe95ab2bec5ac77a8fe2a93860cd))
+* update data retrieval paths for calibration and uptime sensors ([835c5a7](https://github.com/stuartp44/haduco/commit/835c5a72101ed51b4544d9e06f03d38caad4e9ef))
+
 ## [1.4.2](https://github.com/stuartp44/haduco/compare/v1.4.1...v1.4.2) (2026-01-04)
 
 
