@@ -28,7 +28,7 @@ class DucoboxCoordinator(DataUpdateCoordinator):
             data = await asyncio.wait_for(self.hass.async_add_executor_job(self._fetch_data), timeout=30)
             self._last_successful_data = data
             return data
-        except asyncio.TimeoutError:
+        except TimeoutError:
             _LOGGER.warning("Timeout occurred while fetching data from Ducobox API, using last known data")
             return self._last_successful_data
         except Exception as e:

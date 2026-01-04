@@ -70,6 +70,11 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         await self.async_set_unique_id(unique_id)
         _LOGGER.debug("Unique ID set: %s", unique_id)
 
+        # Check if device already exists and update IP if changed
+        existing_entry = await self._update_ip_if_changed(unique_id, host, scheme)
+        if existing_entry:
+            return self.async_abort(reason="already_configured")
+
         # If HTTP discovery but device already exists with HTTPS, prefer HTTPS
         if scheme == "http" and self._is_existing_entry(unique_id, host, "https"):
             _LOGGER.debug("Device already configured with HTTPS, preferring that over HTTP")
@@ -175,6 +180,27 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         scheme = "https" if "_https._tcp" in discovery_info.type else "http"
         return host, unique_id, scheme
 
+    async def _update_ip_if_changed(self, unique_id: str, new_host: str, scheme: str) -> bool:
+        """Check if device exists and update IP if changed. Returns True if device exists."""
+        entries = self.hass.config_entries.async_entries(DOMAIN)
+        for entry in entries:
+            if entry.unique_id == unique_id:
+                current_base_url = entry.data.get("base_url")
+                new_base_url = f"{scheme}://{new_host}"
+
+                if current_base_url != new_base_url:
+                    _LOGGER.info(
+                        "Device %s IP changed from %s to %s, updating configuration",
+                        unique_id,
+                        current_base_url,
+                        new_base_url,
+                    )
+                    self.hass.config_entries.async_update_entry(entry, data={**entry.data, "base_url": new_base_url})
+                    # Reload the entry to apply the new IP
+                    await self.hass.config_entries.async_reload(entry.entry_id)
+                return True
+        return False
+
     def _is_existing_entry(self, unique_id: str, host: str | None = None, scheme: str = "http") -> bool:
         entries = self.hass.config_entries.async_entries(DOMAIN)
         _LOGGER.debug("Checking if device exists. unique_id=%s, entries=%s", unique_id, len(entries))
@@ -183,10 +209,6 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
                 "Comparing with entry: unique_id=%s, base_url=%s", entry.unique_id, entry.data.get("base_url")
             )
             if entry.unique_id == unique_id:
-                if host and entry.data.get("base_url") != f"{scheme}://{host}":
-                    self.hass.config_entries.async_update_entry(
-                        entry, data={**entry.data, "base_url": f"{scheme}://{host}"}
-                    )
                 return True
         return False
 
