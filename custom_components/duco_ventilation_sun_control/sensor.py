@@ -90,8 +90,12 @@ def create_device_info(coordinator: DucoboxCoordinator, entry: ConfigEntry, devi
     # Try to get sw_version and serial from BoardInfo (Communication/Print boards)
     # Fall back to General.Board for Connectivity boards
     board_info = data.get("BoardInfo", {})
-    sw_version = board_info.get("swversion") or data.get("General", {}).get("Board", {}).get("SwVersionComm", {}).get("Val")
-    serial_number = board_info.get("serial") or data.get("General", {}).get("Board", {}).get("SerialBoardComm", {}).get("Val")
+    sw_version = board_info.get("swversion") or data.get("General", {}).get("Board", {}).get("SwVersionComm", {}).get(
+        "Val"
+    )
+    serial_number = board_info.get("serial") or data.get("General", {}).get("Board", {}).get("SerialBoardComm", {}).get(
+        "Val"
+    )
 
     return DeviceInfo(
         identifiers={(DOMAIN, device_id)},
@@ -108,7 +112,7 @@ def create_main_sensors(coordinator: DucoboxCoordinator, device_info: DeviceInfo
     """Create main Ducobox sensors only if data exists."""
     entities = []
     data = coordinator.data
-    
+
     for description in COMMBOARD_SENSORS:
         # Check if the sensor data exists before creating the entity
         value = description.value_fn(data)
@@ -121,7 +125,7 @@ def create_main_sensors(coordinator: DucoboxCoordinator, device_info: DeviceInfo
                     unique_id=f"{device_id}-{description.key}",
                 )
             )
-    
+
     return entities
 
 
@@ -170,7 +174,7 @@ def create_box_sensors(
     if not box_name:
         node_type = node.get("General", {}).get("Type", {}).get("Val", "BOX")
         box_name = node_type
-    
+
     box_sw_version = coordinator.data.get("General", {}).get("Board", {}).get("SwVersionBox", {}).get("Val", "")
     box_serial_number = coordinator.data.get("General", {}).get("Board", {}).get("SerialBoardBox", {}).get("Val", "")
     box_device_info = DeviceInfo(
@@ -252,7 +256,7 @@ def create_generic_node_sensors(
 
     node_id = node.get("Node")
     entities = []
-    
+
     for description in NODE_SENSORS.get(node_type, []):
         # Check if the sensor data exists before creating
         value = description.value_fn(coordinator.data)
@@ -268,7 +272,7 @@ def create_generic_node_sensors(
                     node_name=node_type,
                 )
             )
-    
+
     return entities
 
 
@@ -277,7 +281,7 @@ def create_duco_network_sensors(
 ) -> list[SensorEntity]:
     """Create Duco network sensors."""
     entities = []
-    
+
     for description in DUCONETWORK_SENSORS:
         # Check if the sensor data exists before creating
         value = description.value_fn(coordinator.data)
@@ -290,7 +294,7 @@ def create_duco_network_sensors(
                     unique_id=f"{device_id}-{description.key}",
                 )
             )
-    
+
     return entities
 
 
@@ -299,7 +303,7 @@ def create_calibration_sensors(
 ) -> list[SensorEntity]:
     """Create calibration sensors."""
     entities = []
-    
+
     for description in CALIBRATION_SENSORS:
         # Check if the sensor data exists before creating
         value = description.value_fn(coordinator.data)
@@ -312,7 +316,7 @@ def create_calibration_sensors(
                     unique_id=f"{device_id}-{description.key}",
                 )
             )
-    
+
     return entities
 
 
