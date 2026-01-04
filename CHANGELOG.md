@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.1](https://github.com/stuartp44/haduco/compare/v1.4.0...v1.4.1) (2026-01-04)
+
+
+### Bug Fixes
+
+* remove unnecessary blank line in create_box_sensors function ([fea7a28](https://github.com/stuartp44/haduco/commit/fea7a289aa9d7fe13c13036c6c20d1d53263d2ad))
+* update box sensor to retrieve software version and serial number from node data ([b66d3af](https://github.com/stuartp44/haduco/commit/b66d3afef7d66e60fe7d695d6e906cb146e6ceaf))
+
 ## [1.4.0](https://github.com/stuartp44/haduco/compare/v1.3.13...v1.4.0) (2026-01-04)
 
 
