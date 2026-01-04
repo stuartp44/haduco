@@ -60,7 +60,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, ["sensor", "select"])
-    
+
     if unload_ok:
         # Retrieve and close the DucoPy instance to clean up the HTTP session
         duco_client = hass.data.get(DOMAIN)
@@ -69,5 +69,5 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             await asyncio.get_running_loop().run_in_executor(None, duco_client.close)
             hass.data.pop(DOMAIN, None)
             _LOGGER.debug("DucoPy client closed and removed from hass.data")
-    
+
     return unload_ok
