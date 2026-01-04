@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.1](https://github.com/stuartp44/haduco/compare/v1.2.0...v1.2.1) (2026-01-04)
+
+
+### Bug Fixes
+
+* update valid discovery names to include 'duco[' for improved device detection ([aa58289](https://github.com/stuartp44/haduco/commit/aa582895f475b98a2417050a24b3280fdc51683b))
+
 ## [1.2.0](https://github.com/stuartp44/haduco/compare/v1.1.3...v1.2.0) (2026-01-04)
 
 
