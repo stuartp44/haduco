@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.3](https://github.com/stuartp44/haduco/compare/v1.3.2...v1.3.3) (2026-01-04)
+
+
+### Bug Fixes
+
+* improve coordinator refresh handling and logging after mode change ([a33a8fe](https://github.com/stuartp44/haduco/commit/a33a8fee35e0a7647f72dfd4d682ddc6a242afaf))
+
 ## [1.3.2](https://github.com/stuartp44/haduco/compare/v1.3.1...v1.3.2) (2026-01-04)
 
 
