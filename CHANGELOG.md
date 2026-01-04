@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.4](https://github.com/stuartp44/haduco/compare/v1.3.3...v1.3.4) (2026-01-04)
+
+
+### Bug Fixes
+
+* enhance board type determination logic based on API response ([e394c2d](https://github.com/stuartp44/haduco/commit/e394c2d90096d9ad40efbf6084ce7ab7b3c7b3a9))
+* improve readability of API version extraction in board type determination ([3afdff4](https://github.com/stuartp44/haduco/commit/3afdff4ecc589e2f1d39a2622b81206d06fd5eb9))
+* update board type handling and improve URL construction in discovery confirmation ([f155471](https://github.com/stuartp44/haduco/commit/f155471b39e0f9215dc154ee87d86fa350a14586))
+
 ## [1.3.3](https://github.com/stuartp44/haduco/compare/v1.3.2...v1.3.3) (2026-01-04)
 
 
