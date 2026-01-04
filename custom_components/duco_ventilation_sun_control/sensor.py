@@ -87,8 +87,8 @@ def create_device_info(coordinator: DucoboxCoordinator, entry: ConfigEntry, devi
 
     # Get sw_version and serial from BoardInfo (library normalizes for all board types)
     board_info = data.get("BoardInfo", {})
-    sw_version = board_info.get("swversion")
-    serial_number = board_info.get("serial")
+    sw_version = board_info.get("SwVersion")
+    serial_number = board_info.get("Serial")
 
     return DeviceInfo(
         identifiers={(DOMAIN, device_id)},
