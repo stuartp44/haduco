@@ -85,6 +85,7 @@ def create_device_info(coordinator: DucoboxCoordinator, entry: ConfigEntry, devi
         "board_type", "DUCO Board"
     )
     hostname = data.get("General", {}).get("Lan", {}).get("HostName", {}).get("Val")
+    base_url = entry.data.get("base_url")
 
     return DeviceInfo(
         identifiers={(DOMAIN, device_id)},
@@ -92,6 +93,7 @@ def create_device_info(coordinator: DucoboxCoordinator, entry: ConfigEntry, devi
         manufacturer=MANUFACTURER,
         model=board_type,
         sw_version=data.get("General", {}).get("Board", {}).get("SwVersionComm", {}).get("Val"),
+        configuration_url=base_url,
     )
 
 
@@ -149,6 +151,11 @@ def create_box_sensors(
     """Create sensors for a BOX node, including calibration and network sensors."""
     entities = []
     box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "")
+    # Fallback to node type if box_name is empty (e.g., Communication/Print board doesn't provide BoxName)
+    if not box_name:
+        node_type = node.get("General", {}).get("Type", {}).get("Val", "BOX")
+        box_name = node_type
+    
     box_sw_version = coordinator.data.get("General", {}).get("Board", {}).get("SwVersionBox", {}).get("Val", "")
     box_serial_number = coordinator.data.get("General", {}).get("Board", {}).get("SerialBoardBox", {}).get("Val", "")
     box_device_info = DeviceInfo(
