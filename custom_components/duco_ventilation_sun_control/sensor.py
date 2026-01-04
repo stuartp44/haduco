@@ -184,12 +184,14 @@ def create_box_sensors(
 ) -> list[SensorEntity]:
     """Create sensors for a BOX node, including calibration and network sensors."""
     entities = []
+    node_id = node.get("Node")
+    dev_type = node.get("General", {}).get("Type", {}).get("Val", "BOX")
     box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "")
+    
     # Fallback to node type if box_name is empty (e.g., Communication/Print board doesn't provide BoxName)
     if not box_name:
-        node_type = node.get("General", {}).get("Type", {}).get("Val", "BOX")
-        box_name = node_type
-
+        box_name = dev_type
+    
     # Get sw_version and serial from node data (library normalizes for all board types)
     box_sw_version = node.get("General", {}).get("SwVersion", {}).get("Val")
     box_serial_number = node.get("General", {}).get("SerialBoard")
@@ -198,7 +200,7 @@ def create_box_sensors(
         identifiers={(DOMAIN, node_device_id)},
         name=box_name,
         manufacturer=MANUFACTURER,
-        model=box_name.capitalize(),
+        model=dev_type if not box_name or box_name.lower() == "unknown" else box_name.capitalize(),
         sw_version=box_sw_version,
         serial_number=box_serial_number,
         via_device=(DOMAIN, device_id),
