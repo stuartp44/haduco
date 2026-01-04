@@ -7,7 +7,7 @@
         },
         "confirm": {
           "title": "Discovered",
-          "description": "DUCO device with MAC {unique_id} found at {host}. Do you want to add it?"
+          "description": "DUCO {board_type} with MAC {unique_id} found at {host}. Do you want to add it?"
         }
       }
     }
