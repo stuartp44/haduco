@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.1](https://github.com/stuartp44/haduco/compare/v1.5.0...v1.5.1) (2026-01-04)
+
+
+### Bug Fixes
+
+* improve box sensor creation by using node type as fallback for box name ([f43d45c](https://github.com/stuartp44/haduco/commit/f43d45c34147da62c6f79f5c69f45b432a16adf1))
+* use node type as fallback for box name in create_box_sensors function ([f70e7f7](https://github.com/stuartp44/haduco/commit/f70e7f78c6dd2e85d4cf23d65c7c0e7f368cd778))
+
 ## [1.5.0](https://github.com/stuartp44/haduco/compare/v1.4.4...v1.5.0) (2026-01-04)
 
 
