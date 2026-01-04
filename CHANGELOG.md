@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.9](https://github.com/stuartp44/haduco/compare/v1.2.8...v1.2.9) (2026-01-04)
+
+
+### Bug Fixes
+
+* extend wait time for device processing and improve coordinator refresh logic in DucoboxModeSelect ([01fa0ce](https://github.com/stuartp44/haduco/commit/01fa0cedee8a53a5527a473bb3ec28c4a560ded0))
+
 ## [1.2.8](https://github.com/stuartp44/haduco/compare/v1.2.7...v1.2.8) (2026-01-04)
 
 
