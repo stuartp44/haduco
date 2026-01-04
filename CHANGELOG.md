@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.13](https://github.com/stuartp44/haduco/compare/v1.3.12...v1.3.13) (2026-01-04)
+
+
+### Bug Fixes
+
+* normalize keys for board info retrieval in device info creation ([1220e99](https://github.com/stuartp44/haduco/commit/1220e994b91f035dbb780684fe4f430423950c05))
+
 ## [1.3.12](https://github.com/stuartp44/haduco/compare/v1.3.11...v1.3.12) (2026-01-04)
 
 
