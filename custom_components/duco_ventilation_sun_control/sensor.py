@@ -59,7 +59,10 @@ def find_box_addr(nodes: list[dict]) -> int | None:
             if addr is None:
                 # If Addr is None, use the Node ID
                 return node.get("Node")
-            return addr.get("Val")
+            # Handle both normalized (int) and non-normalized (dict with Val) formats
+            if isinstance(addr, dict):
+                return addr.get("Val")
+            return addr
     return None
 
 
