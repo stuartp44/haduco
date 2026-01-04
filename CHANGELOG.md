@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0](https://github.com/stuartp44/haduco/compare/v1.3.13...v1.4.0) (2026-01-04)
+
+
+### Features
+
+* add software version and serial number to generic node device info ([a6e9463](https://github.com/stuartp44/haduco/commit/a6e9463ebfe40cd2fb8a51d906c48049e71ab0ef))
+
+
+### Bug Fixes
+
+* remove unnecessary blank line in create_generic_node_sensors function ([4e1e200](https://github.com/stuartp44/haduco/commit/4e1e200369fdd3e09e50f87db533a692c8c5ad5d))
+
 ## [1.3.13](https://github.com/stuartp44/haduco/compare/v1.3.12...v1.3.13) (2026-01-04)
 
 
