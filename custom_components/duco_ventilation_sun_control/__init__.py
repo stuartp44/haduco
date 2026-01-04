@@ -24,20 +24,13 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Ducobox from a config entry."""
     base_url = entry.data["base_url"]
-    debug_verbosity = entry.options.get("debug_verbosity", 0)
     _LOGGER.debug(f"Base URL from config entry: {base_url}")
-    _LOGGER.debug(f"Debug verbosity: {debug_verbosity}")
-
-    # Map verbosity level to log level string
-    # 0 = ERROR (quietest), 1 = WARNING, 2 = INFO, 3 = DEBUG (most verbose)
-    log_level_map = {0: "ERROR", 1: "WARNING", 2: "INFO", 3: "DEBUG"}
-    log_level = log_level_map.get(debug_verbosity, "ERROR")
 
     try:
         # Initialize DucoPy in executor to avoid blocking the event loop
         # The library auto-detects board generation (Connectivity vs Communication/Print)
         def _init_client():
-            return DucoPy(base_url=base_url, verify=False, log_level=log_level)
+            return DucoPy(base_url=base_url, verify=False)
 
         duco_client = await asyncio.get_running_loop().run_in_executor(None, _init_client)
         _LOGGER.info(f"DucoPy initialized with base URL: {base_url}")
