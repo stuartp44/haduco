@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.6](https://github.com/stuartp44/haduco/compare/v1.2.5...v1.2.6) (2026-01-04)
+
+
+### Bug Fixes
+
+* improve action retrieval and address handling in select and sensor components ([0b56654](https://github.com/stuartp44/haduco/commit/0b56654d46f52b69a343d47274c2e01e8aa48a61))
+
 ## [1.2.5](https://github.com/stuartp44/haduco/compare/v1.2.4...v1.2.5) (2026-01-04)
 
 
