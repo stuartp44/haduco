@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.6](https://github.com/stuartp44/haduco/compare/v1.3.5...v1.3.6) (2026-01-04)
+
+
+### Documentation
+
+* expand library vs integration responsibility section in instructions ([785d58c](https://github.com/stuartp44/haduco/commit/785d58c1b8a73998031a8196ec8c02f8f1faed68))
+
 ## [1.3.5](https://github.com/stuartp44/haduco/compare/v1.3.4...v1.3.5) (2026-01-04)
 
 
