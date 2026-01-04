@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.10](https://github.com/stuartp44/haduco/compare/v1.2.9...v1.2.10) (2026-01-04)
+
+
+### Bug Fixes
+
+* update options form to use current values for refresh time and debug verbosity ([8987378](https://github.com/stuartp44/haduco/commit/8987378e545466cd374f38f37e3d0f981b2b3435))
+
 ## [1.2.9](https://github.com/stuartp44/haduco/compare/v1.2.8...v1.2.9) (2026-01-04)
 
 
