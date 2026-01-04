@@ -55,16 +55,18 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         _LOGGER.debug("Discovery validated successfully")
         host, unique_id, scheme = self._extract_discovery_info(discovery_info)
         _LOGGER.debug("Extracted: host=%s, unique_id=%s, scheme=%s", host, unique_id, scheme)
-        
+
         # For Connectivity Boards, prefer HTTPS over HTTP
         # Check ApiVersion to determine if it's a modern board
         api_version = discovery_info.properties.get("ApiVersion", "")
         is_modern_board = api_version and float(api_version) >= 2.0
-        
+
         if scheme == "http" and is_modern_board:
-            _LOGGER.debug("Modern board (ApiVersion %s) detected via HTTP, aborting to allow HTTPS discovery", api_version)
+            _LOGGER.debug(
+                "Modern board (ApiVersion %s) detected via HTTP, aborting to allow HTTPS discovery", api_version
+            )
             return self.async_abort(reason="prefer_https")
-        
+
         await self.async_set_unique_id(unique_id)
         _LOGGER.debug("Unique ID set: %s", unique_id)
 
