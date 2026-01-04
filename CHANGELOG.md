@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.13](https://github.com/stuartp44/haduco/compare/v1.2.12...v1.2.13) (2026-01-04)
+
+
+### Code Refactoring
+
+* remove debug verbosity option from config flow and related logging ([24e7c94](https://github.com/stuartp44/haduco/commit/24e7c94af6b8a645a506039ea7e82c50d6c68dae))
+
 ## [1.2.12](https://github.com/stuartp44/haduco/compare/v1.2.11...v1.2.12) (2026-01-04)
 
 
