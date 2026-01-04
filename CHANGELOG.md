@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.4](https://github.com/stuartp44/haduco/compare/v1.4.3...v1.4.4) (2026-01-04)
+
+
+### Bug Fixes
+
+* add default options for Communication/Print boards in select entity creation ([1df0f14](https://github.com/stuartp44/haduco/commit/1df0f1480da1658b8fb7d38c8946fed86c6f23b5))
+* enhance select entity creation for Ducobox by adding board type handling and default options for Communication/Print boards ([e4aaa3a](https://github.com/stuartp44/haduco/commit/e4aaa3ae6b7ab1c16e26042de77d53ce18e2a83e))
+
 ## [1.4.3](https://github.com/stuartp44/haduco/compare/v1.4.2...v1.4.3) (2026-01-04)
 
 
