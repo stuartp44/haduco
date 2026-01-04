@@ -168,7 +168,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
                 unique_id = mac.replace(":", "").lower()
             else:
                 raise ValueError("Could not extract MAC address from device")
-            
+
             product_entry_info, _ = await self._get_entry_info(comm_info, host, unique_id)
             board_type = product_entry_info["data"].get("board_type", "Duco")
 
