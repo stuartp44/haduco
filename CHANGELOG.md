@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.2](https://github.com/stuartp44/haduco/compare/v1.2.1...v1.2.2) (2026-01-04)
+
+
+### Bug Fixes
+
+* enhance logging in discovery process for better debugging ([c126c36](https://github.com/stuartp44/haduco/commit/c126c3671e34cb7e0401726b5169d90222a34f27))
+
 ## [1.2.1](https://github.com/stuartp44/haduco/compare/v1.2.0...v1.2.1) (2026-01-04)
 
 
