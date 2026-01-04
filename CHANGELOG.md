@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.5](https://github.com/stuartp44/haduco/compare/v1.3.4...v1.3.5) (2026-01-04)
+
+
+### Bug Fixes
+
+* update host parameter handling in entry info retrieval and base URL construction ([84c50f2](https://github.com/stuartp44/haduco/commit/84c50f2beb9c326a3b86028a44dcb2fe47713f40))
+
 ## [1.3.4](https://github.com/stuartp44/haduco/compare/v1.3.3...v1.3.4) (2026-01-04)
 
 
