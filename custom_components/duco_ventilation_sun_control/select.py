@@ -28,12 +28,14 @@ async def async_setup_entry(
     coordinator = DucoboxCoordinator(hass, update_interval=timedelta(seconds=refresh_time))
     await coordinator.async_config_entry_first_refresh()
 
-    mac_address = get_mac_address(coordinator)
+    # Try to get MAC from coordinator data (library should normalize this)
+    # Fall back to config entry for backward compatibility
+    mac_address = get_mac_from_coordinator(coordinator) or entry.data.get("unique_id")
     if not mac_address:
-        _LOGGER.error("No MAC address found; skipping select entities.")
+        _LOGGER.error("No MAC address found in coordinator data or config entry")
         return
 
-    device_id = mac_address.replace(":", "").lower()
+    device_id = mac_address.lower()
     nodes = coordinator.data.get("Nodes", [])
     box_device_ids = get_box_device_ids(device_id, nodes)
 
@@ -42,9 +44,13 @@ async def async_setup_entry(
         async_add_entities(entities, update_before_add=True)
 
 
-def get_mac_address(coordinator: DucoboxCoordinator) -> str | None:
-    """Retrieve MAC address from coordinator data."""
-    return coordinator.data.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val")
+def get_mac_from_coordinator(coordinator: DucoboxCoordinator) -> str | None:
+    """Get MAC address from coordinator data (library should normalize this)."""
+    # Try to get MAC from General.Lan.Mac (normalized by library)
+    mac = coordinator.data.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val")
+    if mac:
+        return mac.replace(":", "").lower()
+    return None
 
 
 def get_box_device_ids(device_id: str, nodes: list[dict]) -> dict[int, str]:

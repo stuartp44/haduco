@@ -34,14 +34,16 @@ async def async_setup_entry(
     coordinator = DucoboxCoordinator(hass, update_interval=timedelta(seconds=refresh_time))
     await coordinator.async_config_entry_first_refresh()
 
-    mac_address = get_mac_address(coordinator)
+    # Try to get MAC from coordinator data (library should normalize this)
+    # Fall back to config entry for backward compatibility
+    mac_address = get_mac_from_coordinator(coordinator) or entry.data.get("unique_id")
     if not mac_address:
-        _LOGGER.error("No MAC address found in data, unable to create sensors")
-        _LOGGER.debug(f"Data received: {coordinator.data}")
+        _LOGGER.error("No MAC address found in coordinator data or config entry")
+        _LOGGER.debug(f"Coordinator data: {coordinator.data}")
         return
 
-    device_id = mac_address.replace(":", "").lower()
-    device_info = create_device_info(coordinator, device_id)
+    device_id = mac_address.lower()
+    device_info = create_device_info(coordinator, entry, device_id)
 
     entities = []
     entities.extend(create_main_sensors(coordinator, device_info, device_id))
@@ -66,21 +68,31 @@ def find_box_addr(nodes: list[dict]) -> int | None:
     return None
 
 
-def get_mac_address(coordinator: DucoboxCoordinator) -> str | None:
-    """Retrieve the MAC address from the coordinator data."""
-    return coordinator.data.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val")
+def get_mac_from_coordinator(coordinator: DucoboxCoordinator) -> str | None:
+    """Get MAC address from coordinator data (library should normalize this)."""
+    # Try to get MAC from General.Lan.Mac (normalized by library)
+    mac = coordinator.data.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val")
+    if mac:
+        return mac.replace(":", "").lower()
+    return None
 
 
-def create_device_info(coordinator: DucoboxCoordinator, device_id: str) -> DeviceInfo:
+def create_device_info(coordinator: DucoboxCoordinator, coordinator: DucoboxCoordinator, entry: ConfigEntry, device_id: str) -> DeviceInfo:
     """Create device info for the main Ducobox."""
+    # Try to get board info from coordinator (library should normalize this)
     data = coordinator.data
+    board_type = (
+        data.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val")
+        or entry.data.get("board_type", "DUCO Board")
+    )
+    hostname = data.get("General", {}).get("Lan", {}).get("HostName", {}).get("Val")
+    
     return DeviceInfo(
         identifiers={(DOMAIN, device_id)},
-        name=data.get("General", {}).get("Lan", {}).get("HostName", {}).get("Val", "Unknown"),
+        name=hostname or f"{board_type} ({device_id})",
         manufacturer=MANUFACTURER,
-        model=data.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "Unknown").capitalize(),
-        serial_number=data.get("General", {}).get("Board", {}).get("SerialBoardComm", {}).get("Val", "Unknown"),
-        sw_version=data.get("General", {}).get("Board", {}).get("SwVersionComm", {}).get("Val", "Unknown"),
+        model=board_type,
+        sw_version=data.get("General", {}).get("Board", {}).get("SwVersionComm", {}).get("Val"),
     )
 
 
