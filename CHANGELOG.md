@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.6](https://github.com/stuartp44/haduco/compare/v1.5.5...v1.5.6) (2026-01-05)
+
+
+### Bug Fixes
+
+* improve logic for retrieving calibration status and state values ([d4af029](https://github.com/stuartp44/haduco/commit/d4af0297e7f9fd678e48313537ff3014d029c1db))
+* remove unnecessary parentheses in calibration value functions ([8a05761](https://github.com/stuartp44/haduco/commit/8a05761b16b57a75ce9d75d7d89b6cd4f44d3fda))
+
 ## [1.5.5](https://github.com/stuartp44/haduco/compare/v1.5.4...v1.5.5) (2026-01-05)
 
 
