@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0](https://github.com/stuartp44/haduco/compare/v1.5.6...v1.6.0) (2026-01-05)
+
+
+### Features
+
+* allow translation and refactor code to allow this ([882ce30](https://github.com/stuartp44/haduco/commit/882ce30244c6b2a0f502d881cc0749486c570342))
+
 ## [1.5.6](https://github.com/stuartp44/haduco/compare/v1.5.5...v1.5.6) (2026-01-05)
 
 
