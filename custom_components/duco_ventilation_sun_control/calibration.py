@@ -10,8 +10,9 @@ CALIBRATION_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = (
         key="CalibrationStatus",
         name="Calibration Status",
         value_fn=lambda data: _process_calibration_status(
-            # Library normalizes calibration data for both board types
-            data.get("general_data", {}).get("Calibration", {}).get("CalibIsValid", {}).get("Val")
+            # Connectivity: Ventilation.Calibration.Valid, Communication/Print: Calibration.CalibIsValid
+            data.get("general_data", {}).get("Ventilation", {}).get("Calibration", {}).get("Valid", {}).get("Val")
+            or data.get("general_data", {}).get("Calibration", {}).get("CalibIsValid", {}).get("Val")
         ),
         icon="mdi:progress-wrench",
         sensor_key="CalibrationStatus",
@@ -22,8 +23,9 @@ CALIBRATION_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = (
         key="CalibrationState",
         name="Calibration State",
         value_fn=lambda data: _process_calibration_state(
-            # Library normalizes calibration data for both board types
-            data.get("general_data", {}).get("Calibration", {}).get("CalibState", {}).get("Val")
+            # Connectivity: Ventilation.Calibration.State, Communication/Print: Calibration.CalibState
+            data.get("general_data", {}).get("Ventilation", {}).get("Calibration", {}).get("State", {}).get("Val")
+            or data.get("general_data", {}).get("Calibration", {}).get("CalibState", {}).get("Val")
         ),
         icon="mdi:progress-wrench",
         sensor_key="CalibrationState",
