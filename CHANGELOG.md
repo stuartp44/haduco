@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.5](https://github.com/stuartp44/haduco/compare/v1.5.4...v1.5.5) (2026-01-05)
+
+
+### Bug Fixes
+
+* update comments for clarity on calibration data retrieval in CALIBRATION_SENSORS ([31e0e9c](https://github.com/stuartp44/haduco/commit/31e0e9ce1dba1d0887c9c6c79bdb697422982f36))
+
 ## [1.5.4](https://github.com/stuartp44/haduco/compare/v1.5.3...v1.5.4) (2026-01-04)
 
 
