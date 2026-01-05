@@ -17,7 +17,6 @@ from .ducobox_classes import DucoboxNodeSensorEntityDescription, DucoboxSensorEn
 COMMON_BOX_SENSORS: list[DucoboxNodeSensorEntityDescription] = [
     DucoboxNodeSensorEntityDescription(
         key="Mode",
-        name="Ventilation Mode",
         value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("Mode"),
         icon="mdi:fan",
         sensor_key="Mode",
@@ -25,7 +24,6 @@ COMMON_BOX_SENSORS: list[DucoboxNodeSensorEntityDescription] = [
     ),
     DucoboxNodeSensorEntityDescription(
         key="State",
-        name="Ventilation State",
         value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("State"),
         icon="mdi:fan-auto",
         sensor_key="State",
@@ -33,7 +31,6 @@ COMMON_BOX_SENSORS: list[DucoboxNodeSensorEntityDescription] = [
     ),
     DucoboxNodeSensorEntityDescription(
         key="FlowLvlTgt",
-        name="Flow Level Target",
         native_unit_of_measurement=PERCENTAGE,
         value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("FlowLvlTgt"),
         icon="mdi:fan-chevron-up",
@@ -50,7 +47,6 @@ BOX_SENSORS: dict[str, list[DucoboxSensorEntityDescription | DucoboxNodeSensorEn
         # Oda = outdoor -> box
         DucoboxSensorEntityDescription(
             key="TempOda",
-            name="Outdoor Temperature",
             native_unit_of_measurement=UnitOfTemperature.CELSIUS,
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.TEMPERATURE,
@@ -61,7 +57,6 @@ BOX_SENSORS: dict[str, list[DucoboxSensorEntityDescription | DucoboxNodeSensorEn
         # Sup = box -> house
         DucoboxSensorEntityDescription(
             key="TempSup",
-            name="Supply Temperature",
             native_unit_of_measurement=UnitOfTemperature.CELSIUS,
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.TEMPERATURE,
@@ -72,7 +67,6 @@ BOX_SENSORS: dict[str, list[DucoboxSensorEntityDescription | DucoboxNodeSensorEn
         # Eta = house -> box
         DucoboxSensorEntityDescription(
             key="TempEta",
-            name="Extract Temperature",
             native_unit_of_measurement=UnitOfTemperature.CELSIUS,
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.TEMPERATURE,
@@ -83,7 +77,6 @@ BOX_SENSORS: dict[str, list[DucoboxSensorEntityDescription | DucoboxNodeSensorEn
         # Eha = box -> outdoor
         DucoboxSensorEntityDescription(
             key="TempEha",
-            name="Exhaust Temperature",
             native_unit_of_measurement=UnitOfTemperature.CELSIUS,
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.TEMPERATURE,
@@ -94,7 +87,6 @@ BOX_SENSORS: dict[str, list[DucoboxSensorEntityDescription | DucoboxNodeSensorEn
         # Fan speed sensors
         DucoboxSensorEntityDescription(
             key="SpeedSup",
-            name="Supply Fan Speed",
             native_unit_of_measurement="RPM",
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.SPEED,
@@ -104,7 +96,6 @@ BOX_SENSORS: dict[str, list[DucoboxSensorEntityDescription | DucoboxNodeSensorEn
         ),
         DucoboxSensorEntityDescription(
             key="SpeedEha",
-            name="Exhaust Fan Speed",
             native_unit_of_measurement="RPM",
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.SPEED,
@@ -115,7 +106,6 @@ BOX_SENSORS: dict[str, list[DucoboxSensorEntityDescription | DucoboxNodeSensorEn
         # Pressure sensors
         DucoboxSensorEntityDescription(
             key="PressSup",
-            name="Supply Pressure",
             native_unit_of_measurement=UnitOfPressure.PA,
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.PRESSURE,
@@ -125,7 +115,6 @@ BOX_SENSORS: dict[str, list[DucoboxSensorEntityDescription | DucoboxNodeSensorEn
         ),
         DucoboxSensorEntityDescription(
             key="PressEha",
-            name="Exhaust Pressure",
             native_unit_of_measurement=UnitOfPressure.PA,
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.PRESSURE,
@@ -136,7 +125,6 @@ BOX_SENSORS: dict[str, list[DucoboxSensorEntityDescription | DucoboxNodeSensorEn
         # Filter time remaining
         DucoboxSensorEntityDescription(
             key="TimeFilterRemain",
-            name="Filter Time Remaining",
             native_unit_of_measurement=UnitOfTime.DAYS,  # Assuming the value is in days
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.DURATION,
@@ -151,7 +139,6 @@ BOX_SENSORS: dict[str, list[DucoboxSensorEntityDescription | DucoboxNodeSensorEn
         # Bypass position
         DucoboxSensorEntityDescription(
             key="BypassPos",
-            name="Bypass Position",
             native_unit_of_measurement=PERCENTAGE,
             state_class=SensorStateClass.MEASUREMENT,
             value_fn=lambda data: _process_bypass_position(

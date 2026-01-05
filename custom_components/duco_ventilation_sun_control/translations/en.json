@@ -23,5 +23,83 @@
           }
         }
       }
+    },
+    "entity": {
+      "sensor": {
+        "calibrationstatus": {
+          "name": "Calibration status"
+        },
+        "calibrationstate": {
+          "name": "Calibration state"
+        },
+        "mode": {
+          "name": "Ventilation mode"
+        },
+        "state": {
+          "name": "Ventilation state"
+        },
+        "flowlvltgt": {
+          "name": "Flow level target"
+        },
+        "tempoda": {
+          "name": "Outdoor temperature"
+        },
+        "tempsup": {
+          "name": "Supply temperature"
+        },
+        "tempeta": {
+          "name": "Extract temperature"
+        },
+        "tempeha": {
+          "name": "Exhaust temperature"
+        },
+        "speedsup": {
+          "name": "Supply fan speed"
+        },
+        "speedeha": {
+          "name": "Exhaust fan speed"
+        },
+        "presssup": {
+          "name": "Supply pressure"
+        },
+        "presseha": {
+          "name": "Exhaust pressure"
+        },
+        "timefilterremain": {
+          "name": "Filter time remaining"
+        },
+        "bypasspos": {
+          "name": "Bypass position"
+        },
+        "rssiwifi": {
+          "name": "Wi-Fi signal strength"
+        },
+        "uptime": {
+          "name": "Device uptime"
+        },
+        "temp": {
+          "name": "Temperature"
+        },
+        "co2": {
+          "name": "CO₂"
+        },
+        "iaqco2": {
+          "name": "CO₂ air quality"
+        },
+        "rh": {
+          "name": "Relative humidity"
+        },
+        "iaqrh": {
+          "name": "Humidity air quality"
+        },
+        "humidity": {
+          "name": "Humidity"
+        }
+      },
+      "select": {
+        "ventilation_mode": {
+          "name": "Ventilation mode"
+        }
+      }
     }
 }

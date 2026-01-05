@@ -8,7 +8,6 @@ from .ducobox_classes import DucoboxNodeSensorEntityDescription, DucoboxSensorEn
 CALIBRATION_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = (
     DucoboxNodeSensorEntityDescription(
         key="CalibrationStatus",
-        name="Calibration Status",
         value_fn=lambda data: _process_calibration_status(
             # Connectivity: Ventilation.Calibration.Valid, Communication/Print: Calibration.CalibIsValid
             data.get("general_data", {}).get("Ventilation", {}).get("Calibration", {}).get("Valid", {}).get("Val")
@@ -22,7 +21,6 @@ CALIBRATION_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = (
     ),
     DucoboxNodeSensorEntityDescription(
         key="CalibrationState",
-        name="Calibration State",
         value_fn=lambda data: _process_calibration_state(
             # Connectivity: Ventilation.Calibration.State, Communication/Print: Calibration.CalibState
             data.get("general_data", {}).get("Ventilation", {}).get("Calibration", {}).get("State", {}).get("Val")

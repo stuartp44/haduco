@@ -190,7 +190,8 @@ class DucoboxModeSelect(CoordinatorEntity[DucoboxCoordinator], SelectEntity):
         super().__init__(coordinator)
         self._attr_device_info = device_info
         self._attr_unique_id = unique_id
-        self._attr_name = "Ventilation Mode"
+        self._attr_has_entity_name = True
+        self._attr_translation_key = "ventilation_mode"
         self._attr_options = options
         self._node_id = node_id
 

@@ -14,7 +14,6 @@ COMMBOARD_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = (
     # Wi-Fi signal strength
     DucoboxSensorEntityDescription(
         key="RssiWifi",
-        name="Wi-Fi Signal Strength",
         native_unit_of_measurement="dBm",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.SIGNAL_STRENGTH,
@@ -24,7 +23,6 @@ COMMBOARD_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = (
     # Device uptime
     DucoboxSensorEntityDescription(
         key="UpTime",
-        name="Device Uptime",
         native_unit_of_measurement=UnitOfTime.SECONDS,
         state_class=SensorStateClass.TOTAL_INCREASING,
         device_class=SensorDeviceClass.DURATION,

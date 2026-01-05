@@ -369,7 +369,8 @@ class DucoboxSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntity):
         self.entity_description = description
         self._attr_device_info = device_info
         self._attr_unique_id = unique_id
-        self._attr_name = f"{device_info['name']} {description.name}"
+        self._attr_has_entity_name = True
+        self._attr_translation_key = description.key.lower()
 
     @property
     def native_value(self) -> Any:
@@ -396,7 +397,8 @@ class DucoboxNodeSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntit
         self._attr_device_info = device_info
         self._attr_unique_id = unique_id
         self._node_id = node_id
-        self._attr_name = description.name
+        self._attr_has_entity_name = True
+        self._attr_translation_key = description.key.lower()
 
     @property
     def native_value(self) -> Any:
