@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.1](https://github.com/stuartp44/haduco/compare/v1.6.0...v1.6.1) (2026-01-05)
+
+
+### Bug Fixes
+
+* add fallback for software version retrieval in device info creation ([2b852c4](https://github.com/stuartp44/haduco/commit/2b852c4c65ed484ad9aaa7ab9ac0020df86abb52))
+
 ## [1.6.0](https://github.com/stuartp44/haduco/compare/v1.5.6...v1.6.0) (2026-01-05)
 
 
