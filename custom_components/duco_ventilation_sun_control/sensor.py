@@ -93,6 +93,15 @@ def create_device_info(coordinator: DucoboxCoordinator, entry: ConfigEntry, devi
     sw_version = board_info.get("SwVersion")
     serial_number = board_info.get("Serial")
 
+    # Fallback: If library normalization didn't provide sw_version, get it from General.Board
+    if not sw_version:
+        # For Connectivity boards, use SwVersionComm; for others, use SwVersionBox
+        if "Connectivity" in board_type:
+            sw_version = data.get("General", {}).get("Board", {}).get("SwVersionComm", {}).get("Val")
+        else:
+            # Communication/Print boards might use different field
+            sw_version = data.get("General", {}).get("Board", {}).get("SwVersionBox", {}).get("Val")
+
     return DeviceInfo(
         identifiers={(DOMAIN, device_id)},
         name=hostname or f"{board_type} ({device_id})",
