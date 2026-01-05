@@ -11,9 +11,9 @@ CALIBRATION_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = (
         name="Calibration Status",
         value_fn=lambda data: _process_calibration_status(
             # Connectivity: Ventilation.Calibration.Valid, Communication/Print: Calibration.CalibIsValid
-            (data.get("general_data", {}).get("Ventilation", {}).get("Calibration", {}).get("Valid", {}).get("Val")
+            data.get("general_data", {}).get("Ventilation", {}).get("Calibration", {}).get("Valid", {}).get("Val")
             if data.get("general_data", {}).get("Ventilation", {}).get("Calibration", {}).get("Valid") is not None
-            else data.get("general_data", {}).get("Calibration", {}).get("CalibIsValid", {}).get("Val"))
+            else data.get("general_data", {}).get("Calibration", {}).get("CalibIsValid", {}).get("Val")
         ),
         icon="mdi:progress-wrench",
         sensor_key="CalibrationStatus",
@@ -25,9 +25,9 @@ CALIBRATION_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = (
         name="Calibration State",
         value_fn=lambda data: _process_calibration_state(
             # Connectivity: Ventilation.Calibration.State, Communication/Print: Calibration.CalibState
-            (data.get("general_data", {}).get("Ventilation", {}).get("Calibration", {}).get("State", {}).get("Val")
+            data.get("general_data", {}).get("Ventilation", {}).get("Calibration", {}).get("State", {}).get("Val")
             if data.get("general_data", {}).get("Ventilation", {}).get("Calibration", {}).get("State") is not None
-            else data.get("general_data", {}).get("Calibration", {}).get("CalibState", {}).get("Val"))
+            else data.get("general_data", {}).get("Calibration", {}).get("CalibState", {}).get("Val")
         ),
         icon="mdi:progress-wrench",
         sensor_key="CalibrationState",
