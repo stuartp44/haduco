@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.4](https://github.com/stuartp44/haduco/compare/v1.6.3...v1.6.4) (2026-01-06)
+
+
+### Bug Fixes
+
+* update API version key and handle software version data retrieval ([a3f4292](https://github.com/stuartp44/haduco/commit/a3f4292ca945bced6bb57cb57c72d0ed4b0d21f2))
+
 ## [1.6.3](https://github.com/stuartp44/haduco/compare/v1.6.2...v1.6.3) (2026-01-06)
 
 
