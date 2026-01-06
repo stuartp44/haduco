@@ -292,9 +292,35 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         mac = unique_id
         # Use provided board_type if available, otherwise try to detect from API
         if not board_type:
-            board_type = (
-                info.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "Connectivity Board")
+            comm_subtype = (
+                info.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
             )
+            # Determine board type based on API response
+            if comm_subtype:
+                if "connectivity" in comm_subtype.lower():
+                    board_type = "Connectivity Board"
+                elif "communication" in comm_subtype.lower() or "print" in comm_subtype.lower():
+                    board_type = "Communication and Print Board"
+                else:
+                    board_type = f"{comm_subtype} Board"
+            else:
+                # Fallback: check API version to determine board generation
+                api_version = (
+                    info.get("General", {})
+                    .get("Board", {})
+                    .get("ApiVersion", {})
+                    .get("Val")
+                )
+                if api_version:
+                    try:
+                        if float(api_version) >= 2.0:
+                            board_type = "Connectivity Board"
+                        else:
+                            board_type = "Communication and Print Board"
+                    except (ValueError, TypeError):
+                        board_type = "DUCO Board"
+                else:
+                    board_type = "DUCO Board"
 
         return {
             "title": f"{board_type} ({mac})",  # only used if flow_title not applied

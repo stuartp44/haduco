@@ -9,6 +9,10 @@
           "title": "Discovered",
           "description": "DUCO {board_type} with MAC {unique_id} found at {host}. Do you want to add it?"
         }
+      },
+      "abort": {
+        "already_configured": "This device is already configured",
+        "already_in_progress": "Configuration of this device is already in progress"
       }
     },
     "options": {
