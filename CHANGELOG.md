@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.2](https://github.com/stuartp44/haduco/compare/v1.6.1...v1.6.2) (2026-01-06)
+
+
+### Bug Fixes
+
+* enhance board type detection and add abort messages for configuration flow ([78fe51f](https://github.com/stuartp44/haduco/commit/78fe51f8c9678e9faacc115de692297c7c906550))
+* simplify board type detection logic by removing redundant lines ([6d686bc](https://github.com/stuartp44/haduco/commit/6d686bcf880dab33a8d7ad99ed6f25cd1a67b209))
+
+
+### CI/CD
+
+* **deps:** bump actions/checkout from 4 to 6 ([2252732](https://github.com/stuartp44/haduco/commit/2252732ff278e662a0a4beccc2964959eaa58a15))
+* **deps:** bump actions/setup-node from 4 to 6 ([0ee0f33](https://github.com/stuartp44/haduco/commit/0ee0f3318a0596ed371e62c33bf6914b8a3f83c6))
+* **deps:** bump github/codeql-action from 3 to 4 ([7d670d5](https://github.com/stuartp44/haduco/commit/7d670d5e3c6be00b2b779085c91d9d93ea9988d2))
+
 ## [1.6.1](https://github.com/stuartp44/haduco/compare/v1.6.0...v1.6.1) (2026-01-05)
 
 
