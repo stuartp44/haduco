@@ -204,7 +204,8 @@ def create_box_sensors(
         box_name = dev_type
 
     # Get sw_version and serial from node data (library normalizes for all board types)
-    box_sw_version = node.get("General", {}).get("SwVersion", {}).get("Val")
+    sw_version_data = node.get("General", {}).get("SwVersion")
+    box_sw_version = sw_version_data.get("Val") if isinstance(sw_version_data, dict) else sw_version_data
     box_serial_number = node.get("General", {}).get("SerialBoard")
 
     # BOX is connected via the main board (Communication/Print or Connectivity)
@@ -298,7 +299,8 @@ def create_generic_node_sensors(
 ) -> list[SensorEntity]:
     """Create sensors for a generic node, linking them via the specified device."""
     # Get node-specific sw_version and serial from the node data
-    node_sw_version = node.get("General", {}).get("SwVersion", {}).get("Val")
+    sw_version_data = node.get("General", {}).get("SwVersion")
+    node_sw_version = sw_version_data.get("Val") if isinstance(sw_version_data, dict) else sw_version_data
     node_serial = node.get("General", {}).get("SerialBoard")
 
     node_device_info = DeviceInfo(
