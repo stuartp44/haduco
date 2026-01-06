@@ -184,7 +184,8 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             }
 
             return self.async_create_entry(
-                data=product_entry_info["data"],  # No title
+                title="",
+                data=product_entry_info["data"],
             )
 
         except ValueError:
