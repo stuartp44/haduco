@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.3](https://github.com/stuartp44/haduco/compare/v1.6.2...v1.6.3) (2026-01-06)
+
+
+### Bug Fixes
+
+* add title parameter to async_create_entry in config flow ([b662150](https://github.com/stuartp44/haduco/commit/b662150f268786d10bc59076f810d3778e645fa2))
+
 ## [1.6.2](https://github.com/stuartp44/haduco/compare/v1.6.1...v1.6.2) (2026-01-06)
 
 
