@@ -1,5 +1,11 @@
 {
-  "branches": ["main"],
+  "branches": [
+    "main",
+    {
+      "name": "preview/*",
+      "prerelease": "preview"
+    }
+  ],
   "repositoryUrl": "https://github.com/stuartp44/haduco",
   "plugins": [
     [
@@ -17,7 +23,8 @@
           { "type": "test", "release": false },
           { "type": "build", "release": false },
           { "type": "ci", "release": false },
-          { "breaking": true, "release": "major" }
+          { "breaking": true, "release": "major" },
+          { "message": ".*", "release": "patch" }
         ]
       }
     ],
