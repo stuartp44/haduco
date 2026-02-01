@@ -239,10 +239,6 @@ def _is_comm_print_board(board_type: str, data: dict) -> bool:
     if "Communication" in board_type or "Print" in board_type:
         return True
 
-    board_info = data.get("BoardInfo")
-    if board_info:
-        return True
-
     board_name = (
         data.get("General", {}).get("Board", {}).get("Type", {}).get("Val")
         or data.get("General", {}).get("Board", {}).get("Name", {}).get("Val")

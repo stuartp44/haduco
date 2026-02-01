@@ -87,9 +87,7 @@ def create_device_info(coordinator: DucoboxCoordinator, entry: ConfigEntry, devi
     """Create device info for the main Ducobox."""
     # Library normalizes board info across both board types
     data = coordinator.data
-    board_type = entry.data.get("board_type", "DUCO Board")
-    if not board_type or board_type == "DUCO Board":
-        board_type = _detect_board_type_from_data(data)
+    board_type = _resolve_board_type(entry.data.get("board_type", "DUCO Board"), data)
     hostname = data.get("General", {}).get("Lan", {}).get("HostName", {}).get("Val")
     base_url = entry.data.get("base_url")
 
@@ -145,8 +143,6 @@ def _normalize_device_info_value(value: object | None) -> str | None:
 
 def _detect_board_type_from_data(data: dict) -> str:
     """Detect the board type from coordinator data."""
-    board_info = data.get("BoardInfo")
-
     comm_subtype = data.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
     if isinstance(comm_subtype, str) and comm_subtype:
         if "connectivity" in comm_subtype.lower():
@@ -163,10 +159,6 @@ def _detect_board_type_from_data(data: dict) -> str:
             return "Connectivity Board" if float(api_version) >= 2.0 else "Communication and Print Board"
         except (TypeError, ValueError):
             return "DUCO Board"
-
-    if board_info:
-        return "Communication and Print Board"
-
     return "DUCO Board"
 
 
@@ -179,9 +171,7 @@ def create_main_sensors(
     """Create main Ducobox sensors only for available data structures."""
     entities = []
     data = coordinator.data
-    board_type = entry.data.get("board_type", "")
-    if not board_type or board_type == "DUCO Board":
-        board_type = _detect_board_type_from_data(data)
+    board_type = _resolve_board_type(entry.data.get("board_type", ""), data)
     is_comm_print_board = _is_comm_print_board(board_type, data)
 
     # Filter out Wi-Fi sensor for Communication/Print boards (Ethernet only)
@@ -228,6 +218,14 @@ def _is_comm_print_board(board_type: str, data: dict) -> bool:
         or data.get("General", {}).get("Board", {}).get("BoardType", {}).get("Val")
     )
     return isinstance(board_name, str) and ("Communication" in board_name or "Print" in board_name)
+
+
+def _resolve_board_type(entry_board_type: str, data: dict) -> str:
+    """Resolve board type using coordinator data when available."""
+    if entry_board_type and entry_board_type != "DUCO Board":
+        return entry_board_type
+    detected = _detect_board_type_from_data(data)
+    return detected if detected != "DUCO Board" else (entry_board_type or detected)
 
 
 def _is_box_node(node: dict, node_type: str) -> bool:
@@ -349,9 +347,7 @@ def create_box_sensors(
         )
 
     # Add Duco network sensors as diagnostic sensors (only for Connectivity boards)
-    board_type = entry.data.get("board_type", "")
-    if not board_type or board_type == "DUCO Board":
-        board_type = _detect_board_type_from_data(coordinator.data)
+    board_type = _resolve_board_type(entry.data.get("board_type", ""), coordinator.data)
     if "Connectivity" in board_type:
         # Only add network sensor if NetworkDuco.State data exists
         if coordinator.data.get("General", {}).get("NetworkDuco", {}).get("State") is not None:
@@ -370,24 +366,19 @@ def create_box_sensors(
                 ]
             )
 
-    # Add calibration sensors as diagnostic sensors when data exists
-    calibration_payload = {"node_data": node, "general_data": coordinator.data}
-    calibration_descriptions = [
-        description for description in CALIBRATION_SENSORS if description.value_fn(calibration_payload) is not None
-    ]
-    if calibration_descriptions:
-        entities.extend(
-            [
-                DucoboxCalibrationSensorEntity(
-                    coordinator=coordinator,
-                    node_data=node,
-                    description=description,
-                    device_info=box_device_info,
-                    unique_id=f"{node_device_id}-{description.key}",
-                )
-                for description in calibration_descriptions
-            ]
-        )
+    # Add calibration sensors as diagnostic sensors
+    entities.extend(
+        [
+            DucoboxCalibrationSensorEntity(
+                coordinator=coordinator,
+                node_data=node,
+                description=description,
+                device_info=box_device_info,
+                unique_id=f"{node_device_id}-{description.key}",
+            )
+            for description in CALIBRATION_SENSORS
+        ]
+    )
 
     return entities
 
@@ -419,22 +410,19 @@ def create_generic_node_sensors(
     )
 
     node_id = node.get("Node")
-    board_type = entry.data.get("board_type", "")
-    if not board_type or board_type == "DUCO Board":
-        board_type = _detect_board_type_from_data(coordinator.data)
+    board_type = _resolve_board_type(entry.data.get("board_type", ""), coordinator.data)
 
     # Filter out IAQ sensors for Communication/Print boards (only available on Connectivity boards)
     sensors = NODE_SENSORS.get(node_type, [])
     if "Communication" in board_type or "Print" in board_type:
         sensors = [s for s in sensors if "Iaq" not in s.key]
 
-    # Only create sensors for fields that actually exist in the node's sensor data
-    # This prevents creating sensors that will always show "Unknown"
-    sensor_section = node.get("Sensor") or {}
-    sensor_data = sensor_section.get("data", {}) if isinstance(sensor_section, dict) else {}
-    if sensor_data:
-        # Filter to only sensors whose sensor_key exists in the actual data
-        sensors = [s for s in sensors if hasattr(s, "sensor_key") and s.sensor_key in sensor_data]
+    # Only filter sensor keys on Communication/Print boards to avoid hiding Connectivity sensors
+    if _is_comm_print_board(board_type, coordinator.data):
+        sensor_section = node.get("Sensor") or {}
+        sensor_data = sensor_section.get("data", {}) if isinstance(sensor_section, dict) else {}
+        if sensor_data:
+            sensors = [s for s in sensors if hasattr(s, "sensor_key") and s.sensor_key in sensor_data]
 
     return [
         DucoboxNodeSensorEntity(
