@@ -79,13 +79,7 @@ def get_mac_from_coordinator(coordinator: DucoboxCoordinator) -> str | None:
     # Try to get MAC from General.Lan.Mac (normalized by library)
     mac = coordinator.data.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val")
     if not mac:
-        mac = (
-            coordinator.data.get("api_info", {})
-            .get("General", {})
-            .get("Lan", {})
-            .get("Mac", {})
-            .get("Val")
-        )
+        mac = coordinator.data.get("api_info", {}).get("General", {}).get("Lan", {}).get("Mac", {}).get("Val")
     if mac:
         return mac.replace(":", "").lower()
     return None
@@ -96,7 +90,9 @@ def create_device_info(coordinator: DucoboxCoordinator, entry: ConfigEntry, devi
     # Library normalizes board info across both board types
     data = coordinator.data
     board_type = _resolve_board_type(entry.data.get("board_type", "DUCO Board"), data)
-    board_data = data.get("General", {}).get("Board", {}) or data.get("api_info", {}).get("General", {}).get("Board", {})
+    board_data = data.get("General", {}).get("Board", {}) or data.get("api_info", {}).get("General", {}).get(
+        "Board", {}
+    )
     lan_data = data.get("General", {}).get("Lan", {}) or data.get("api_info", {}).get("General", {}).get("Lan", {})
     hostname = _normalize_device_info_value(lan_data.get("HostName"))
     base_url = entry.data.get("base_url")
