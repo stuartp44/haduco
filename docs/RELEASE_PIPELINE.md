@@ -19,6 +19,7 @@ This project uses a comprehensive automated release pipeline that handles testin
 - **Changelog Generation**: Automatically generates and updates CHANGELOG.md
 - **GitHub Releases**: Creates releases with detailed notes
 - **Version Bumping**: Updates manifest.json automatically
+ - **Preview Channel**: PRs labeled `preview` publish pre-releases with `-preview.N` tag suffix
 
 ### 3. **Contributor Acknowledgment**
 - **Automatic Updates**: Contributors list updated on each release
@@ -90,6 +91,11 @@ BREAKING CHANGE: Configuration format has changed
    - manifest.json is updated
    - GitHub release is created
    - Contributors are acknowledged
+
+### Preview Releases
+
+To publish a preview version for early testing, add the `preview` label to your PR.
+This publishes a **GitHub pre-release** tagged like `v1.2.3-preview.1`.
 
 ### Version Examples
 

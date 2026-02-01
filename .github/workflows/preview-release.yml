@@ -1,0 +1,166 @@
+name: Preview Release
+
+on:
+  pull_request:
+    types: [labeled, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Linting
+    if: >-
+      contains(github.event.pull_request.labels.*.name, 'preview') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements_test.txt
+
+      - name: Ruff (linter)
+        run: ruff check .
+
+      - name: Ruff (formatter)
+        run: ruff format --check .
+
+      - name: mypy
+        run: mypy custom_components/duco_ventilation_sun_control
+
+  hacs-validation:
+    runs-on: ubuntu-latest
+    name: HACS Validation
+    if: >-
+      contains(github.event.pull_request.labels.*.name, 'preview') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: HACS validation
+        uses: hacs/action@main
+        with:
+          category: integration
+
+  hassfest:
+    runs-on: ubuntu-latest
+    name: Hassfest Validation
+    if: >-
+      contains(github.event.pull_request.labels.*.name, 'preview') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Hassfest validation
+        uses: home-assistant/actions/hassfest@master
+
+  preview-release:
+    runs-on: ubuntu-latest
+    name: Preview Semantic Release
+    needs: [lint, hacs-validation, hassfest]
+    if: >-
+      contains(github.event.pull_request.labels.*.name, 'preview') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+
+      - name: Install semantic-release
+        run: |
+          npm install -g semantic-release@23 \
+            @semantic-release/changelog@6 \
+            @semantic-release/git@10 \
+            @semantic-release/github@10 \
+            @semantic-release/exec@6 \
+            conventional-changelog-conventionalcommits@7
+
+      - name: Prepare preview branch
+        run: git checkout -B preview/pr-${{ github.event.pull_request.number }}
+
+      - name: Run semantic-release (preview)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
+        run: npx semantic-release
+
+      - name: Find latest preview release
+        id: preview_release
+        uses: actions/github-script@v8
+        with:
+          result-encoding: string
+          script: |
+            const { data: releases } = await github.rest.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 20,
+            });
+
+            const previewRelease = releases.find((release) =>
+              release.prerelease && release.tag_name.includes('preview')
+            );
+
+            if (!previewRelease) {
+              core.setFailed('No preview prerelease found.');
+              return '';
+            }
+
+            return JSON.stringify({
+              url: previewRelease.html_url,
+              tag: previewRelease.tag_name,
+            });
+
+      - name: Comment on PR and add label
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const payload = JSON.parse(`${{ steps.preview_release.outputs.result }}`);
+            const issue_number = context.payload.pull_request.number;
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number,
+              labels: ['previewed'],
+            });
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number,
+              body: `Preview release **${payload.tag}** created: ${payload.url}`,
+            });
