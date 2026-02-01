@@ -290,9 +290,7 @@ def create_node_sensors(
         if node_type not in {"BOX", "UC"} and node_type not in BOX_SENSORS:
             # Use the parent box's device ID as the via_device
             via_device_id = box_device_ids.get(parent_box_id, device_id)
-            _LOGGER.debug(
-                f"Using via_device_id: {via_device_id} for node ID: {node_id}"
-            )
+            _LOGGER.debug("Using via_device_id for node ID: %s", node_id)
             node_device_id = f"{device_id}-{node_id}"
             entities.extend(
                 create_generic_node_sensors(
