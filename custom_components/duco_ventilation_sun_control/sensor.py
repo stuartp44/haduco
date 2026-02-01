@@ -78,6 +78,14 @@ def get_mac_from_coordinator(coordinator: DucoboxCoordinator) -> str | None:
     """Get MAC address from coordinator data (library should normalize this)."""
     # Try to get MAC from General.Lan.Mac (normalized by library)
     mac = coordinator.data.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val")
+    if not mac:
+        mac = (
+            coordinator.data.get("api_info", {})
+            .get("General", {})
+            .get("Lan", {})
+            .get("Mac", {})
+            .get("Val")
+        )
     if mac:
         return mac.replace(":", "").lower()
     return None
@@ -88,7 +96,9 @@ def create_device_info(coordinator: DucoboxCoordinator, entry: ConfigEntry, devi
     # Library normalizes board info across both board types
     data = coordinator.data
     board_type = _resolve_board_type(entry.data.get("board_type", "DUCO Board"), data)
-    hostname = data.get("General", {}).get("Lan", {}).get("HostName", {}).get("Val")
+    board_data = data.get("General", {}).get("Board", {}) or data.get("api_info", {}).get("General", {}).get("Board", {})
+    lan_data = data.get("General", {}).get("Lan", {}) or data.get("api_info", {}).get("General", {}).get("Lan", {})
+    hostname = _normalize_device_info_value(lan_data.get("HostName"))
     base_url = entry.data.get("base_url")
 
     # Get sw_version and serial from BoardInfo (library normalizes for all board types)
@@ -99,17 +109,22 @@ def create_device_info(coordinator: DucoboxCoordinator, entry: ConfigEntry, devi
     # Fallback: If library normalization didn't provide sw_version, get it from General.Board
     if not sw_version:
         sw_version = _normalize_device_info_value(
-            data.get("General", {}).get("Board", {}).get("SwVersionComm")
-            or data.get("General", {}).get("Board", {}).get("SwVersionBox")
-            or data.get("General", {}).get("Board", {}).get("SwVersion")
+            board_data.get("SwVersionComm")
+            or board_data.get("SwVersionBox")
+            or board_data.get("SwVersion")
+            or board_data.get("PublicApiVersion")
         )
 
     if not serial_number:
         serial_number = _normalize_device_info_value(
-            data.get("General", {}).get("Board", {}).get("SerialNumber")
-            or data.get("General", {}).get("Board", {}).get("Serial")
-            or data.get("General", {}).get("Board", {}).get("SerialBoard")
-            or data.get("General", {}).get("Lan", {}).get("Mac")
+            board_data.get("SerialNumber")
+            or board_data.get("Serial")
+            or board_data.get("SerialBoard")
+            or board_data.get("SerialBoardComm")
+            or board_data.get("SerialBoardBox")
+            or board_data.get("SerialDucoComm")
+            or board_data.get("SerialDucoBox")
+            or lan_data.get("Mac")
         )
 
     return DeviceInfo(
@@ -130,6 +145,10 @@ def _normalize_device_info_value(value: object | None) -> str | None:
     if isinstance(value, dict):
         if "Val" in value:
             return _normalize_device_info_value(value.get("Val"))
+        if "Value" in value:
+            return _normalize_device_info_value(value.get("Value"))
+        if "val" in value:
+            return _normalize_device_info_value(value.get("val"))
         if "value" in value:
             return _normalize_device_info_value(value.get("value"))
         return None
@@ -143,6 +162,11 @@ def _normalize_device_info_value(value: object | None) -> str | None:
 
 def _detect_board_type_from_data(data: dict) -> str:
     """Detect the board type from coordinator data."""
+    generation_info = data.get("generation_info") or {}
+    generation_board_type = generation_info.get("board_type")
+    if isinstance(generation_board_type, str) and generation_board_type:
+        return generation_board_type
+
     comm_subtype = data.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
     if isinstance(comm_subtype, str) and comm_subtype:
         if "connectivity" in comm_subtype.lower():
