@@ -108,7 +108,6 @@ def create_device_info(coordinator: DucoboxCoordinator, entry: ConfigEntry, devi
             board_data.get("SwVersionComm")
             or board_data.get("SwVersionBox")
             or board_data.get("SwVersion")
-            or board_data.get("PublicApiVersion")
         )
 
     if not serial_number:

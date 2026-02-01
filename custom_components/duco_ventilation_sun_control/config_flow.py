@@ -162,7 +162,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         """Handle manual input."""
         host = user_input["host"]
         try:
-            comm_info = await self._get_duco_comm_board_info(host)
+            comm_info, scheme, host_value = await self._get_comm_board_info_with_scheme(host)
             # Extract MAC from the communication board info
             info = comm_info["communication_board_info"]
             mac = info.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val", "")
@@ -171,7 +171,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             else:
                 raise ValueError("Could not extract MAC address from device")
 
-            product_entry_info, _ = await self._get_entry_info(comm_info, host, unique_id)
+            product_entry_info, _ = await self._get_entry_info(comm_info, host_value, unique_id, scheme)
             board_type = product_entry_info["data"].get("board_type", "Duco")
 
             await self.async_set_unique_id(unique_id)
@@ -194,6 +194,52 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             return self._show_user_form(errors={"host": "cannot_connect"})
         except RuntimeError:
             return self._show_user_form(errors={"host": "unknown_error"})
+
+    async def _get_comm_board_info_with_scheme(self, host: str) -> tuple[dict, str, str]:
+        """Get communication board info and determine the best scheme to use."""
+        parsed_url = requests.utils.urlparse(host)
+
+        if parsed_url.scheme:
+            if parsed_url.scheme not in ("http", "https"):
+                raise ValueError("Invalid URL scheme")
+            host_value = parsed_url.netloc or parsed_url.path
+            comm_info = await self._get_duco_comm_board_info(host)
+
+            if parsed_url.scheme == "http" and self._is_connectivity_board(comm_info["communication_board_info"]):
+                try:
+                    https_info = await self._get_duco_comm_board_info(f"https://{host_value}")
+                    return https_info, "https", host_value
+                except Exception:
+                    return comm_info, "http", host_value
+
+            return comm_info, parsed_url.scheme, host_value
+
+        host_value = host
+        try:
+            comm_info = await self._get_duco_comm_board_info(f"https://{host_value}")
+            return comm_info, "https", host_value
+        except Exception:
+            comm_info = await self._get_duco_comm_board_info(f"http://{host_value}")
+            if self._is_connectivity_board(comm_info["communication_board_info"]):
+                try:
+                    https_info = await self._get_duco_comm_board_info(f"https://{host_value}")
+                    return https_info, "https", host_value
+                except Exception:
+                    return comm_info, "http", host_value
+            return comm_info, "http", host_value
+
+    def _is_connectivity_board(self, info: dict) -> bool:
+        """Detect connectivity boards to ensure HTTPS is used when required."""
+        board = info.get("General", {}).get("Board", {})
+        comm_subtype = board.get("CommSubTypeName", {}).get("Val", "")
+        if "connectivity" in str(comm_subtype).lower():
+            return True
+
+        api_version = board.get("PublicApiVersion", {}).get("Val") or board.get("ApiVersion", {}).get("Val")
+        try:
+            return float(api_version) >= 2.0
+        except (TypeError, ValueError):
+            return False
 
     def _show_user_form(self, errors: dict[str, str] | None = None) -> FlowResult:
         return self.async_show_form(
