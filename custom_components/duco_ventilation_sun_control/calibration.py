@@ -36,14 +36,24 @@ def _get_calibration_value(data: dict, key: str) -> object | None:
     return None
 
 
+def _get_calibration_bool(data: dict, primary_key: str, fallback_key: str) -> bool | None:
+    value = _get_calibration_value(data, primary_key)
+    if value is None:
+        value = _get_calibration_value(data, fallback_key)
+    return value if isinstance(value, bool) else None
+
+
+def _get_calibration_str(data: dict, primary_key: str, fallback_key: str) -> str | None:
+    value = _get_calibration_value(data, primary_key)
+    if value is None:
+        value = _get_calibration_value(data, fallback_key)
+    return value if isinstance(value, str) else None
+
+
 CALIBRATION_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = (
     DucoboxNodeSensorEntityDescription(
         key="CalibrationStatus",
-        value_fn=lambda data: _process_calibration_status(
-            _get_calibration_value(data, "Valid")
-            if _get_calibration_value(data, "Valid") is not None
-            else _get_calibration_value(data, "CalibIsValid")
-        ),
+        value_fn=lambda data: _process_calibration_status(_get_calibration_bool(data, "Valid", "CalibIsValid")),
         icon="mdi:progress-wrench",
         sensor_key="CalibrationStatus",
         node_type="BOX",
@@ -51,11 +61,7 @@ CALIBRATION_SENSORS: tuple[DucoboxSensorEntityDescription, ...] = (
     ),
     DucoboxNodeSensorEntityDescription(
         key="CalibrationState",
-        value_fn=lambda data: _process_calibration_state(
-            _get_calibration_value(data, "State")
-            if _get_calibration_value(data, "State") is not None
-            else _get_calibration_value(data, "CalibState")
-        ),
+        value_fn=lambda data: _process_calibration_state(_get_calibration_str(data, "State", "CalibState")),
         icon="mdi:progress-wrench",
         sensor_key="CalibrationState",
         node_type="BOX",
