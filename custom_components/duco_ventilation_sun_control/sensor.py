@@ -100,16 +100,19 @@ def create_device_info(coordinator: DucoboxCoordinator, entry: ConfigEntry, devi
 
     # Fallback: If library normalization didn't provide sw_version, get it from General.Board
     if not sw_version:
-        # For Connectivity boards, use SwVersionComm; for others, use SwVersionBox
-        if "Connectivity" in board_type:
-            sw_version = _normalize_device_info_value(
-                data.get("General", {}).get("Board", {}).get("SwVersionComm", {}).get("Val")
-            )
-        else:
-            # Communication/Print boards might use different field
-            sw_version = _normalize_device_info_value(
-                data.get("General", {}).get("Board", {}).get("SwVersionBox", {}).get("Val")
-            )
+        sw_version = _normalize_device_info_value(
+            data.get("General", {}).get("Board", {}).get("SwVersionComm")
+            or data.get("General", {}).get("Board", {}).get("SwVersionBox")
+            or data.get("General", {}).get("Board", {}).get("SwVersion")
+        )
+
+    if not serial_number:
+        serial_number = _normalize_device_info_value(
+            data.get("General", {}).get("Board", {}).get("SerialNumber")
+            or data.get("General", {}).get("Board", {}).get("Serial")
+            or data.get("General", {}).get("Board", {}).get("SerialBoard")
+            or data.get("General", {}).get("Lan", {}).get("Mac")
+        )
 
     return DeviceInfo(
         identifiers={(DOMAIN, device_id)},
@@ -125,6 +128,12 @@ def create_device_info(coordinator: DucoboxCoordinator, entry: ConfigEntry, devi
 def _normalize_device_info_value(value: object | None) -> str | None:
     """Normalize device info values, ignoring placeholders."""
     if value is None:
+        return None
+    if isinstance(value, dict):
+        if "Val" in value:
+            return _normalize_device_info_value(value.get("Val"))
+        if "value" in value:
+            return _normalize_device_info_value(value.get("value"))
         return None
     if isinstance(value, str):
         stripped = value.strip()
@@ -171,6 +180,8 @@ def create_main_sensors(
     entities = []
     data = coordinator.data
     board_type = entry.data.get("board_type", "")
+    if not board_type or board_type == "DUCO Board":
+        board_type = _detect_board_type_from_data(data)
     is_comm_print_board = _is_comm_print_board(board_type, data)
 
     # Filter out Wi-Fi sensor for Communication/Print boards (Ethernet only)
@@ -209,10 +220,6 @@ def create_main_sensors(
 def _is_comm_print_board(board_type: str, data: dict) -> bool:
     """Return True when the board does not support Wi-Fi signal strength."""
     if "Communication" in board_type or "Print" in board_type:
-        return True
-
-    board_info = data.get("BoardInfo")
-    if board_info:
         return True
 
     board_name = (
@@ -343,6 +350,8 @@ def create_box_sensors(
 
     # Add Duco network sensors as diagnostic sensors (only for Connectivity boards)
     board_type = entry.data.get("board_type", "")
+    if not board_type or board_type == "DUCO Board":
+        board_type = _detect_board_type_from_data(coordinator.data)
     if "Connectivity" in board_type:
         # Only add network sensor if NetworkDuco.State data exists
         if coordinator.data.get("General", {}).get("NetworkDuco", {}).get("State") is not None:
@@ -411,6 +420,8 @@ def create_generic_node_sensors(
 
     node_id = node.get("Node")
     board_type = entry.data.get("board_type", "")
+    if not board_type or board_type == "DUCO Board":
+        board_type = _detect_board_type_from_data(coordinator.data)
 
     # Filter out IAQ sensors for Communication/Print boards (only available on Connectivity boards)
     sensors = NODE_SENSORS.get(node_type, [])
