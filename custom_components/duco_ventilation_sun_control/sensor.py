@@ -105,9 +105,7 @@ def create_device_info(coordinator: DucoboxCoordinator, entry: ConfigEntry, devi
     # Fallback: If library normalization didn't provide sw_version, get it from General.Board
     if not sw_version:
         sw_version = _normalize_device_info_value(
-            board_data.get("SwVersionComm")
-            or board_data.get("SwVersionBox")
-            or board_data.get("SwVersion")
+            board_data.get("SwVersionComm") or board_data.get("SwVersionBox") or board_data.get("SwVersion")
         )
 
     if not serial_number:
