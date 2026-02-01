@@ -3,7 +3,10 @@
       "flow_title": "{board_type} ({unique_id})",
       "step": {
         "user": {
-          "title": "Connect to your DUCO device"
+          "title": "Connect to your DUCO device",
+          "data": {
+            "host": "IP address or hostname"
+          }
         },
         "confirm": {
           "title": "Discovered",
