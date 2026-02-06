@@ -13,6 +13,46 @@ from .const import DOMAIN, SCAN_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
 
+
+def _detect_board_type_from_info(info: dict) -> str:
+    """Detect the board type from a communication board info payload."""
+    board = info.get("General", {}).get("Board", {})
+
+    comm_subtype = board.get("CommSubTypeName", {}).get("Val", "")
+    if comm_subtype:
+        comm_subtype_lower = str(comm_subtype).lower()
+        if "connectivity" in comm_subtype_lower:
+            return "Connectivity Board"
+        if "communication" in comm_subtype_lower or "print" in comm_subtype_lower:
+            return "Communication and Print Board"
+        return f"{comm_subtype} Board"
+
+    board_name = (
+        board.get("Type", {}).get("Val")
+        or board.get("Name", {}).get("Val")
+        or board.get("BoardType", {}).get("Val")
+        or board.get("BoardTypeName", {}).get("Val")
+    )
+    if isinstance(board_name, str) and board_name:
+        board_name_lower = board_name.lower()
+        if "connectivity" in board_name_lower:
+            return "Connectivity Board"
+        if "communication" in board_name_lower or "print" in board_name_lower:
+            return "Communication and Print Board"
+
+    api_version = board.get("PublicApiVersion", {}).get("Val") or board.get(
+        "ApiVersion", {}
+    ).get("Val")
+    try:
+        return (
+            "Connectivity Board"
+            if float(api_version) >= 2.0
+            else "Communication and Print Board"
+        )
+    except (TypeError, ValueError):
+        return "DUCO Board"
+
+
 CONFIG_SCHEMA = vol.Schema(
     {
         vol.Required("host"): str,
@@ -33,13 +73,17 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
     VERSION = 1
 
-    async def async_step_user(self, user_input: dict[str, str] | None = None) -> FlowResult:
+    async def async_step_user(
+        self, user_input: dict[str, str] | None = None
+    ) -> FlowResult:
         """Handle the initial step."""
         if user_input is not None:
             return await self._handle_user_input(user_input)
         return self._show_user_form()
 
-    async def async_step_zeroconf(self, discovery_info: ZeroconfServiceInfo) -> FlowResult:
+    async def async_step_zeroconf(
+        self, discovery_info: ZeroconfServiceInfo
+    ) -> FlowResult:
         """Handle mDNS discovery."""
         _LOGGER.debug(
             "Zeroconf discovery triggered! Service: %s, Name: %s, Type: %s",
@@ -48,12 +92,17 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             discovery_info.type,
         )
         if not self._is_valid_discovery(discovery_info):
-            _LOGGER.debug("Discovery rejected - device name '%s' doesn't match required pattern", discovery_info.name)
+            _LOGGER.debug(
+                "Discovery rejected - device name '%s' doesn't match required pattern",
+                discovery_info.name,
+            )
             return self.async_abort(reason="not_duco_air_device")
 
         _LOGGER.debug("Discovery validated successfully")
         host, unique_id, scheme = self._extract_discovery_info(discovery_info)
-        _LOGGER.debug("Extracted: host=%s, unique_id=%s, scheme=%s", host, unique_id, scheme)
+        _LOGGER.debug(
+            "Extracted: host=%s, unique_id=%s, scheme=%s", host, unique_id, scheme
+        )
 
         # For Connectivity Boards, prefer HTTPS over HTTP
         # Check ApiVersion to determine if it's a modern board
@@ -62,7 +111,8 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
         if scheme == "http" and is_modern_board:
             _LOGGER.debug(
-                "Modern board (ApiVersion %s) detected via HTTP, aborting to allow HTTPS discovery", api_version
+                "Modern board (ApiVersion %s) detected via HTTP, aborting to allow HTTPS discovery",
+                api_version,
             )
             return self.async_abort(reason="prefer_https")
 
@@ -76,7 +126,9 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
         # If HTTP discovery but device already exists with HTTPS, prefer HTTPS
         if scheme == "http" and self._is_existing_entry(unique_id, host, "https"):
-            _LOGGER.debug("Device already configured with HTTPS, preferring that over HTTP")
+            _LOGGER.debug(
+                "Device already configured with HTTPS, preferring that over HTTP"
+            )
             return self.async_abort(reason="already_configured")
 
         if self._is_existing_entry(unique_id, host, scheme):
@@ -84,10 +136,16 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             return self.async_abort(reason="already_configured")
 
         _LOGGER.debug("Proceeding to confirmation step")
-        self.context["discovery"] = {"host": host, "unique_id": unique_id, "scheme": scheme}
+        self.context["discovery"] = {
+            "host": host,
+            "unique_id": unique_id,
+            "scheme": scheme,
+        }
         return await self.async_step_confirm()
 
-    async def async_step_confirm(self, user_input: dict[str, str] | None = None) -> FlowResult:
+    async def async_step_confirm(
+        self, user_input: dict[str, str] | None = None
+    ) -> FlowResult:
         """Ask user to confirm adding the discovered device."""
         discovery = self.context.get("discovery", {})
         host = discovery.get("host", "unknown")
@@ -101,35 +159,9 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         try:
             base_url = f"{scheme}://{host}"
             comm_info = await self._get_duco_comm_board_info(base_url)
-            # Try to get the actual board type from the API
-            comm_subtype = (
+            board_type = _detect_board_type_from_info(
                 comm_info["communication_board_info"]
-                .get("General", {})
-                .get("Board", {})
-                .get("CommSubTypeName", {})
-                .get("Val", "")
             )
-            # Determine board type based on API response
-            if comm_subtype:
-                if "connectivity" in comm_subtype.lower():
-                    board_type = "Connectivity Board"
-                elif "communication" in comm_subtype.lower() or "print" in comm_subtype.lower():
-                    board_type = "Communication and Print Board"
-                else:
-                    board_type = f"{comm_subtype} Board"
-            else:
-                # Fallback: check API version to determine board generation
-                api_version = (
-                    comm_info["communication_board_info"]
-                    .get("General", {})
-                    .get("Board", {})
-                    .get("ApiVersion", {})
-                    .get("Val")
-                )
-                if api_version and float(api_version) >= 2.0:
-                    board_type = "Connectivity Board"
-                else:
-                    board_type = "Communication and Print Board"
 
             unique_id = (
                 comm_info["communication_board_info"]
@@ -145,8 +177,14 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         except Exception as e:
             _LOGGER.warning("Failed to fetch board info for confirm step: %s", e)
 
-        _LOGGER.debug("Setting title_placeholders: board_type=%s, unique_id=%s", board_type, unique_id)
-        _LOGGER.debug("Setting description_placeholders: host=%s, unique_id=%s", host, unique_id)
+        _LOGGER.debug(
+            "Setting title_placeholders: board_type=%s, unique_id=%s",
+            board_type,
+            unique_id,
+        )
+        _LOGGER.debug(
+            "Setting description_placeholders: host=%s, unique_id=%s", host, unique_id
+        )
 
         self.context["title_placeholders"] = {
             "board_type": board_type,
@@ -155,14 +193,20 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
         return self.async_show_form(
             step_id="confirm",
-            description_placeholders={"host": host, "unique_id": unique_id, "board_type": board_type},
+            description_placeholders={
+                "host": host,
+                "unique_id": unique_id,
+                "board_type": board_type,
+            },
         )
 
     async def _handle_user_input(self, user_input: dict) -> FlowResult:
         """Handle manual input."""
         host = user_input["host"]
         try:
-            comm_info, scheme, host_value = await self._get_comm_board_info_with_scheme(host)
+            comm_info, scheme, host_value = await self._get_comm_board_info_with_scheme(
+                host
+            )
             # Extract MAC from the communication board info
             info = comm_info["communication_board_info"]
             mac = info.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val", "")
@@ -171,7 +215,9 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             else:
                 raise ValueError("Could not extract MAC address from device")
 
-            product_entry_info, _ = await self._get_entry_info(comm_info, host_value, unique_id, scheme)
+            product_entry_info, _ = await self._get_entry_info(
+                comm_info, host_value, unique_id, scheme
+            )
             board_type = product_entry_info["data"].get("board_type", "Duco")
 
             await self.async_set_unique_id(unique_id)
@@ -195,7 +241,9 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         except RuntimeError:
             return self._show_user_form(errors={"host": "unknown_error"})
 
-    async def _get_comm_board_info_with_scheme(self, host: str) -> tuple[dict, str, str]:
+    async def _get_comm_board_info_with_scheme(
+        self, host: str
+    ) -> tuple[dict, str, str]:
         """Get communication board info and determine the best scheme to use."""
         parsed_url = requests.utils.urlparse(host)
 
@@ -205,9 +253,13 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             host_value = parsed_url.netloc or parsed_url.path
             comm_info = await self._get_duco_comm_board_info(host)
 
-            if parsed_url.scheme == "http" and self._is_connectivity_board(comm_info["communication_board_info"]):
+            if parsed_url.scheme == "http" and self._is_connectivity_board(
+                comm_info["communication_board_info"]
+            ):
                 try:
-                    https_info = await self._get_duco_comm_board_info(f"https://{host_value}")
+                    https_info = await self._get_duco_comm_board_info(
+                        f"https://{host_value}"
+                    )
                     return https_info, "https", host_value
                 except Exception:
                     return comm_info, "http", host_value
@@ -222,7 +274,9 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
             comm_info = await self._get_duco_comm_board_info(f"http://{host_value}")
             if self._is_connectivity_board(comm_info["communication_board_info"]):
                 try:
-                    https_info = await self._get_duco_comm_board_info(f"https://{host_value}")
+                    https_info = await self._get_duco_comm_board_info(
+                        f"https://{host_value}"
+                    )
                     return https_info, "https", host_value
                 except Exception:
                     return comm_info, "http", host_value
@@ -230,16 +284,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
     def _is_connectivity_board(self, info: dict) -> bool:
         """Detect connectivity boards to ensure HTTPS is used when required."""
-        board = info.get("General", {}).get("Board", {})
-        comm_subtype = board.get("CommSubTypeName", {}).get("Val", "")
-        if "connectivity" in str(comm_subtype).lower():
-            return True
-
-        api_version = board.get("PublicApiVersion", {}).get("Val") or board.get("ApiVersion", {}).get("Val")
-        try:
-            return float(api_version) >= 2.0
-        except (TypeError, ValueError):
-            return False
+        return _detect_board_type_from_info(info) == "Connectivity Board"
 
     def _show_user_form(self, errors: dict[str, str] | None = None) -> FlowResult:
         return self.async_show_form(
@@ -249,17 +294,20 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         )
 
     def _is_valid_discovery(self, discovery_info: ZeroconfServiceInfo) -> bool:
-        valid_names = ["duco_", "duco ", "duco["]
-        return any(discovery_info.name.lower().startswith(x) for x in valid_names)
+        return discovery_info.name.lower().startswith("duco")
 
-    def _extract_discovery_info(self, discovery_info: ZeroconfServiceInfo) -> tuple[str, str, str]:
+    def _extract_discovery_info(
+        self, discovery_info: ZeroconfServiceInfo
+    ) -> tuple[str, str, str]:
         host = discovery_info.addresses[0]
         unique_id = (discovery_info.properties.get("MAC") or "").replace(":", "")
         # Determine scheme from service type
         scheme = "https" if "_https._tcp" in discovery_info.type else "http"
         return host, unique_id, scheme
 
-    async def _update_ip_if_changed(self, unique_id: str, new_host: str, scheme: str) -> bool:
+    async def _update_ip_if_changed(
+        self, unique_id: str, new_host: str, scheme: str
+    ) -> bool:
         """Check if device exists and update IP if changed. Returns True if device exists."""
         entries = self.hass.config_entries.async_entries(DOMAIN)
         for entry in entries:
@@ -274,18 +322,28 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
                         current_base_url,
                         new_base_url,
                     )
-                    self.hass.config_entries.async_update_entry(entry, data={**entry.data, "base_url": new_base_url})
+                    self.hass.config_entries.async_update_entry(
+                        entry, data={**entry.data, "base_url": new_base_url}
+                    )
                     # Reload the entry to apply the new IP
                     await self.hass.config_entries.async_reload(entry.entry_id)
                 return True
         return False
 
-    def _is_existing_entry(self, unique_id: str, host: str | None = None, scheme: str = "http") -> bool:
+    def _is_existing_entry(
+        self, unique_id: str, host: str | None = None, scheme: str = "http"
+    ) -> bool:
         entries = self.hass.config_entries.async_entries(DOMAIN)
-        _LOGGER.debug("Checking if device exists. unique_id=%s, entries=%s", unique_id, len(entries))
+        _LOGGER.debug(
+            "Checking if device exists. unique_id=%s, entries=%s",
+            unique_id,
+            len(entries),
+        )
         for entry in entries:
             _LOGGER.debug(
-                "Comparing with entry: unique_id=%s, base_url=%s", entry.unique_id, entry.data.get("base_url")
+                "Comparing with entry: unique_id=%s, base_url=%s",
+                entry.unique_id,
+                entry.data.get("base_url"),
             )
             if entry.unique_id == unique_id:
                 return True
@@ -299,7 +357,9 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         board_type = discovery.get("board_type")  # Use detected board type if available
         base_url = f"{scheme}://{host}"
         comm_info = await self._get_duco_comm_board_info(base_url)
-        product_entry_info, _ = await self._get_entry_info(comm_info, host, unique_id, scheme, board_type)
+        product_entry_info, _ = await self._get_entry_info(
+            comm_info, host, unique_id, scheme, board_type
+        )
 
         # Set placeholders for flow_title
         board_type = product_entry_info["data"].get("board_type", "Duco")
@@ -339,28 +399,7 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
         mac = unique_id
         # Use provided board_type if available, otherwise try to detect from API
         if not board_type:
-            comm_subtype = info.get("General", {}).get("Board", {}).get("CommSubTypeName", {}).get("Val", "")
-            # Determine board type based on API response
-            if comm_subtype:
-                if "connectivity" in comm_subtype.lower():
-                    board_type = "Connectivity Board"
-                elif "communication" in comm_subtype.lower() or "print" in comm_subtype.lower():
-                    board_type = "Communication and Print Board"
-                else:
-                    board_type = f"{comm_subtype} Board"
-            else:
-                # Fallback: check API version to determine board generation
-                api_version = info.get("General", {}).get("Board", {}).get("PublicApiVersion", {}).get("Val")
-                if api_version:
-                    try:
-                        if float(api_version) >= 2.0:
-                            board_type = "Connectivity Board"
-                        else:
-                            board_type = "Communication and Print Board"
-                    except (ValueError, TypeError):
-                        board_type = "DUCO Board"
-                else:
-                    board_type = "DUCO Board"
+            board_type = _detect_board_type_from_info(info)
 
         return {
             "title": f"{board_type} ({mac})",  # only used if flow_title not applied
@@ -402,19 +441,25 @@ class DucoboxConnectivityBoardConfigFlow(config_entries.ConfigFlow, domain=DOMAI
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry: config_entries.ConfigEntry) -> "DucoboxOptionsFlowHandler":
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> "DucoboxOptionsFlowHandler":
         return DucoboxOptionsFlowHandler()
 
 
 class DucoboxOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle options flow."""
 
-    async def async_step_init(self, user_input: dict[str, int] | None = None) -> FlowResult:
+    async def async_step_init(
+        self, user_input: dict[str, int] | None = None
+    ) -> FlowResult:
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
 
         # Get current refresh time or use default
-        current_refresh_time = self.config_entry.options.get("refresh_time", SCAN_INTERVAL.total_seconds())
+        current_refresh_time = self.config_entry.options.get(
+            "refresh_time", SCAN_INTERVAL.total_seconds()
+        )
 
         return self.async_show_form(
             step_id="init",

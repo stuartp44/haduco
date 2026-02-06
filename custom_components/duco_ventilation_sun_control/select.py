@@ -25,7 +25,12 @@ async def async_setup_entry(
     """Set up Ducobox select entities from a config entry."""
     refresh_time = entry.options.get("refresh_time", SCAN_INTERVAL.total_seconds())
 
-    coordinator = DucoboxCoordinator(hass, update_interval=timedelta(seconds=refresh_time))
+    coordinator = DucoboxCoordinator(
+        hass,
+        entry.runtime_data,
+        update_interval=timedelta(seconds=refresh_time),
+        config_entry=entry,
+    )
     await coordinator.async_config_entry_first_refresh()
 
     # Try to get MAC from coordinator data (library should normalize this)
@@ -40,7 +45,9 @@ async def async_setup_entry(
     box_device_ids = get_box_device_ids(device_id, nodes)
     board_type = entry.data.get("board_type", "")
 
-    entities = await create_select_entities(hass, coordinator, device_id, nodes, box_device_ids, board_type)
+    entities = await create_select_entities(
+        hass, coordinator, device_id, nodes, box_device_ids, board_type
+    )
     if entities:
         async_add_entities(entities, update_before_add=True)
 
@@ -121,7 +128,12 @@ async def create_select_entities(
         via_device = (DOMAIN, via_device_id) if via_device_id else None
 
         if node_type == "BOX":
-            box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "")
+            box_name = (
+                coordinator.data.get("General", {})
+                .get("Board", {})
+                .get("BoxName", {})
+                .get("Val", "")
+            )
             # Fallback to node type if box_name is empty or "Unknown"
             if not box_name or box_name.lower() == "unknown":
                 model = node_type
@@ -135,19 +147,33 @@ async def create_select_entities(
         # For Communication/Print boards, use default options without API call
         if is_comm_print_board:
             options = default_options
-            _LOGGER.debug(f"[SELECT] Using default options for node {node_id} (Communication/Print board)")
+            _LOGGER.debug(
+                f"[SELECT] Using default options for node {node_id} (Communication/Print board)"
+            )
         else:
             # For Connectivity boards, query available actions from API
             try:
-                actions_response = await hass.async_add_executor_job(coordinator.client.get_actions_node, node_id)
+                actions_response = await hass.async_add_executor_job(
+                    coordinator.client.get_actions_node, node_id
+                )
                 ventilation_action = next(
-                    (a for a in actions_response.Actions if a.Action == "SetVentilationState" and hasattr(a, "Enum")),
+                    (
+                        a
+                        for a in actions_response.Actions
+                        if a.Action == "SetVentilationState" and hasattr(a, "Enum")
+                    ),
                     None,
                 )
                 if not ventilation_action or not ventilation_action.Enum:
-                    _LOGGER.debug(f"[SELECT] No ventilation action found for node {node_id}")
+                    _LOGGER.debug(
+                        f"[SELECT] No ventilation action found for node {node_id}"
+                    )
                     continue
-                options = [opt.strip() for opt in ventilation_action.Enum if isinstance(opt, str)]
+                options = [
+                    opt.strip()
+                    for opt in ventilation_action.Enum
+                    if isinstance(opt, str)
+                ]
             except Exception as e:
                 if _is_comm_print_exception(e):
                     options = default_options
@@ -155,7 +181,9 @@ async def create_select_entities(
                         f"[SELECT] Falling back to default options for node {node_id} (Communication/Print board)"
                     )
                 else:
-                    _LOGGER.warning(f"[SELECT] Failed to retrieve ventilation actions for node {node_id}: {e}")
+                    _LOGGER.warning(
+                        f"[SELECT] Failed to retrieve ventilation actions for node {node_id}: {e}"
+                    )
                     continue
 
         device_info = DeviceInfo(
@@ -171,12 +199,18 @@ async def create_select_entities(
             coordinator=coordinator,
             device_info=device_info,
             unique_id=unique_id,
-            node_id=node_id if isinstance(node_id, int) else int(node_id) if node_id else 0,
+            node_id=node_id
+            if isinstance(node_id, int)
+            else int(node_id)
+            if node_id
+            else 0,
             options=options,
         )
         entities.append(entity)
 
-        _LOGGER.debug(f"[SELECT] Created select for node {node_id} with options {options}")
+        _LOGGER.debug(
+            f"[SELECT] Created select for node {node_id} with options {options}"
+        )
 
     return entities
 
@@ -210,7 +244,9 @@ class DucoboxModeSelect(CoordinatorEntity[DucoboxCoordinator], SelectEntity):
                 state = node.get("Ventilation", {}).get("State")
                 if isinstance(state, str) and state in self._attr_options:
                     return state
-                _LOGGER.warning(f"[SELECT] Invalid current state '{state}' for node {self._node_id}")
+                _LOGGER.warning(
+                    f"[SELECT] Invalid current state '{state}' for node {self._node_id}"
+                )
                 return None
         _LOGGER.warning(f"[SELECT] Node {self._node_id} not found")
         return None
@@ -225,13 +261,21 @@ class DucoboxModeSelect(CoordinatorEntity[DucoboxCoordinator], SelectEntity):
                 option,
                 self._node_id,
             )
-            _LOGGER.debug("[SELECT] Successfully sent command, waiting for device to process")
+            _LOGGER.debug(
+                "[SELECT] Successfully sent command, waiting for device to process"
+            )
             await asyncio.sleep(3.0)  # Give device 3 seconds to process the change
-            _LOGGER.debug("[SELECT] Refreshing coordinator data and waiting for completion")
+            _LOGGER.debug(
+                "[SELECT] Refreshing coordinator data and waiting for completion"
+            )
             await self.coordinator.async_refresh()  # Wait for refresh to complete
-            _LOGGER.debug("[SELECT] Coordinator refresh completed, all entities should update")
+            _LOGGER.debug(
+                "[SELECT] Coordinator refresh completed, all entities should update"
+            )
         except Exception as e:
-            _LOGGER.error(f"[SELECT] Failed to set mode '{option}' for node {self._node_id}: {e}")
+            _LOGGER.error(
+                f"[SELECT] Failed to set mode '{option}' for node {self._node_id}: {e}"
+            )
 
 
 def _is_comm_print_board(board_type: str, data: dict) -> bool:
@@ -244,10 +288,15 @@ def _is_comm_print_board(board_type: str, data: dict) -> bool:
         or data.get("General", {}).get("Board", {}).get("Name", {}).get("Val")
         or data.get("General", {}).get("Board", {}).get("BoardType", {}).get("Val")
     )
-    return isinstance(board_name, str) and ("Communication" in board_name or "Print" in board_name)
+    return isinstance(board_name, str) and (
+        "Communication" in board_name or "Print" in board_name
+    )
 
 
 def _is_comm_print_exception(err: Exception) -> bool:
     """Return True when the error indicates node actions are unsupported."""
     message = str(err)
-    return "Node actions are not available" in message or "Communication and Print Board" in message
+    return (
+        "Node actions are not available" in message
+        or "Communication and Print Board" in message
+    )
