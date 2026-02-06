@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any
+from typing import Any, TypeAlias
 
 from ducopy import DucoPy
 from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
@@ -11,7 +11,7 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-type DucoboxConfigEntry = ConfigEntry[DucoPy]
+DucoboxConfigEntry: TypeAlias = ConfigEntry[DucoPy]
 
 # This integration is configured via config flow only
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
