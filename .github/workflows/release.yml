@@ -107,7 +107,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Update Contributors
     needs: release
-    if: success()
+    if: success() && github.ref == 'refs/heads/main'
     steps:
       - name: Check out code from GitHub
         uses: actions/checkout@v6

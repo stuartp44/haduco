@@ -7,7 +7,12 @@ from homeassistant.const import (
     UnitOfTemperature,
 )
 
-from .common import _process_node_co2, _process_node_humidity, _process_node_iaq, _process_node_temperature
+from .common import (
+    _process_node_co2,
+    _process_node_humidity,
+    _process_node_iaq,
+    _process_node_temperature,
+)
 from .ducobox_classes import DucoboxNodeSensorEntityDescription
 
 NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
@@ -120,6 +125,16 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             ),
             sensor_key="Temp",
             node_type="BSRH",
+        ),
+    ],
+    "VLV": [
+        DucoboxNodeSensorEntityDescription(
+            key="FlowLvlTgt",
+            native_unit_of_measurement=PERCENTAGE,
+            value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("FlowLvlTgt"),
+            icon="mdi:fan-chevron-up",
+            sensor_key="FlowLvlTgt",
+            node_type="VLV",
         ),
     ],
 }

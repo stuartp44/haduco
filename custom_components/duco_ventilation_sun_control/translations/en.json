@@ -3,7 +3,10 @@
       "flow_title": "{board_type} ({unique_id})",
       "step": {
         "user": {
-          "title": "Connect to your DUCO device"
+          "title": "Connect to your DUCO device",
+          "data": {
+            "host": "IP address or hostname"
+          }
         },
         "confirm": {
           "title": "Discovered",
@@ -13,6 +16,10 @@
       "abort": {
         "already_configured": "This device is already configured",
         "already_in_progress": "Configuration of this device is already in progress"
+      },
+      "error": {
+        "cannot_connect": "Failed to connect",
+        "invalid_url": "Enter a valid host or ip address"
       }
     },
     "options": {

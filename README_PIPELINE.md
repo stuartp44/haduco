@@ -75,6 +75,12 @@ Every push to `main`:
 6. Creates GitHub release
 7. Updates contributors
 
+### 3a. **Preview Releases**
+Add the `preview` label to a PR:
+1. Runs all tests
+2. Publishes a **pre-release** with a `-preview.N` tag suffix
+3. Keeps main stable while allowing early testers
+
 ### 4. **Contributor Acknowledgment**
 - Automatic CONTRIBUTORS.md updates
 - Visual display with avatars
@@ -234,6 +240,10 @@ Each push to main will:
 - Create release if needed
 - Keep changelog current
 - Acknowledge contributors
+
+### Preview Releases
+To publish a preview version, add the `preview` label to your PR.
+This creates GitHub pre-releases with tags like `v1.2.3-preview.1`.
 
 ---
 

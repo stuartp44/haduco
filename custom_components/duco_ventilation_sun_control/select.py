@@ -25,7 +25,12 @@ async def async_setup_entry(
     """Set up Ducobox select entities from a config entry."""
     refresh_time = entry.options.get("refresh_time", SCAN_INTERVAL.total_seconds())
 
-    coordinator = DucoboxCoordinator(hass, update_interval=timedelta(seconds=refresh_time))
+    coordinator = DucoboxCoordinator(
+        hass,
+        entry.runtime_data,
+        update_interval=timedelta(seconds=refresh_time),
+        config_entry=entry,
+    )
     await coordinator.async_config_entry_first_refresh()
 
     # Try to get MAC from coordinator data (library should normalize this)
@@ -75,7 +80,7 @@ async def create_select_entities(
 ) -> list[SelectEntity]:
     """Create all select entities for Ducobox nodes."""
     entities = []
-    is_comm_print_board = "Communication" in board_type or "Print" in board_type
+    is_comm_print_board = _is_comm_print_board(board_type, coordinator.data)
 
     # Default options for Communication/Print boards (standard DUCO ventilation states)
     default_options = [
@@ -149,8 +154,14 @@ async def create_select_entities(
                     continue
                 options = [opt.strip() for opt in ventilation_action.Enum if isinstance(opt, str)]
             except Exception as e:
-                _LOGGER.warning(f"[SELECT] Failed to retrieve ventilation actions for node {node_id}: {e}")
-                continue
+                if _is_comm_print_exception(e):
+                    options = default_options
+                    _LOGGER.debug(
+                        f"[SELECT] Falling back to default options for node {node_id} (Communication/Print board)"
+                    )
+                else:
+                    _LOGGER.warning(f"[SELECT] Failed to retrieve ventilation actions for node {node_id}: {e}")
+                    continue
 
         device_info = DeviceInfo(
             identifiers={(DOMAIN, node_device_id)},
@@ -226,3 +237,22 @@ class DucoboxModeSelect(CoordinatorEntity[DucoboxCoordinator], SelectEntity):
             _LOGGER.debug("[SELECT] Coordinator refresh completed, all entities should update")
         except Exception as e:
             _LOGGER.error(f"[SELECT] Failed to set mode '{option}' for node {self._node_id}: {e}")
+
+
+def _is_comm_print_board(board_type: str, data: dict) -> bool:
+    """Return True when the board does not support node actions."""
+    if "Communication" in board_type or "Print" in board_type:
+        return True
+
+    board_name = (
+        data.get("General", {}).get("Board", {}).get("Type", {}).get("Val")
+        or data.get("General", {}).get("Board", {}).get("Name", {}).get("Val")
+        or data.get("General", {}).get("Board", {}).get("BoardType", {}).get("Val")
+    )
+    return isinstance(board_name, str) and ("Communication" in board_name or "Print" in board_name)
+
+
+def _is_comm_print_exception(err: Exception) -> bool:
+    """Return True when the error indicates node actions are unsupported."""
+    message = str(err)
+    return "Node actions are not available" in message or "Communication and Print Board" in message

@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any
+from typing import Any, TypeAlias
 
 from ducopy import DucoPy
 from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
@@ -10,6 +10,8 @@ from homeassistant.helpers import config_validation as cv
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
+
+DucoboxConfigEntry: TypeAlias = ConfigEntry[DucoPy]
 
 # This integration is configured via config flow only
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
@@ -21,7 +23,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     return True
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: DucoboxConfigEntry) -> bool:
     """Set up Ducobox from a config entry."""
     base_url = entry.data["base_url"]
     _LOGGER.debug(f"Base URL from config entry: {base_url}")
@@ -41,7 +43,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             _LOGGER.info(f"API generation: {duco_client.client._generation}")
 
         hass.data.setdefault(DOMAIN, {})
-        hass.data[DOMAIN] = duco_client
+        hass.data[DOMAIN][entry.entry_id] = duco_client
+        entry.runtime_data = duco_client
     except Exception as ex:
         _LOGGER.error("Could not connect to Ducobox: %s", ex)
         raise ConfigEntryNotReady from ex
@@ -50,17 +53,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: DucoboxConfigEntry) -> bool:
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, ["sensor", "select"])
 
     if unload_ok:
         # Retrieve and close the DucoPy instance to clean up the HTTP session
-        duco_client = hass.data.get(DOMAIN)
+        duco_client = entry.runtime_data
         if duco_client:
             # Close the session in executor to avoid blocking
             await asyncio.get_running_loop().run_in_executor(None, duco_client.close)
-            hass.data.pop(DOMAIN, None)
+            if DOMAIN in hass.data:
+                hass.data[DOMAIN].pop(entry.entry_id, None)
             _LOGGER.debug("DucoPy client closed and removed from hass.data")
 
     return unload_ok
