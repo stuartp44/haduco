@@ -47,13 +47,8 @@ async def async_setup_entry(
         coordinator.data,
         coordinator.client,
     )
-    if (
-        entry.data.get("board_type") == "DUCO Board"
-        and resolved_board_type != "DUCO Board"
-    ):
-        hass.config_entries.async_update_entry(
-            entry, data={**entry.data, "board_type": resolved_board_type}
-        )
+    if entry.data.get("board_type") == "DUCO Board" and resolved_board_type != "DUCO Board":
+        hass.config_entries.async_update_entry(entry, data={**entry.data, "board_type": resolved_board_type})
 
     # Try to get MAC from coordinator data (library should normalize this)
     # Fall back to config entry for backward compatibility
@@ -97,33 +92,21 @@ def get_mac_from_coordinator(coordinator: DucoboxCoordinator) -> str | None:
     # Try to get MAC from General.Lan.Mac (normalized by library)
     mac = coordinator.data.get("General", {}).get("Lan", {}).get("Mac", {}).get("Val")
     if not mac:
-        mac = (
-            coordinator.data.get("api_info", {})
-            .get("General", {})
-            .get("Lan", {})
-            .get("Mac", {})
-            .get("Val")
-        )
+        mac = coordinator.data.get("api_info", {}).get("General", {}).get("Lan", {}).get("Mac", {}).get("Val")
     if mac:
         return mac.replace(":", "").lower()
     return None
 
 
-def create_device_info(
-    coordinator: DucoboxCoordinator, entry: ConfigEntry, device_id: str
-) -> DeviceInfo:
+def create_device_info(coordinator: DucoboxCoordinator, entry: ConfigEntry, device_id: str) -> DeviceInfo:
     """Create device info for the main Ducobox."""
     # Library normalizes board info across both board types
     data = coordinator.data
-    board_type = _resolve_board_type(
-        entry.data.get("board_type", "DUCO Board"), data, coordinator.client
+    board_type = _resolve_board_type(entry.data.get("board_type", "DUCO Board"), data, coordinator.client)
+    board_data = data.get("General", {}).get("Board", {}) or data.get("api_info", {}).get("General", {}).get(
+        "Board", {}
     )
-    board_data = data.get("General", {}).get("Board", {}) or data.get(
-        "api_info", {}
-    ).get("General", {}).get("Board", {})
-    lan_data = data.get("General", {}).get("Lan", {}) or data.get("api_info", {}).get(
-        "General", {}
-    ).get("Lan", {})
+    lan_data = data.get("General", {}).get("Lan", {}) or data.get("api_info", {}).get("General", {}).get("Lan", {})
     hostname = _normalize_device_info_value(lan_data.get("HostName"))
     base_url = entry.data.get("base_url")
 
@@ -135,9 +118,7 @@ def create_device_info(
     # Fallback: If library normalization didn't provide sw_version, get it from General.Board
     if not sw_version:
         sw_version = _normalize_device_info_value(
-            board_data.get("SwVersionComm")
-            or board_data.get("SwVersionBox")
-            or board_data.get("SwVersion")
+            board_data.get("SwVersionComm") or board_data.get("SwVersionBox") or board_data.get("SwVersion")
         )
 
     if not serial_number:
@@ -191,9 +172,7 @@ def _detect_board_type_from_client(client: object | None) -> str | None:
         return None
 
     nested_client = getattr(client, "client", None)
-    board_type = getattr(nested_client, "_board_type", None) or getattr(
-        client, "_board_type", None
-    )
+    board_type = getattr(nested_client, "_board_type", None) or getattr(client, "_board_type", None)
     if isinstance(board_type, str) and board_type:
         board_type_lower = board_type.lower()
         if "connectivity" in board_type_lower:
@@ -201,9 +180,7 @@ def _detect_board_type_from_client(client: object | None) -> str | None:
         if "communication" in board_type_lower or "print" in board_type_lower:
             return "Communication and Print Board"
 
-    generation = getattr(nested_client, "_generation", None) or getattr(
-        client, "_generation", None
-    )
+    generation = getattr(nested_client, "_generation", None) or getattr(client, "_generation", None)
     try:
         if float(generation) >= 2.0:
             return "Connectivity Board"
@@ -229,10 +206,7 @@ def _detect_board_type_from_data(data: dict) -> str:
         if isinstance(comm_subtype, str) and comm_subtype:
             if "connectivity" in comm_subtype.lower():
                 return "Connectivity Board"
-            if (
-                "communication" in comm_subtype.lower()
-                or "print" in comm_subtype.lower()
-            ):
+            if "communication" in comm_subtype.lower() or "print" in comm_subtype.lower():
                 return "Communication and Print Board"
             return f"{comm_subtype} Board"
 
@@ -249,16 +223,10 @@ def _detect_board_type_from_data(data: dict) -> str:
             if "communication" in board_name_lower or "print" in board_name_lower:
                 return "Communication and Print Board"
 
-        api_version = board.get("ApiVersion", {}).get("Val") or board.get(
-            "PublicApiVersion", {}
-        ).get("Val")
+        api_version = board.get("ApiVersion", {}).get("Val") or board.get("PublicApiVersion", {}).get("Val")
         if api_version:
             try:
-                return (
-                    "Connectivity Board"
-                    if float(api_version) >= 2.0
-                    else "Communication and Print Board"
-                )
+                return "Connectivity Board" if float(api_version) >= 2.0 else "Communication and Print Board"
             except (TypeError, ValueError):
                 return "DUCO Board"
     return "DUCO Board"
@@ -273,9 +241,7 @@ def create_main_sensors(
     """Create main Ducobox sensors only for available data structures."""
     entities = []
     data = coordinator.data
-    board_type = _resolve_board_type(
-        entry.data.get("board_type", ""), data, coordinator.client
-    )
+    board_type = _resolve_board_type(entry.data.get("board_type", ""), data, coordinator.client)
     is_comm_print_board = _is_comm_print_board(board_type, data)
 
     # Filter out Wi-Fi sensor for Communication/Print boards (Ethernet only)
@@ -326,13 +292,7 @@ def _supports_wifi(data: dict, board_type: str) -> bool:
     if rssi is not None:
         return True
 
-    rssi = (
-        data.get("api_info", {})
-        .get("General", {})
-        .get("Lan", {})
-        .get("RssiWifi", {})
-        .get("Val")
-    )
+    rssi = data.get("api_info", {}).get("General", {}).get("Lan", {}).get("RssiWifi", {}).get("Val")
     return rssi is not None
 
 
@@ -346,20 +306,14 @@ def _is_comm_print_board(board_type: str, data: dict) -> bool:
         or data.get("General", {}).get("Board", {}).get("Name", {}).get("Val")
         or data.get("General", {}).get("Board", {}).get("BoardType", {}).get("Val")
     )
-    return isinstance(board_name, str) and (
-        "Communication" in board_name or "Print" in board_name
-    )
+    return isinstance(board_name, str) and ("Communication" in board_name or "Print" in board_name)
 
 
-def _resolve_board_type(
-    entry_board_type: str, data: dict, client: object | None = None
-) -> str:
+def _resolve_board_type(entry_board_type: str, data: dict, client: object | None = None) -> str:
     """Resolve board type using client and coordinator data when available."""
     if entry_board_type and entry_board_type != "DUCO Board":
         return entry_board_type
-    detected = _detect_board_type_from_client(client) or _detect_board_type_from_data(
-        data
-    )
+    detected = _detect_board_type_from_client(client) or _detect_board_type_from_data(data)
     return detected if detected != "DUCO Board" else (entry_board_type or detected)
 
 
@@ -401,9 +355,7 @@ def _has_calibration_data(node: dict, general_data: dict | None = None) -> bool:
     )
 
 
-def create_node_sensors(
-    coordinator: DucoboxCoordinator, device_id: str, entry: ConfigEntry
-) -> list[SensorEntity]:
+def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str, entry: ConfigEntry) -> list[SensorEntity]:
     """Create sensors for each node, connecting them via the box."""
     entities = []
     nodes = coordinator.data.get("Nodes", [])
@@ -416,9 +368,7 @@ def create_node_sensors(
             node_id = node.get("Node")
             node_device_id = f"{device_id}-{node_id}"
             box_device_ids[node_id] = node_device_id
-            entities.extend(
-                create_box_sensors(coordinator, node, node_device_id, device_id, entry)
-            )
+            entities.extend(create_box_sensors(coordinator, node, node_device_id, device_id, entry))
 
     # Then, create sensors for other nodes, linking them via their box
     for node in nodes:
@@ -436,9 +386,7 @@ def create_node_sensors(
             _LOGGER.debug("Using via_device_id for node ID: %s", node_id)
             node_device_id = f"{device_id}-{node_id}"
             entities.extend(
-                create_generic_node_sensors(
-                    coordinator, node, node_device_id, node_type, via_device_id, entry
-                )
+                create_generic_node_sensors(coordinator, node, node_device_id, node_type, via_device_id, entry)
             )
 
     return entities
@@ -454,12 +402,7 @@ def create_box_sensors(
     """Create sensors for a BOX node, including calibration and network sensors."""
     entities = []
     dev_type = node.get("General", {}).get("Type", {}).get("Val", "BOX")
-    box_name = (
-        coordinator.data.get("General", {})
-        .get("Board", {})
-        .get("BoxName", {})
-        .get("Val", "")
-    )
+    box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "")
 
     # Fallback to node type if box_name is empty or "Unknown"
     if not box_name or box_name.lower() == "unknown":
@@ -468,13 +411,9 @@ def create_box_sensors(
     # Get sw_version and serial from node data (library normalizes for all board types)
     sw_version_data = node.get("General", {}).get("SwVersion")
     box_sw_version = _normalize_device_info_value(
-        sw_version_data.get("Val")
-        if isinstance(sw_version_data, dict)
-        else sw_version_data
+        sw_version_data.get("Val") if isinstance(sw_version_data, dict) else sw_version_data
     )
-    box_serial_number = _normalize_device_info_value(
-        node.get("General", {}).get("SerialBoard")
-    )
+    box_serial_number = _normalize_device_info_value(node.get("General", {}).get("SerialBoard"))
 
     # BOX is connected via the main board (Communication/Print or Connectivity)
     box_device_info = DeviceInfo(
@@ -521,15 +460,10 @@ def create_box_sensors(
         )
 
     # Add Duco network sensors as diagnostic sensors (only for Connectivity boards)
-    board_type = _resolve_board_type(
-        entry.data.get("board_type", ""), coordinator.data, coordinator.client
-    )
+    board_type = _resolve_board_type(entry.data.get("board_type", ""), coordinator.data, coordinator.client)
     if "Connectivity" in board_type:
         # Only add network sensor if NetworkDuco.State data exists
-        if (
-            coordinator.data.get("General", {}).get("NetworkDuco", {}).get("State")
-            is not None
-        ):
+        if coordinator.data.get("General", {}).get("NetworkDuco", {}).get("State") is not None:
             entities.extend(
                 [
                     DucoboxNodeSensorEntity(
@@ -549,14 +483,10 @@ def create_box_sensors(
     calibration_sensors = CALIBRATION_SENSORS
     if _is_comm_print_board(board_type, coordinator.data):
         calibration_sensors = [
-            description
-            for description in CALIBRATION_SENSORS
-            if description.key != "CalibrationStatus"
+            description for description in CALIBRATION_SENSORS if description.key != "CalibrationStatus"
         ]
     for description in calibration_sensors:
-        if description.key != "CalibrationState" and not _has_calibration_data(
-            node, coordinator.data
-        ):
+        if description.key != "CalibrationState" and not _has_calibration_data(node, coordinator.data):
             continue
         entities.append(
             DucoboxCalibrationSensorEntity(
@@ -583,13 +513,9 @@ def create_generic_node_sensors(
     # Get node-specific sw_version and serial from the node data
     sw_version_data = node.get("General", {}).get("SwVersion")
     node_sw_version = _normalize_device_info_value(
-        sw_version_data.get("Val")
-        if isinstance(sw_version_data, dict)
-        else sw_version_data
+        sw_version_data.get("Val") if isinstance(sw_version_data, dict) else sw_version_data
     )
-    node_serial = _normalize_device_info_value(
-        node.get("General", {}).get("SerialBoard")
-    )
+    node_serial = _normalize_device_info_value(node.get("General", {}).get("SerialBoard"))
 
     node_device_info = DeviceInfo(
         identifiers={(DOMAIN, node_device_id)},
@@ -602,9 +528,7 @@ def create_generic_node_sensors(
     )
 
     node_id = node.get("Node")
-    board_type = _resolve_board_type(
-        entry.data.get("board_type", ""), coordinator.data, coordinator.client
-    )
+    board_type = _resolve_board_type(entry.data.get("board_type", ""), coordinator.data, coordinator.client)
 
     # Filter out IAQ sensors for Communication/Print boards (only available on Connectivity boards)
     sensors = NODE_SENSORS.get(node_type, [])
@@ -614,15 +538,9 @@ def create_generic_node_sensors(
     # Only filter sensor keys on Communication/Print boards to avoid hiding Connectivity sensors
     if _is_comm_print_board(board_type, coordinator.data):
         sensor_section = node.get("Sensor") or {}
-        sensor_data = (
-            sensor_section.get("data", {}) if isinstance(sensor_section, dict) else {}
-        )
+        sensor_data = sensor_section.get("data", {}) if isinstance(sensor_section, dict) else {}
         if sensor_data:
-            sensors = [
-                s
-                for s in sensors
-                if hasattr(s, "sensor_key") and s.sensor_key in sensor_data
-            ]
+            sensors = [s for s in sensors if hasattr(s, "sensor_key") and s.sensor_key in sensor_data]
 
     return [
         DucoboxNodeSensorEntity(
@@ -720,15 +638,11 @@ class DucoboxNodeSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntit
         nodes = self.coordinator.data.get("Nodes", [])
         for node in nodes:
             if node.get("Node") == self._node_id:
-                return self.entity_description.value_fn(
-                    {"node_data": node, "general_data": self.coordinator.data}
-                )
+                return self.entity_description.value_fn({"node_data": node, "general_data": self.coordinator.data})
         return None
 
 
-class DucoboxCalibrationSensorEntity(
-    CoordinatorEntity[DucoboxCoordinator], SensorEntity
-):
+class DucoboxCalibrationSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntity):
     """Representation of a Ducobox calibration sensor entity."""
 
     def __init__(
@@ -751,6 +665,4 @@ class DucoboxCalibrationSensorEntity(
     @property
     def native_value(self) -> Any:
         """Return the state of the sensor."""
-        return self.entity_description.value_fn(
-            {"node_data": self._node_data, "general_data": self.coordinator.data}
-        )
+        return self.entity_description.value_fn({"node_data": self._node_data, "general_data": self.coordinator.data})

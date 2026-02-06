@@ -33,20 +33,14 @@ class DucoboxCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self) -> dict:
         """Fetch data from the Ducobox API with a timeout."""
         try:
-            data = await asyncio.wait_for(
-                self.hass.async_add_executor_job(self._fetch_data), timeout=30
-            )
+            data = await asyncio.wait_for(self.hass.async_add_executor_job(self._fetch_data), timeout=30)
             self._last_successful_data = data
             return data
         except TimeoutError:
-            _LOGGER.warning(
-                "Timeout occurred while fetching data from Ducobox API, using last known data"
-            )
+            _LOGGER.warning("Timeout occurred while fetching data from Ducobox API, using last known data")
             return self._last_successful_data
         except Exception as e:
-            _LOGGER.warning(
-                "Failed to fetch data from Ducobox API: %s, using last known data", e
-            )
+            _LOGGER.warning("Failed to fetch data from Ducobox API: %s, using last known data", e)
             return self._last_successful_data
 
     def _fetch_data(self) -> dict[str, list]:
@@ -63,9 +57,7 @@ class DucoboxCoordinator(DataUpdateCoordinator):
             data["BoardInfo"] = board_info
             _LOGGER.debug(f"Data received from board_info: {board_info}")
         except Exception as e:
-            _LOGGER.debug(
-                f"Failed to fetch board_info (may not be available on this board type): {e}"
-            )
+            _LOGGER.debug(f"Failed to fetch board_info (may not be available on this board type): {e}")
 
         # Convert nodes_response.Nodes (which is a list of NodeInfo objects) to list of dicts
         data["Nodes"] = [node.dict() for node in nodes_response.Nodes]

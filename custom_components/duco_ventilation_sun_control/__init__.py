@@ -34,16 +34,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: DucoboxConfigEntry) -> b
         def _init_client():
             return DucoPy(base_url=base_url, verify=False)
 
-        duco_client = await asyncio.get_running_loop().run_in_executor(
-            None, _init_client
-        )
+        duco_client = await asyncio.get_running_loop().run_in_executor(None, _init_client)
         _LOGGER.info(f"DucoPy initialized with base URL: {base_url}")
 
         # Log detected board information
-        if (
-            hasattr(duco_client.client, "_board_type")
-            and duco_client.client._board_type
-        ):
+        if hasattr(duco_client.client, "_board_type") and duco_client.client._board_type:
             _LOGGER.info(f"Detected board type: {duco_client.client._board_type}")
             _LOGGER.info(f"API generation: {duco_client.client._generation}")
 
@@ -60,9 +55,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: DucoboxConfigEntry) -> b
 
 async def async_unload_entry(hass: HomeAssistant, entry: DucoboxConfigEntry) -> bool:
     """Unload a config entry."""
-    unload_ok = await hass.config_entries.async_unload_platforms(
-        entry, ["sensor", "select"]
-    )
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, ["sensor", "select"])
 
     if unload_ok:
         # Retrieve and close the DucoPy instance to clean up the HTTP session
