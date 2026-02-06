@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.0](https://github.com/stuartp44/haduco/compare/v1.6.4...v1.7.0) (2026-02-06)
+
+
+### Features
+
+* add preview release workflow and documentation for pre-releases ([7a8f329](https://github.com/stuartp44/haduco/commit/7a8f3297c9e7001601d884a939691f98fee39f49))
+
+
+### Code Refactoring
+
+* enhance communication board info retrieval and scheme handling ([34c78ff](https://github.com/stuartp44/haduco/commit/34c78ff69ccc9822baa98c0c6f3add0179820044))
+* enhance device info retrieval for communication and print boards ([9a08f93](https://github.com/stuartp44/haduco/commit/9a08f93d2fcc7e17ed5027be6396f7e3ab43436f))
+* improve calibration value retrieval and enhance select entity setup ([ff4f6a5](https://github.com/stuartp44/haduco/commit/ff4f6a5a1a829a4fc89fc76e728e1e0260f9c55a))
+* improve device info retrieval and normalization for communication and print boards ([08f1ce4](https://github.com/stuartp44/haduco/commit/08f1ce4ea96ca99910cd602498e0c20a7ebf675a))
+* simplify logging in create_node_sensors function ([d66d448](https://github.com/stuartp44/haduco/commit/d66d44824068666b85ec73c18a990b7351ab5eb2))
+* simplify MAC address retrieval and normalize board data access ([1134360](https://github.com/stuartp44/haduco/commit/1134360c7f44ec5adbc0faf35d1d07a2fc6db73e))
+* streamline board type resolution and remove redundant checks ([7d3adc9](https://github.com/stuartp44/haduco/commit/7d3adc954660aaf95b36e0bbad1d1bd81d014fc4))
+* streamline calibration value retrieval functions ([05e2a8f](https://github.com/stuartp44/haduco/commit/05e2a8f68511926e068814a533ab4459c2dad21a))
+* streamline code for communication and print board handling ([1055ee0](https://github.com/stuartp44/haduco/commit/1055ee0cdd8cfeb57d4de1cc8232885eb73249f7))
+* streamline device info retrieval by consolidating version checks ([3412a80](https://github.com/stuartp44/haduco/commit/3412a800be1b3624dbdee856b845c30d9921d5fa))
+* update preview release workflow and configuration ([77038b1](https://github.com/stuartp44/haduco/commit/77038b160af5dd4420af08bf9cd9f593f3c98433))
+* update type alias for DucoboxConfigEntry for clarity ([73ae065](https://github.com/stuartp44/haduco/commit/73ae06500e4e3506300a5d1f992c1496f6428643))
+* update type hints for client and fetch_data return type for clarity ([1557fc1](https://github.com/stuartp44/haduco/commit/1557fc17f1ad3f7439449f1210c67c4018739d42))
+
 ## [1.6.4](https://github.com/stuartp44/haduco/compare/v1.6.3...v1.6.4) (2026-01-06)
 
 

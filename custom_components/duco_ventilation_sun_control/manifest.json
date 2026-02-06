@@ -14,7 +14,7 @@
     "ducopy@git+https://github.com/Sikerdebaard/ducopy.git@stu/add_ability_to_communicate_with_com_and_print_board",
     "retrying==1.3.4"
   ],
-  "version": "1.6.3",
+  "version": "1.7.0",
   "zeroconf": [
     {
       "type": "_http._tcp.local.",
