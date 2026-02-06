@@ -16,7 +16,7 @@ class DucoboxCoordinator(DataUpdateCoordinator):
     def __init__(
         self,
         hass: HomeAssistant,
-        client: object,
+        client: Any,
         update_interval: timedelta,
         config_entry: ConfigEntry,
     ):
@@ -43,7 +43,7 @@ class DucoboxCoordinator(DataUpdateCoordinator):
             _LOGGER.warning("Failed to fetch data from Ducobox API: %s, using last known data", e)
             return self._last_successful_data
 
-    def _fetch_data(self) -> dict[str, list]:
+    def _fetch_data(self) -> dict[str, Any]:
         """Fetch data from the Duco API."""
         data = self._client.get_info()
         _LOGGER.debug(f"Data received from /info: {data}")
@@ -65,5 +65,5 @@ class DucoboxCoordinator(DataUpdateCoordinator):
         return data
 
     @property
-    def client(self) -> object:
+    def client(self) -> Any:
         return self._client
