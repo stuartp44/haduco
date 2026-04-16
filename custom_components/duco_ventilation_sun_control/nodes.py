@@ -97,6 +97,14 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             node_type="VLVRH",
         ),
         DucoboxNodeSensorEntityDescription(
+            key="FlowLvlActi",
+            native_unit_of_measurement=PERCENTAGE,
+            value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("FlowLvlActi"),
+            icon="mdi:fan",
+            sensor_key="FlowLvlActi",
+            node_type="VLVRH",
+        ),
+        DucoboxNodeSensorEntityDescription(
             key="IaqRh",
             native_unit_of_measurement=PERCENTAGE,
             icon="mdi:crosshairs",
@@ -136,6 +144,14 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             sensor_key="FlowLvlTgt",
             node_type="VLV",
         ),
+        DucoboxNodeSensorEntityDescription(
+            key="FlowLvlActi",
+            native_unit_of_measurement=PERCENTAGE,
+            value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("FlowLvlActi"),
+            icon="mdi:fan",
+            sensor_key="FlowLvlActi",
+            node_type="VLV",
+        ),
     ],
     "VLVCO2RH": [
         DucoboxNodeSensorEntityDescription(
@@ -151,6 +167,14 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("FlowLvlTgt"),
             icon="mdi:fan-chevron-up",
             sensor_key="FlowLvlTgt",
+            node_type="VLVCO2RH",
+        ),
+        DucoboxNodeSensorEntityDescription(
+            key="FlowLvlActi",
+            native_unit_of_measurement=PERCENTAGE,
+            value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("FlowLvlActi"),
+            icon="mdi:fan",
+            sensor_key="FlowLvlActi",
             node_type="VLVCO2RH",
         ),
         DucoboxNodeSensorEntityDescription(

@@ -355,6 +355,17 @@ def _has_calibration_data(node: dict, general_data: dict | None = None) -> bool:
     )
 
 
+def _has_energy_comfort_data(node: dict) -> bool:
+    """Return True when box has heat recovery/energy comfort features (temperature sensors, bypass, etc). This is needed as communication print boards dont tell us what box it is."""
+    return (
+        node.get("HeatRecovery") is not None
+        or node.get("EnergyCalib") is not None
+        or node.get("Ventilation", {}).get("EnergyCalib") is not None
+        or node.get("Ventilation", {}).get("Sensor", {}).get("TempOda") is not None
+        or node.get("Ventilation", {}).get("Fan", {}).get("SpeedSup") is not None
+    )
+
+
 def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str, entry: ConfigEntry) -> list[SensorEntity]:
     """Create sensors for each node, connecting them via the box."""
     entities = []
@@ -443,7 +454,7 @@ def create_box_sensors(
     )
 
     # Add box-specific sensors
-    if box_name in BOX_SENSORS:
+    if box_name in BOX_SENSORS and box_name != "NOT_SURE":
         entities.extend(
             [
                 DucoboxNodeSensorEntity(
@@ -456,6 +467,23 @@ def create_box_sensors(
                     node_name=box_name,
                 )
                 for description in BOX_SENSORS[box_name]
+            ]
+        )
+
+    # Add energy comfort sensors if box has heat recovery/energy features
+    if _has_energy_comfort_data(node):
+        entities.extend(
+            [
+                DucoboxNodeSensorEntity(
+                    coordinator=coordinator,
+                    node_id=node.get("Node"),
+                    description=description,
+                    device_info=box_device_info,
+                    unique_id=f"{node_device_id}-{description.key}",
+                    device_id=device_id,
+                    node_name=box_name,
+                )
+                for description in BOX_SENSORS["NOT_SURE"]
             ]
         )
 
