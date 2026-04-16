@@ -25,14 +25,14 @@ from .ducobox_classes import (
 COMMON_BOX_SENSORS: list[DucoboxNodeSensorEntityDescription] = [
     DucoboxNodeSensorEntityDescription(
         key="Mode",
-        value_fn=lambda node: (node.get("node_data", {}).get("Ventilation", {}).get("Mode")),
+        value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("Mode"),
         icon="mdi:fan",
         sensor_key="Mode",
         node_type="BOX",
     ),
     DucoboxNodeSensorEntityDescription(
         key="State",
-        value_fn=lambda node: (node.get("node_data", {}).get("Ventilation", {}).get("State")),
+        value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("State"),
         icon="mdi:fan-auto",
         sensor_key="State",
         node_type="BOX",
@@ -40,7 +40,7 @@ COMMON_BOX_SENSORS: list[DucoboxNodeSensorEntityDescription] = [
     DucoboxNodeSensorEntityDescription(
         key="FlowLvlTgt",
         native_unit_of_measurement=PERCENTAGE,
-        value_fn=lambda node: (node.get("node_data", {}).get("Ventilation", {}).get("FlowLvlTgt")),
+        value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("FlowLvlTgt"),
         icon="mdi:fan-chevron-up",
         sensor_key="FlowLvlTgt",
         node_type="BOX",
