@@ -25,18 +25,14 @@ from .ducobox_classes import (
 COMMON_BOX_SENSORS: list[DucoboxNodeSensorEntityDescription] = [
     DucoboxNodeSensorEntityDescription(
         key="Mode",
-        value_fn=lambda node: (
-            node.get("node_data", {}).get("Ventilation", {}).get("Mode")
-        ),
+        value_fn=lambda node: (node.get("node_data", {}).get("Ventilation", {}).get("Mode")),
         icon="mdi:fan",
         sensor_key="Mode",
         node_type="BOX",
     ),
     DucoboxNodeSensorEntityDescription(
         key="State",
-        value_fn=lambda node: (
-            node.get("node_data", {}).get("Ventilation", {}).get("State")
-        ),
+        value_fn=lambda node: (node.get("node_data", {}).get("Ventilation", {}).get("State")),
         icon="mdi:fan-auto",
         sensor_key="State",
         node_type="BOX",
@@ -44,18 +40,14 @@ COMMON_BOX_SENSORS: list[DucoboxNodeSensorEntityDescription] = [
     DucoboxNodeSensorEntityDescription(
         key="FlowLvlTgt",
         native_unit_of_measurement=PERCENTAGE,
-        value_fn=lambda node: (
-            node.get("node_data", {}).get("Ventilation", {}).get("FlowLvlTgt")
-        ),
+        value_fn=lambda node: (node.get("node_data", {}).get("Ventilation", {}).get("FlowLvlTgt")),
         icon="mdi:fan-chevron-up",
         sensor_key="FlowLvlTgt",
         node_type="BOX",
     ),
 ]
 
-BOX_SENSORS: dict[
-    str, list[DucoboxSensorEntityDescription | DucoboxNodeSensorEntityDescription]
-] = {
+BOX_SENSORS: dict[str, list[DucoboxSensorEntityDescription | DucoboxNodeSensorEntityDescription]] = {
     "FOCUS": [],
     "NOT_SURE": [
         # Temperature sensors
@@ -67,10 +59,7 @@ BOX_SENSORS: dict[
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.TEMPERATURE,
             value_fn=lambda data: _process_temperature(
-                data.get("node_data", {})
-                .get("Ventilation", {})
-                .get("Sensor", {})
-                .get("TempOda")
+                data.get("node_data", {}).get("Ventilation", {}).get("Sensor", {}).get("TempOda")
             ),
         ),
         # Sup = box -> house
@@ -80,10 +69,7 @@ BOX_SENSORS: dict[
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.TEMPERATURE,
             value_fn=lambda data: _process_temperature(
-                data.get("node_data", {})
-                .get("Ventilation", {})
-                .get("Sensor", {})
-                .get("TempSup")
+                data.get("node_data", {}).get("Ventilation", {}).get("Sensor", {}).get("TempSup")
             ),
         ),
         # Eta = house -> box
@@ -93,10 +79,7 @@ BOX_SENSORS: dict[
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.TEMPERATURE,
             value_fn=lambda data: _process_temperature(
-                data.get("node_data", {})
-                .get("Ventilation", {})
-                .get("Sensor", {})
-                .get("TempEta")
+                data.get("node_data", {}).get("Ventilation", {}).get("Sensor", {}).get("TempEta")
             ),
         ),
         # Eha = box -> outdoor
@@ -106,10 +89,7 @@ BOX_SENSORS: dict[
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.TEMPERATURE,
             value_fn=lambda data: _process_temperature(
-                data.get("node_data", {})
-                .get("Ventilation", {})
-                .get("Sensor", {})
-                .get("TempEha")
+                data.get("node_data", {}).get("Ventilation", {}).get("Sensor", {}).get("TempEha")
             ),
         ),
         # Fan speed sensors
@@ -119,10 +99,7 @@ BOX_SENSORS: dict[
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.SPEED,
             value_fn=lambda data: _process_speed(
-                data.get("node_data", {})
-                .get("Ventilation", {})
-                .get("Fan", {})
-                .get("SpeedSup")
+                data.get("node_data", {}).get("Ventilation", {}).get("Fan", {}).get("SpeedSup")
             ),
         ),
         DucoboxSensorEntityDescription(
@@ -131,10 +108,7 @@ BOX_SENSORS: dict[
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.SPEED,
             value_fn=lambda data: _process_speed(
-                data.get("node_data", {})
-                .get("Ventilation", {})
-                .get("Fan", {})
-                .get("SpeedEha")
+                data.get("node_data", {}).get("Ventilation", {}).get("Fan", {}).get("SpeedEha")
             ),
         ),
         # Pressure sensors
@@ -144,10 +118,7 @@ BOX_SENSORS: dict[
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.PRESSURE,
             value_fn=lambda data: _process_pressure(
-                data.get("node_data", {})
-                .get("Ventilation", {})
-                .get("Fan", {})
-                .get("PressSup")
+                data.get("node_data", {}).get("Ventilation", {}).get("Fan", {}).get("PressSup")
             ),
         ),
         DucoboxSensorEntityDescription(
@@ -156,10 +127,7 @@ BOX_SENSORS: dict[
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.PRESSURE,
             value_fn=lambda data: _process_pressure(
-                data.get("node_data", {})
-                .get("Ventilation", {})
-                .get("Fan", {})
-                .get("PressEha")
+                data.get("node_data", {}).get("Ventilation", {}).get("Fan", {}).get("PressEha")
             ),
         ),
         # Filter time remaining
@@ -169,10 +137,7 @@ BOX_SENSORS: dict[
             state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.DURATION,
             value_fn=lambda data: _process_timefilterremain(
-                data.get("node_data", {})
-                .get("HeatRecovery", {})
-                .get("General", {})
-                .get("TimeFilterRemain")
+                data.get("node_data", {}).get("HeatRecovery", {}).get("General", {}).get("TimeFilterRemain")
             ),
         ),
         # Bypass position
@@ -181,10 +146,7 @@ BOX_SENSORS: dict[
             native_unit_of_measurement=PERCENTAGE,
             state_class=SensorStateClass.MEASUREMENT,
             value_fn=lambda data: _process_bypass_position(
-                data.get("node_data", {})
-                .get("HeatRecovery", {})
-                .get("Bypass", {})
-                .get("Pos")
+                data.get("node_data", {}).get("HeatRecovery", {}).get("Bypass", {}).get("Pos")
             ),
         ),
     ],
