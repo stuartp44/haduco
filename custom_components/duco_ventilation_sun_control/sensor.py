@@ -209,7 +209,7 @@ def _detect_board_type_from_client(client: object | None) -> str | None:
             return "Connectivity Board"
         if float(generation) > 0:
             return "Communication and Print Board"
-    except TypeError, ValueError:
+    except (TypeError, ValueError):
         return None
 
     return None
@@ -259,7 +259,7 @@ def _detect_board_type_from_data(data: dict) -> str:
                     if float(api_version) >= 2.0
                     else "Communication and Print Board"
                 )
-            except TypeError, ValueError:
+            except (TypeError, ValueError):
                 return "DUCO Board"
     return "DUCO Board"
 
@@ -308,7 +308,7 @@ def create_main_sensors(
                     unique_id=f"{device_id}-{description.key}",
                 )
             )
-        except KeyError, AttributeError:
+        except (KeyError, AttributeError):
             # Structure doesn't exist, skip this sensor
             _LOGGER.debug(
                 f"Skipping sensor {description.key} - required data structure not available on this board type"
