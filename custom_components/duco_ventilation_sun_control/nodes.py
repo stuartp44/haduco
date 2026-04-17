@@ -97,6 +97,14 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             node_type="VLVRH",
         ),
         DucoboxNodeSensorEntityDescription(
+            key="FlowLvl",
+            native_unit_of_measurement=PERCENTAGE,
+            value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("FlowLvl"),
+            icon="mdi:fan",
+            sensor_key="FlowLvl",
+            node_type="VLVRH",
+        ),
+        DucoboxNodeSensorEntityDescription(
             key="IaqRh",
             native_unit_of_measurement=PERCENTAGE,
             icon="mdi:crosshairs",
@@ -135,6 +143,89 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             icon="mdi:fan-chevron-up",
             sensor_key="FlowLvlTgt",
             node_type="VLV",
+        ),
+        DucoboxNodeSensorEntityDescription(
+            key="FlowLvl",
+            native_unit_of_measurement=PERCENTAGE,
+            value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("FlowLvl"),
+            icon="mdi:fan",
+            sensor_key="FlowLvl",
+            node_type="VLV",
+        ),
+    ],
+    "VLVCO2RH": [
+        DucoboxNodeSensorEntityDescription(
+            key="Mode",
+            value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("Mode"),
+            icon="mdi:fan-auto",
+            sensor_key="Mode",
+            node_type="VLVCO2RH",
+        ),
+        DucoboxNodeSensorEntityDescription(
+            key="FlowLvlTgt",
+            native_unit_of_measurement=PERCENTAGE,
+            value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("FlowLvlTgt"),
+            icon="mdi:fan-chevron-up",
+            sensor_key="FlowLvlTgt",
+            node_type="VLVCO2RH",
+        ),
+        DucoboxNodeSensorEntityDescription(
+            key="FlowLvl",
+            native_unit_of_measurement=PERCENTAGE,
+            value_fn=lambda node: node.get("node_data", {}).get("Ventilation", {}).get("FlowLvl"),
+            icon="mdi:fan",
+            sensor_key="FlowLvl",
+            node_type="VLVCO2RH",
+        ),
+        DucoboxNodeSensorEntityDescription(
+            key="Co2",
+            native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
+            device_class=SensorDeviceClass.CO2,
+            value_fn=lambda node: _process_node_co2(
+                node.get("node_data", {}).get("Sensor", {}).get("data", {}).get("Co2")
+            ),
+            sensor_key="Co2",
+            node_type="VLVCO2RH",
+        ),
+        DucoboxNodeSensorEntityDescription(
+            key="IaqCo2",
+            native_unit_of_measurement=PERCENTAGE,
+            icon="mdi:crosshairs",
+            value_fn=lambda node: _process_node_iaq(
+                node.get("node_data", {}).get("Sensor", {}).get("data", {}).get("IaqCo2")
+            ),
+            sensor_key="IaqCo2",
+            node_type="VLVCO2RH",
+        ),
+        DucoboxNodeSensorEntityDescription(
+            key="Rh",
+            native_unit_of_measurement=PERCENTAGE,
+            device_class=SensorDeviceClass.HUMIDITY,
+            value_fn=lambda node: _process_node_humidity(
+                node.get("node_data", {}).get("Sensor", {}).get("data", {}).get("Rh")
+            ),
+            sensor_key="Rh",
+            node_type="VLVCO2RH",
+        ),
+        DucoboxNodeSensorEntityDescription(
+            key="IaqRh",
+            native_unit_of_measurement=PERCENTAGE,
+            icon="mdi:crosshairs",
+            value_fn=lambda node: _process_node_iaq(
+                node.get("node_data", {}).get("Sensor", {}).get("data", {}).get("IaqRh")
+            ),
+            sensor_key="IaqRh",
+            node_type="VLVCO2RH",
+        ),
+        DucoboxNodeSensorEntityDescription(
+            key="Temp",
+            native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+            device_class=SensorDeviceClass.TEMPERATURE,
+            value_fn=lambda node: _process_node_temperature(
+                node.get("node_data", {}).get("Sensor", {}).get("data", {}).get("Temp")
+            ),
+            sensor_key="Temp",
+            node_type="VLVCO2RH",
         ),
     ],
 }

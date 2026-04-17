@@ -52,6 +52,9 @@
         "flowlvltgt": {
           "name": "Flow level target"
         },
+        "flowlvl": {
+          "name": "Flow level"
+        },
         "tempoda": {
           "name": "Outdoor temperature"
         },

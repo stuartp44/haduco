@@ -157,3 +157,4 @@ This is a custom integration and is not officially supported by DUCO. Use at you
 ---
 
 **Made for the Home Assistant community**
+

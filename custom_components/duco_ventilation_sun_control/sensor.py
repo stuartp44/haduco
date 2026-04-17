@@ -325,9 +325,9 @@ def _is_box_node(node: dict, node_type: str) -> bool:
     return (
         node.get("Calibration") is not None
         or node.get("EnergyCalib") is not None
-        or node.get("Ventilation", {}).get("Calibration") is not None
-        or node.get("Ventilation", {}).get("EnergyCalib") is not None
-        or node.get("HeatRecovery", {}).get("EnergyCalib") is not None
+        or (node.get("Ventilation") or {}).get("Calibration") is not None
+        or (node.get("Ventilation") or {}).get("EnergyCalib") is not None
+        or (node.get("HeatRecovery") or {}).get("EnergyCalib") is not None
     )
 
 
@@ -336,9 +336,9 @@ def _has_calibration_data(node: dict, general_data: dict | None = None) -> bool:
     if (
         node.get("Calibration") is not None
         or node.get("EnergyCalib") is not None
-        or node.get("Ventilation", {}).get("Calibration") is not None
-        or node.get("Ventilation", {}).get("EnergyCalib") is not None
-        or node.get("HeatRecovery", {}).get("EnergyCalib") is not None
+        or (node.get("Ventilation") or {}).get("Calibration") is not None
+        or (node.get("Ventilation") or {}).get("EnergyCalib") is not None
+        or (node.get("HeatRecovery") or {}).get("EnergyCalib") is not None
     ):
         return True
 
@@ -348,11 +348,34 @@ def _has_calibration_data(node: dict, general_data: dict | None = None) -> bool:
     return (
         general_data.get("Calibration") is not None
         or general_data.get("EnergyCalib") is not None
-        or general_data.get("Ventilation", {}).get("Calibration") is not None
-        or general_data.get("Ventilation", {}).get("EnergyCalib") is not None
-        or general_data.get("HeatRecovery", {}).get("EnergyCalib") is not None
-        or general_data.get("api_info", {}).get("EnergyCalib") is not None
+        or (general_data.get("Ventilation") or {}).get("Calibration") is not None
+        or (general_data.get("Ventilation") or {}).get("EnergyCalib") is not None
+        or (general_data.get("HeatRecovery") or {}).get("EnergyCalib") is not None
+        or (general_data.get("api_info") or {}).get("EnergyCalib") is not None
     )
+
+
+def _has_energy_comfort_data(node: dict, general_data: dict | None = None) -> bool:
+    """Return True when box has heat recovery/energy comfort features (temperature sensors, bypass, etc). This is needed as communication print boards dont tell us what box it is."""
+    # Check Connectivity Board paths (node-level data)
+    if (
+        node.get("HeatRecovery") is not None
+        or node.get("EnergyCalib") is not None
+        or (node.get("Ventilation") or {}).get("EnergyCalib") is not None
+        or (node.get("Ventilation") or {}).get("Sensor") is not None
+        or (node.get("Ventilation") or {}).get("Fan") is not None
+    ):
+        return True
+
+    # Check Communication/Print Board paths (general-level data from /boxinfoget)
+    if general_data:
+        return (
+            general_data.get("EnergyInfo") is not None
+            or general_data.get("EnergyFan") is not None
+            or general_data.get("EnergyCalib") is not None
+        )
+
+    return False
 
 
 def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str, entry: ConfigEntry) -> list[SensorEntity]:
@@ -443,7 +466,7 @@ def create_box_sensors(
     )
 
     # Add box-specific sensors
-    if box_name in BOX_SENSORS:
+    if box_name in BOX_SENSORS and box_name != "NOT_SURE":
         entities.extend(
             [
                 DucoboxNodeSensorEntity(
@@ -456,6 +479,23 @@ def create_box_sensors(
                     node_name=box_name,
                 )
                 for description in BOX_SENSORS[box_name]
+            ]
+        )
+
+    # Add energy comfort sensors if box has heat recovery/energy features
+    if _has_energy_comfort_data(node, coordinator.data):
+        entities.extend(
+            [
+                DucoboxNodeSensorEntity(
+                    coordinator=coordinator,
+                    node_id=node.get("Node"),
+                    description=description,
+                    device_info=box_device_info,
+                    unique_id=f"{node_device_id}-{description.key}",
+                    device_id=device_id,
+                    node_name=box_name,
+                )
+                for description in BOX_SENSORS["NOT_SURE"]
             ]
         )
 
@@ -534,6 +574,10 @@ def create_generic_node_sensors(
     sensors = NODE_SENSORS.get(node_type, [])
     if "Communication" in board_type or "Print" in board_type:
         sensors = [s for s in sensors if "Iaq" not in s.key]
+
+    # Filter out FlowLvl sensors if the data isn't available (value is None on Connectivity boards)
+    if node.get("Ventilation", {}).get("FlowLvl") is None:
+        sensors = [s for s in sensors if s.key != "FlowLvl"]
 
     # Only filter sensor keys on Communication/Print boards to avoid hiding Connectivity sensors
     if _is_comm_print_board(board_type, coordinator.data):
