@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.0](https://github.com/stuartp44/haduco/compare/v1.7.0...v1.8.0) (2026-04-17)
+
+
+### Features
+
+* add FlowLvlActi sensor for VLV and VLVCO2RH nodes; implement energy comfort data check ([fa78ac9](https://github.com/stuartp44/haduco/commit/fa78ac9311caf04446da469904e109895c3d4bc2))
+* add various features ([138e06d](https://github.com/stuartp44/haduco/commit/138e06dfde1cdb867c5226e5445b8b833992a139))
+* add VLVCO2RH node sensor descriptions for ventilation data ([71fe8d7](https://github.com/stuartp44/haduco/commit/71fe8d76f7ecc1f6c7d5d43ddc8561d51a329107))
+
+
+### Bug Fixes
+
+* update exception handling to use tuple syntax for multiple exceptions ([1f80c95](https://github.com/stuartp44/haduco/commit/1f80c95f752d5ec3a52194c804784fce24fad873))
+
+
+### Documentation
+
+* add note about unofficial support for DUCO integration ([f3c1b42](https://github.com/stuartp44/haduco/commit/f3c1b42a85d0ba6431e2b44267901c37caa144b1))
+
+
+### Code Refactoring
+
+* simplify lambda functions for sensor value retrieval in boxes and nodes ([1af977d](https://github.com/stuartp44/haduco/commit/1af977d746fd0e53fa237462ec97cefe328b55d0))
+* streamline lambda functions for sensor value extraction in boxes and nodes ([3f60418](https://github.com/stuartp44/haduco/commit/3f604187c7f3e0e7f8dcbc7ac00540d08605e65e))
+
+
+### CI/CD
+
+* **deps:** bump actions/github-script from 8 to 9 ([7bcec09](https://github.com/stuartp44/haduco/commit/7bcec09a967de7724fbb41f937e5d23473f64c86))
+
 ## [1.7.0](https://github.com/stuartp44/haduco/compare/v1.6.4...v1.7.0) (2026-02-06)
 
 
