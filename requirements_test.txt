@@ -2,8 +2,8 @@
 pytest-homeassistant-custom-component==0.13.109
 
 # Linting and formatting
-ruff==0.15.9
-mypy==1.20.0
+ruff==0.15.11
+mypy==1.20.1
 
 # Home Assistant testing
 homeassistant==2024.3.3
