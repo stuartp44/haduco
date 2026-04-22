@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.1](https://github.com/stuartp44/haduco/compare/v1.8.0...v1.8.1) (2026-04-22)
+
+
+### Bug Fixes
+
+* update ducopy dependency to version v17 in manifest.json ([275831d](https://github.com/stuartp44/haduco/commit/275831d83002684da866a244f5912163355a153d))
+
 ## [1.8.0](https://github.com/stuartp44/haduco/compare/v1.7.0...v1.8.0) (2026-04-17)
 
 
