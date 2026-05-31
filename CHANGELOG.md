@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.9.0](https://github.com/stuartp44/haduco/compare/v1.8.1...v1.9.0) (2026-05-31)
+
+
+### Features
+
+* add log level mapping for ducopy and reduce integration log noise ([1858284](https://github.com/stuartp44/haduco/commit/1858284cd6bf937409af849710d50b460b2b901b))
+
+
+### Bug Fixes
+
+* streamline logging patch in test_log_level_mapping ([cc355b3](https://github.com/stuartp44/haduco/commit/cc355b3e138518116c0a9d50e638d3ebf643ac1a))
+
 ## [1.8.1](https://github.com/stuartp44/haduco/compare/v1.8.0...v1.8.1) (2026-04-22)
 
 
