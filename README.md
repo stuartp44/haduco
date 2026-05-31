@@ -124,6 +124,20 @@ mypy custom_components/duco_ventilation_sun_control
 3. Ensure the DUCO device is powered on and accessible
 4. Check Home Assistant logs for error messages
 
+### Reduce Integration Log Noise
+
+Use Home Assistant's standard logger configuration in `configuration.yaml`:
+
+```yaml
+logger:
+  default: info
+  logs:
+    custom_components.duco_ventilation_sun_control: warning
+    ducopy: warning
+```
+
+Set `ducopy` to `warning` or `error` to reduce library log spam while keeping important errors visible.
+
 ### Enable Debug Logging
 
 Add to your `configuration.yaml`:

@@ -17,6 +17,18 @@ DucoboxConfigEntry: TypeAlias = ConfigEntry[DucoPy]
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
+def _get_ducopy_log_level() -> str:
+    """Map the effective Python log level for ducopy to a DucoPy level string."""
+    level = logging.getLogger("ducopy").getEffectiveLevel()
+    if level <= logging.DEBUG:
+        return "DEBUG"
+    if level <= logging.INFO:
+        return "INFO"
+    if level <= logging.WARNING:
+        return "WARNING"
+    return "ERROR"
+
+
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up the Ducobox Connectivity Board integration."""
     _LOGGER.debug("Setting up Ducobox Connectivity Board integration")
@@ -26,13 +38,15 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: DucoboxConfigEntry) -> bool:
     """Set up Ducobox from a config entry."""
     base_url = entry.data["base_url"]
+    log_level = _get_ducopy_log_level()
     _LOGGER.debug(f"Base URL from config entry: {base_url}")
+    _LOGGER.debug("Using DucoPy log level from Python logging: %s", log_level)
 
     try:
         # Initialize DucoPy in executor to avoid blocking the event loop
         # The library auto-detects board generation (Connectivity vs Communication/Print)
         def _init_client():
-            return DucoPy(base_url=base_url, verify=False)
+            return DucoPy(base_url=base_url, verify=False, log_level=log_level)
 
         duco_client = await asyncio.get_running_loop().run_in_executor(None, _init_client)
         _LOGGER.info(f"DucoPy initialized with base URL: {base_url}")
