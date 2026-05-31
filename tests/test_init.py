@@ -1,5 +1,6 @@
 """Test the DUCO Ventilation & Sun Control integration setup."""
 
+import logging
 from unittest.mock import patch
 
 import pytest
@@ -63,25 +64,28 @@ async def test_unload_entry(hass: HomeAssistant, mock_config_entry: MockConfigEn
 
 @pytest.mark.asyncio
 async def test_log_level_mapping(hass: HomeAssistant, mock_ducopy):
-    """Test that debug verbosity is correctly mapped to log levels."""
+    """Test that Python logger levels are mapped to DucoPy log levels."""
     test_cases = [
-        (0, "ERROR"),
-        (1, "WARNING"),
-        (2, "INFO"),
-        (3, "DEBUG"),
+        (logging.ERROR, "ERROR"),
+        (logging.WARNING, "WARNING"),
+        (logging.INFO, "INFO"),
+        (logging.DEBUG, "DEBUG"),
     ]
 
-    for verbosity, expected_log_level in test_cases:
+    for logger_level, expected_log_level in test_cases:
         entry = MockConfigEntry(
             domain=DOMAIN,
             data={"base_url": "https://192.168.1.100"},
-            options={"debug_verbosity": verbosity},
-            unique_id=f"test_{verbosity}",
+            unique_id=f"test_{logger_level}",
         )
         entry.add_to_hass(hass)
 
-        with patch("custom_components.duco_ventilation_sun_control.DucoPy") as mock_ducopy_class:
+        with (
+            patch("custom_components.duco_ventilation_sun_control.DucoPy") as mock_ducopy_class,
+            patch("custom_components.duco_ventilation_sun_control.logging.getLogger") as mock_get_logger,
+        ):
             mock_ducopy_class.return_value = mock_ducopy
+            mock_get_logger.return_value.getEffectiveLevel.return_value = logger_level
             await hass.config_entries.async_setup(entry.entry_id)
             await hass.async_block_till_done()
 
