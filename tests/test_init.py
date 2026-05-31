@@ -82,9 +82,7 @@ async def test_log_level_mapping(hass: HomeAssistant, mock_ducopy):
 
         with (
             patch("custom_components.duco_ventilation_sun_control.DucoPy") as mock_ducopy_class,
-            patch(
-                "custom_components.duco_ventilation_sun_control.logging.getLogger"
-            ) as mock_get_logger,
+            patch("custom_components.duco_ventilation_sun_control.logging.getLogger") as mock_get_logger,
         ):
             mock_ducopy_class.return_value = mock_ducopy
             mock_get_logger.return_value.getEffectiveLevel.return_value = logger_level
