@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.0](https://github.com/stuartp44/haduco/compare/v1.9.0...v1.10.0) (2026-06-07)
+
+
+### Features
+
+* add VLVCO2 sensor entity descriptions for ventilation control ([9cb980e](https://github.com/stuartp44/haduco/commit/9cb980e5b9773979c6befc59af71a7002846a6fc))
+
+
+### CI/CD
+
+* **deps:** bump actions/dependency-review-action from 4 to 5 ([2fdc9d4](https://github.com/stuartp44/haduco/commit/2fdc9d4a6eb689ef5d8c6b32ade936d0e2ba06e4))
+
 ## [1.9.0](https://github.com/stuartp44/haduco/compare/v1.8.1...v1.9.0) (2026-05-31)
 
 
