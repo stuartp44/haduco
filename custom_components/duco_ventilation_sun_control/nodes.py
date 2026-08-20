@@ -197,6 +197,16 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
             sensor_key="IaqCo2",
             node_type="VLVCO2",
         ),
+        DucoboxNodeSensorEntityDescription(
+            key="Temp",
+            native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+            device_class=SensorDeviceClass.TEMPERATURE,
+            value_fn=lambda node: _process_node_temperature(
+                node.get("node_data", {}).get("Sensor", {}).get("data", {}).get("Temp")
+            ),
+            sensor_key="Temp",
+            node_type="VLVCO2",
+        ),
     ],
     "VLVCO2RH": [
         DucoboxNodeSensorEntityDescription(
