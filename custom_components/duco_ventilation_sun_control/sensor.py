@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
 from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
@@ -14,7 +13,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .boxes import BOX_SENSORS, COMMON_BOX_SENSORS
 from .calibration import CALIBRATION_SENSORS
 from .comm_boards import COMMBOARD_SENSORS
-from .const import DOMAIN, MANUFACTURER, SCAN_INTERVAL
+from .const import DOMAIN, MANUFACTURER
 from .coordinator import DucoboxCoordinator
 from .ducobox_classes import (
     DucoboxNodeSensorEntityDescription,
@@ -32,15 +31,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Ducobox sensors from a config entry."""
-    refresh_time = entry.options.get("refresh_time", SCAN_INTERVAL.total_seconds())
-
-    coordinator = DucoboxCoordinator(
-        hass,
-        entry.runtime_data,
-        update_interval=timedelta(seconds=refresh_time),
-        config_entry=entry,
-    )
-    await coordinator.async_config_entry_first_refresh()
+    coordinator: DucoboxCoordinator = entry.runtime_data
 
     resolved_board_type = _resolve_board_type(
         entry.data.get("board_type", "DUCO Board"),

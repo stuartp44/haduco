@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import timedelta
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
@@ -11,7 +10,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, MANUFACTURER, SCAN_INTERVAL
+from .const import DOMAIN, MANUFACTURER
 from .coordinator import DucoboxCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -23,15 +22,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Ducobox select entities from a config entry."""
-    refresh_time = entry.options.get("refresh_time", SCAN_INTERVAL.total_seconds())
-
-    coordinator = DucoboxCoordinator(
-        hass,
-        entry.runtime_data,
-        update_interval=timedelta(seconds=refresh_time),
-        config_entry=entry,
-    )
-    await coordinator.async_config_entry_first_refresh()
+    coordinator: DucoboxCoordinator = entry.runtime_data
 
     # Try to get MAC from coordinator data (library should normalize this)
     # Fall back to config entry for backward compatibility

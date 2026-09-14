@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from datetime import timedelta
 from typing import Any, TypeAlias
 
 from ducopy import DucoPy
@@ -7,11 +8,12 @@ from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 
-from .const import DOMAIN
+from .const import DOMAIN, SCAN_INTERVAL
+from .coordinator import DucoboxCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-DucoboxConfigEntry: TypeAlias = ConfigEntry[DucoPy]
+DucoboxConfigEntry: TypeAlias = ConfigEntry[DucoboxCoordinator]
 
 # This integration is configured via config flow only
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
@@ -56,9 +58,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: DucoboxConfigEntry) -> b
             _LOGGER.info(f"Detected board type: {duco_client.client._board_type}")
             _LOGGER.info(f"API generation: {duco_client.client._generation}")
 
+        # Create a single coordinator, shared by all platforms, so we only
+        # poll the box once per refresh interval instead of once per platform.
+        refresh_time = entry.options.get("refresh_time", SCAN_INTERVAL.total_seconds())
+        coordinator = DucoboxCoordinator(
+            hass,
+            duco_client,
+            update_interval=timedelta(seconds=refresh_time),
+            config_entry=entry,
+        )
+        await coordinator.async_config_entry_first_refresh()
+
         hass.data.setdefault(DOMAIN, {})
-        hass.data[DOMAIN][entry.entry_id] = duco_client
-        entry.runtime_data = duco_client
+        hass.data[DOMAIN][entry.entry_id] = coordinator
+        entry.runtime_data = coordinator
     except Exception as ex:
         _LOGGER.error("Could not connect to Ducobox: %s", ex)
         raise ConfigEntryNotReady from ex
@@ -72,11 +85,11 @@ async def async_unload_entry(hass: HomeAssistant, entry: DucoboxConfigEntry) -> 
     unload_ok = await hass.config_entries.async_unload_platforms(entry, ["sensor", "select"])
 
     if unload_ok:
-        # Retrieve and close the DucoPy instance to clean up the HTTP session
-        duco_client = entry.runtime_data
-        if duco_client:
+        # Retrieve and close the DucoPy client to clean up the HTTP session
+        coordinator = entry.runtime_data
+        if coordinator and coordinator.client:
             # Close the session in executor to avoid blocking
-            await asyncio.get_running_loop().run_in_executor(None, duco_client.close)
+            await asyncio.get_running_loop().run_in_executor(None, coordinator.client.close)
             if DOMAIN in hass.data:
                 hass.data[DOMAIN].pop(entry.entry_id, None)
             _LOGGER.debug("DucoPy client closed and removed from hass.data")
