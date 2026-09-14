@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.11.2](https://github.com/stuartp44/haduco/compare/v1.11.1...v1.11.2) (2026-09-14)
+
+
+### Bug Fixes
+
+* share single coordinator across sensor and select platforms ([fa1da0a](https://github.com/stuartp44/haduco/commit/fa1da0a83814b475fa9682e9c9b77b1a651def52))
+
 ## [1.11.1](https://github.com/stuartp44/haduco/compare/v1.11.0...v1.11.1) (2026-08-30)
 
 
