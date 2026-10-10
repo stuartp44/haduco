@@ -12,6 +12,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN, MANUFACTURER
 from .coordinator import DucoboxCoordinator
+from .device import get_device_info
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -114,7 +115,7 @@ async def create_select_entities(
             parent_device_id = box_device_ids.get(parent_box_id)
         else:
             parent_device_id = None
-        via_device_id = (DOMAIN, parent_device_id) if parent_device_id else None
+        via_device_identifier = (DOMAIN, parent_device_id) if parent_device_id else None
 
         if node_type == "BOX":
             box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "")
@@ -159,13 +160,13 @@ async def create_select_entities(
             name=node_type,
             manufacturer=MANUFACTURER,
             model=model,
-            via_device_id=via_device_id,
         )
         unique_id = f"{node_device_id}-select-ventilation_mode"
 
         entity = DucoboxModeSelect(
             coordinator=coordinator,
             device_info=device_info,
+            via_device_identifier=via_device_identifier,
             unique_id=unique_id,
             node_id=node_id if isinstance(node_id, int) else int(node_id) if node_id else 0,
             options=options,
@@ -184,6 +185,7 @@ class DucoboxModeSelect(CoordinatorEntity[DucoboxCoordinator], SelectEntity):
         self,
         coordinator: DucoboxCoordinator,
         device_info: DeviceInfo,
+        via_device_identifier: tuple[str, str] | None,
         unique_id: str,
         node_id: int,
         options: list[str],
@@ -191,11 +193,22 @@ class DucoboxModeSelect(CoordinatorEntity[DucoboxCoordinator], SelectEntity):
         """Initialize the select entity."""
         super().__init__(coordinator)
         self._attr_device_info = device_info
+        self._via_device_identifier = via_device_identifier
         self._attr_unique_id = unique_id
         self._attr_has_entity_name = True
         self._attr_translation_key = "ventilation_mode"
         self._attr_options = options
         self._node_id = node_id
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device info linked to the registered parent device."""
+        return get_device_info(
+            self.coordinator.hass,
+            self._attr_device_info,
+            self._via_device_identifier,
+            self.coordinator.config_entry.entry_id,
+        )
 
     @property
     def current_option(self) -> str | None:

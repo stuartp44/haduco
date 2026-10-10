@@ -15,6 +15,7 @@ from .calibration import CALIBRATION_SENSORS
 from .comm_boards import COMMBOARD_SENSORS
 from .const import DOMAIN, MANUFACTURER
 from .coordinator import DucoboxCoordinator
+from .device import get_device_info
 from .ducobox_classes import (
     DucoboxNodeSensorEntityDescription,
     DucoboxSensorEntityDescription,
@@ -395,12 +396,11 @@ def create_node_sensors(coordinator: DucoboxCoordinator, device_id: str, entry: 
         _LOGGER.debug(f"Parent Box ID: {parent_box_id}")
 
         if node_type not in {"BOX", "UC"} and node_type not in BOX_SENSORS:
-            # Use the parent box's device ID as the via_device_id
-            via_device_id = box_device_ids.get(parent_box_id, device_id)
-            _LOGGER.debug("Using via_device_id for node ID: %s", node_id)
+            parent_device_id = box_device_ids.get(parent_box_id, device_id)
+            _LOGGER.debug("Using parent device ID for node ID: %s", node_id)
             node_device_id = f"{device_id}-{node_id}"
             entities.extend(
-                create_generic_node_sensors(coordinator, node, node_device_id, node_type, via_device_id, entry)
+                create_generic_node_sensors(coordinator, node, node_device_id, node_type, parent_device_id, entry)
             )
 
     return entities
@@ -437,8 +437,8 @@ def create_box_sensors(
         model=box_name,
         sw_version=box_sw_version,
         serial_number=box_serial_number,
-        via_device_id=(DOMAIN, device_id),
     )
+    parent_identifier = (DOMAIN, device_id)
 
     # Add common BOX sensors (available for all BOX types)
     entities.extend(
@@ -448,6 +448,7 @@ def create_box_sensors(
                 node_id=node.get("Node"),
                 description=description,
                 device_info=box_device_info,
+                via_device_identifier=parent_identifier,
                 unique_id=f"{node_device_id}-{description.key}",
                 device_id=device_id,
                 node_name=box_name,
@@ -465,6 +466,7 @@ def create_box_sensors(
                     node_id=node.get("Node"),
                     description=description,
                     device_info=box_device_info,
+                    via_device_identifier=parent_identifier,
                     unique_id=f"{node_device_id}-{description.key}",
                     device_id=device_id,
                     node_name=box_name,
@@ -482,6 +484,7 @@ def create_box_sensors(
                     node_id=node.get("Node"),
                     description=description,
                     device_info=box_device_info,
+                    via_device_identifier=parent_identifier,
                     unique_id=f"{node_device_id}-{description.key}",
                     device_id=device_id,
                     node_name=box_name,
@@ -502,6 +505,7 @@ def create_box_sensors(
                         node_id=node.get("Node"),
                         description=description,
                         device_info=box_device_info,
+                        via_device_identifier=parent_identifier,
                         unique_id=f"{node_device_id}-{description.key}",
                         device_id=device_id,
                         node_name=box_name,
@@ -526,6 +530,7 @@ def create_box_sensors(
                 description=description,
                 device_info=box_device_info,
                 unique_id=f"{node_device_id}-{description.key}",
+                via_device_identifier=parent_identifier,
             )
         )
 
@@ -537,7 +542,7 @@ def create_generic_node_sensors(
     node: dict,
     node_device_id: str,
     node_type: str,
-    via_device_id: str,
+    parent_device_id: str,
     entry: ConfigEntry,
 ) -> list[SensorEntity]:
     """Create sensors for a generic node, linking them via the specified device."""
@@ -555,8 +560,8 @@ def create_generic_node_sensors(
         model=node_type,
         sw_version=node_sw_version,
         serial_number=node_serial,
-        via_device_id=(DOMAIN, via_device_id),
     )
+    parent_identifier = (DOMAIN, parent_device_id)
 
     node_id = node.get("Node")
     board_type = _resolve_board_type(entry.data.get("board_type", ""), coordinator.data, coordinator.client)
@@ -583,8 +588,9 @@ def create_generic_node_sensors(
             node_id=node_id,
             description=description,
             device_info=node_device_info,
+            via_device_identifier=parent_identifier,
             unique_id=f"{node_device_id}-{description.key}",
-            device_id=via_device_id,
+            device_id=parent_device_id,
             node_name=node_type,
         )
         for description in sensors
@@ -655,6 +661,7 @@ class DucoboxNodeSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntit
         description: DucoboxNodeSensorEntityDescription,
         device_info: DeviceInfo,
         unique_id: str,
+        via_device_identifier: tuple[str, str],
         device_id: str,
         node_name: str,
     ) -> None:
@@ -662,10 +669,21 @@ class DucoboxNodeSensorEntity(CoordinatorEntity[DucoboxCoordinator], SensorEntit
         super().__init__(coordinator)
         self.entity_description = description
         self._attr_device_info = device_info
+        self._via_device_identifier = via_device_identifier
         self._attr_unique_id = unique_id
         self._node_id = node_id
         self._attr_has_entity_name = True
         self._attr_translation_key = description.key.lower()
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device info linked to the registered parent device."""
+        return get_device_info(
+            self.coordinator.hass,
+            self._attr_device_info,
+            self._via_device_identifier,
+            self.coordinator.config_entry.entry_id,
+        )
 
     @property
     def native_value(self) -> Any:
@@ -687,15 +705,27 @@ class DucoboxCalibrationSensorEntity(CoordinatorEntity[DucoboxCoordinator], Sens
         description: DucoboxNodeSensorEntityDescription,
         device_info: DeviceInfo,
         unique_id: str,
+        via_device_identifier: tuple[str, str],
     ) -> None:
         """Initialize a Ducobox calibration sensor entity."""
         super().__init__(coordinator)
         self.entity_description = description
         self._attr_device_info = device_info
+        self._via_device_identifier = via_device_identifier
         self._attr_unique_id = unique_id
         self._node_data = node_data
         self._attr_has_entity_name = True
         self._attr_translation_key = description.key.lower()
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device info linked to the registered parent device."""
+        return get_device_info(
+            self.coordinator.hass,
+            self._attr_device_info,
+            self._via_device_identifier,
+            self.coordinator.config_entry.entry_id,
+        )
 
     @property
     def native_value(self) -> Any:
