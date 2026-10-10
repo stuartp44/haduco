@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.11.3](https://github.com/stuartp44/haduco/compare/v1.11.2...v1.11.3) (2026-10-10)
+
+
+### Bug Fixes
+
+* replace deprecated Home Assistant API usages ([d856e6e](https://github.com/stuartp44/haduco/commit/d856e6ec1a156c373383c6667f6b3326eec434fa))
+* update deprecated Home Assistant APIs ([624a63e](https://github.com/stuartp44/haduco/commit/624a63e6b4ff6f10e6cb465511a1f83ab9cd50f4))
+
 ## [1.11.2](https://github.com/stuartp44/haduco/compare/v1.11.1...v1.11.2) (2026-09-14)
 
 
