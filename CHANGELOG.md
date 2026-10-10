@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.11.4](https://github.com/stuartp44/haduco/compare/v1.11.3...v1.11.4) (2026-10-10)
+
+
+### Bug Fixes
+
+* resolve Home Assistant parent device IDs ([283d72c](https://github.com/stuartp44/haduco/commit/283d72c4b964159d0318908d138dd30a1a7460f2))
+* resolve Home Assistant parent device IDs ([60423fb](https://github.com/stuartp44/haduco/commit/60423fb350e5ea35ee56e5153fca5006c788a47f))
+
 ## [1.11.3](https://github.com/stuartp44/haduco/compare/v1.11.2...v1.11.3) (2026-10-10)
 
 
