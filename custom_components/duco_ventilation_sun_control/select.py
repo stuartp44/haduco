@@ -111,10 +111,10 @@ async def create_select_entities(
             parent_box_id = None
 
         if parent_box_id is not None and isinstance(parent_box_id, int):
-            via_device_id = box_device_ids.get(parent_box_id)
+            parent_device_id = box_device_ids.get(parent_box_id)
         else:
-            via_device_id = None
-        via_device = (DOMAIN, via_device_id) if via_device_id else None
+            parent_device_id = None
+        via_device_id = (DOMAIN, parent_device_id) if parent_device_id else None
 
         if node_type == "BOX":
             box_name = coordinator.data.get("General", {}).get("Board", {}).get("BoxName", {}).get("Val", "")
@@ -159,7 +159,7 @@ async def create_select_entities(
             name=node_type,
             manufacturer=MANUFACTURER,
             model=model,
-            via_device=via_device,
+            via_device_id=via_device_id,
         )
         unique_id = f"{node_device_id}-select-ventilation_mode"
 

@@ -2,8 +2,8 @@ from homeassistant.components.sensor import (
     SensorDeviceClass,
 )
 from homeassistant.const import (
-    CONCENTRATION_PARTS_PER_MILLION,
     PERCENTAGE,
+    UnitOfRatio,
     UnitOfTemperature,
 )
 
@@ -29,7 +29,7 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
         ),
         DucoboxNodeSensorEntityDescription(
             key="Co2",
-            native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
+            native_unit_of_measurement=UnitOfRatio.PARTS_PER_MILLION,
             device_class=SensorDeviceClass.CO2,
             value_fn=lambda node: _process_node_co2(
                 node.get("node_data", {}).get("Sensor", {}).get("data", {}).get("Co2")
@@ -179,7 +179,7 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
         ),
         DucoboxNodeSensorEntityDescription(
             key="Co2",
-            native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
+            native_unit_of_measurement=UnitOfRatio.PARTS_PER_MILLION,
             device_class=SensorDeviceClass.CO2,
             value_fn=lambda node: _process_node_co2(
                 node.get("node_data", {}).get("Sensor", {}).get("data", {}).get("Co2")
@@ -234,7 +234,7 @@ NODE_SENSORS: dict[str, list[DucoboxNodeSensorEntityDescription]] = {
         ),
         DucoboxNodeSensorEntityDescription(
             key="Co2",
-            native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
+            native_unit_of_measurement=UnitOfRatio.PARTS_PER_MILLION,
             device_class=SensorDeviceClass.CO2,
             value_fn=lambda node: _process_node_co2(
                 node.get("node_data", {}).get("Sensor", {}).get("data", {}).get("Co2")
